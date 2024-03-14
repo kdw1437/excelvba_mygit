@@ -32,7 +32,7 @@ Public Property Set RefCell(Value As Range)
     Set pRefCell = Value
 End Property
 
-' Property for the data ID
+' dataId property
 Public Property Get DataId() As String
     DataId = pDataId
 End Property
