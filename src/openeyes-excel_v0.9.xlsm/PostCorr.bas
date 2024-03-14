@@ -20,9 +20,9 @@ Function GenerateJsonString() As String
             Dim dataId2 As String
             Dim corrValue As Variant
 
-            dataId1 = vCell.value
-            dataId2 = hCell.value
-            corrValue = ws.Cells(vCell.Row, hCell.Column).value
+            dataId1 = vCell.Value
+            dataId2 = hCell.Value
+            corrValue = ws.Cells(vCell.Row, hCell.Column).Value
 
             If Not IsEmpty(corrValue) Then
                 ' pair가 반복인지 확인

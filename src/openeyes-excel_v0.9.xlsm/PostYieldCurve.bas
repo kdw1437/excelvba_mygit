@@ -6,7 +6,7 @@ Sub PostYieldCurve()
     'Dim baseDt As String
     Dim dataSetId As String
     Dim StartingPoint As String
-    Dim dataId As String
+    Dim DataId As String
     
     Dim ws As Worksheet
     Set ws = ThisWorkbook.Sheets("Market Data") 'ws선언 후, ws 참조변수로 Market Data sheet을 가리킴.
@@ -15,8 +15,8 @@ Sub PostYieldCurve()
     'targetDate = Sheets("Market Data").Range("A2").Value
     
     'baseDt = Format(targetDate, "yyyymmdd")
-    dataSetId = Sheets("Market Data").Range("O2").value 'dataSetId 참조변수에 O2셀의 값 부여
-    StartingPoint = Sheets("Market Data").Range("P2").value 'StartingPoint 참조변수에 P2셀의 값 부여
+    dataSetId = Sheets("Market Data").Range("O2").Value 'dataSetId 참조변수에 O2셀의 값 부여
+    StartingPoint = Sheets("Market Data").Range("P2").Value 'StartingPoint 참조변수에 P2셀의 값 부여
         
     Dim Table1Point As Range
     Set Table1Point = Sheets("Market Data").Range(StartingPoint).Offset(3, 0) 'startingPoint(M4)명 (셀명)에서 3 row 밑의 셀을 Table1Point에 할당한다.
@@ -51,14 +51,14 @@ Sub PostYieldCurve()
    '빈 셀이 나올 때까지 loop가 돌아간다.
     Do
         '현재 셀이 비었는지 아닌지 확인한다.
-        If IsEmpty(currentCell.value) Then
+        If IsEmpty(currentCell.Value) Then
             Exit Do '빈 셀이 발견 되었을 때, loop에서 빠져나온다.
         End If
         
         ' array를 resize하고, 현재 셀의 값을 array에 할당한다.
         cellCount = cellCount + 1
         ReDim Preserve DATA_ID_Cells(1 To cellCount)
-        DATA_ID_Cells(cellCount) = currentCell.value
+        DATA_ID_Cells(cellCount) = currentCell.Value
         
         ' Move to the next cell 2 columns to the right
         Set currentCell = ws.Cells(currentCell.Row, currentCell.Column + 2)
@@ -82,8 +82,8 @@ Sub PostYieldCurve()
             Dim yieldsArray As String
             yieldsArray = "["
             Do While Not IsEmpty(ws.Cells(YieldCurveRow.Row + 3 + j, YieldCurveRow.Column + (i - 1) * 2))
-                tenor = ws.Cells(YieldCurveRow.Row + 3 + j, YieldCurveRow.Column + (i - 1) * 2).value 'value값을 특정 변수 (Double type)에 할당한다.
-                Rate = ws.Cells(YieldCurveRow.Row + 3 + j, YieldCurveRow.Column + (i - 1) * 2 + 1).value
+                tenor = ws.Cells(YieldCurveRow.Row + 3 + j, YieldCurveRow.Column + (i - 1) * 2).Value 'value값을 특정 변수 (Double type)에 할당한다.
+                Rate = ws.Cells(YieldCurveRow.Row + 3 + j, YieldCurveRow.Column + (i - 1) * 2 + 1).Value
                 RiskCode = Format(tenor * 360, "00000")
     
                 ' yield 객체를 만들고 이를 array yield에 할당한다.

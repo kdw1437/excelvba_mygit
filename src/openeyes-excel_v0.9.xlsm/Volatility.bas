@@ -26,13 +26,13 @@ Sub vol()
     
     Dim volCurve As Variant
     Dim termVol As Variant
-    Dim dataId As String
+    Dim DataId As String
     Dim code As String
     Dim r As Long, c As Long
     
     For Each volCurve In Volatilities
-        dataId = volCurve("dataId")
-        code = MapDataIdToCode(dataId)
+        DataId = volCurve("dataId")
+        code = MapDataIdToCode(DataId)
         
         Dim codeRow As Range
         Set codeRow = ws.Columns("A:A").Find(What:=code, LookIn:=xlValues, LookAt:=xlWhole)
@@ -62,7 +62,7 @@ Sub vol()
                     
                     If Not tenorCell Is Nothing Then
                         r = tenorCell.Row
-                        ws.Cells(r, c).value = volEntry("vol")
+                        ws.Cells(r, c).Value = volEntry("vol")
                     End If
                 Next volEntry
             Next termVol
@@ -73,8 +73,8 @@ Sub vol()
         For Each headerCell In searchRange1
             For Each rowHeaderCell In searchRange2
                 Set dataCell = ws.Cells(rowHeaderCell.Row, headerCell.Column)
-                If IsEmpty(dataCell.value) Then
-                    dataCell.value = 0
+                If IsEmpty(dataCell.Value) Then
+                    dataCell.Value = 0
                 End If
             Next rowHeaderCell
         Next headerCell

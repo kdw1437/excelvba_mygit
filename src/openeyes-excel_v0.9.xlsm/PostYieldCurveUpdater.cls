@@ -19,8 +19,8 @@ Public Property Get ArrayOfCurrency() As Variant
 End Property
 
 ' Setter for pArrayOfCurrency
-Public Property Let ArrayOfCurrency(ByVal value As Variant)
-    pArrayOfCurrency = value
+Public Property Let ArrayOfCurrency(ByVal Value As Variant)
+    pArrayOfCurrency = Value
 End Property
 
 
@@ -31,14 +31,14 @@ Public Property Get YieldCurveRow() As Range
 End Property
 
 ' Setter for pYieldCurveRow
-Public Property Set YieldCurveRow(ByVal value As Range)
-    Set pYieldCurveRow = value
+Public Property Set YieldCurveRow(ByVal Value As Range)
+    Set pYieldCurveRow = Value
 End Property
 
 
 ' Setter for pStartCell
-Public Property Set StartCell(value As Range)
-    Set pStartCell = value
+Public Property Set StartCell(Value As Range)
+    Set pStartCell = Value
 End Property
 
 ' Getter for pStartCell
@@ -59,14 +59,14 @@ Public Sub PopulateArrayOfCurrency()
     
     Do
         ' currency cell이 비었는지 확인한다.
-        If IsEmpty(currentCell.value) Then
+        If IsEmpty(currentCell.Value) Then
             Exit Do ' 빈 셀이 발견되면 loop를 빠져 나간다.
         End If
         
         ' array를 Resize하고, current cell의 값을 부여한다.
         cellCount = cellCount + 1
         ReDim Preserve pArrayOfCurrency(1 To cellCount)
-        pArrayOfCurrency(cellCount) = currentCell.value
+        pArrayOfCurrency(cellCount) = currentCell.Value
         
         ' 오른쪽으로 2 칼럼 이동한다.
         Set currentCell = currentCell.Offset(0, 2)
@@ -91,9 +91,9 @@ Public Function GenerateDataString() As String
             j = 1 ' inner loop counter를 초기화한다.
             yieldsArray = "["
             
-            Do While Not IsEmpty(pYieldCurveRow.Offset(3 + j, (i - 1) * 2).value) ' property YieldCurveRow를 사용한다.
-                tenor = pYieldCurveRow.Offset(3 + j, (i - 1) * 2).value
-                Rate = pYieldCurveRow.Offset(3 + j, (i - 1) * 2 + 1).value
+            Do While Not IsEmpty(pYieldCurveRow.Offset(3 + j, (i - 1) * 2).Value) ' property YieldCurveRow를 사용한다.
+                tenor = pYieldCurveRow.Offset(3 + j, (i - 1) * 2).Value
+                Rate = pYieldCurveRow.Offset(3 + j, (i - 1) * 2 + 1).Value
                 RiskCode = Format(tenor * 360, "00000")
                 
                 ' yield object를 만들고, 이 것을 yieldsArray에 추가한다.

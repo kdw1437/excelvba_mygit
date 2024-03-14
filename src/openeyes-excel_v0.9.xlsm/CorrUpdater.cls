@@ -20,24 +20,24 @@ Public Property Get Worksheet() As Worksheet
     Set Worksheet = pWorksheet
 End Property
 
-Public Property Set Worksheet(value As Worksheet)
-    Set pWorksheet = value
+Public Property Set Worksheet(Value As Worksheet)
+    Set pWorksheet = Value
 End Property
 
 Public Property Get SelCorrelation() As Collection
     Set SelCorrelation = pSelCorrelation
 End Property
 
-Public Property Set SelCorrelation(value As Collection)
-    Set pSelCorrelation = value
+Public Property Set SelCorrelation(Value As Collection)
+    Set pSelCorrelation = Value
 End Property
 
 Public Property Get ColumnNameRow() As Integer
     ColumnNameRow = pColumnNameRow
 End Property
 
-Public Property Let ColumnNameRow(value As Integer)
-    pColumnNameRow = value
+Public Property Let ColumnNameRow(Value As Integer)
+    pColumnNameRow = Value
 End Property
 
 Public Property Get StartRow() As Integer
@@ -45,8 +45,8 @@ Public Property Get StartRow() As Integer
     
 End Property
 
-Public Property Let StartRow(value As Integer)
-    pStartRow = value
+Public Property Let StartRow(Value As Integer)
+    pStartRow = Value
 End Property
 
 Public Property Get MatrixId() As String
@@ -54,8 +54,8 @@ Public Property Get MatrixId() As String
     
 End Property
 
-Public Property Let MatrixId(value As String)
-    pMatrixId = value
+Public Property Let MatrixId(Value As String)
+    pMatrixId = Value
 End Property
 
 Public Property Get StartColumn() As Integer
@@ -63,8 +63,8 @@ Public Property Get StartColumn() As Integer
 
 End Property
 
-Public Property Let StartColumn(value As Integer)
-    pStartColumn = value
+Public Property Let StartColumn(Value As Integer)
+    pStartColumn = Value
 End Property
 
 Public Function UpdateCorrelations() As Boolean
@@ -88,16 +88,16 @@ Public Function UpdateCorrelations() As Boolean
     
     ' correlation으로 worksheet를 update한다.
     For ColumnIndex = pStartColumn To LastContiguousColumn
-        hHeader = pWorksheet.Cells(pColumnNameRow, ColumnIndex).value
+        hHeader = pWorksheet.Cells(pColumnNameRow, ColumnIndex).Value
         
         For rowIndex = pStartRow To LastContiguousRow
-            vHeader = pWorksheet.Cells(rowIndex, 1).value
+            vHeader = pWorksheet.Cells(rowIndex, 1).Value
             Dim correlation As Object
             For Each correlation In pSelCorrelation
                 If (vHeader = correlation("dataId1") And hHeader = correlation("dataId2")) Or _
                    (vHeader = correlation("dataId2") And hHeader = correlation("dataId1")) Then
                     If correlation("matrixId") = pMatrixId Then
-                        pWorksheet.Cells(rowIndex, ColumnIndex).value = correlation("corr")
+                        pWorksheet.Cells(rowIndex, ColumnIndex).Value = correlation("corr")
                     End If
                 End If
             Next correlation

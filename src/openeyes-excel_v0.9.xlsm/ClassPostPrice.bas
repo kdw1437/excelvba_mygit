@@ -4,7 +4,7 @@ Sub ClassPostPrice()
     Set ws = ThisWorkbook.Sheets("Market Data")
     
     Dim StartingPoint As Range
-    Set StartingPoint = ws.Range(ws.Range("P2").value)
+    Set StartingPoint = ws.Range(ws.Range("P2").Value)
     
     Dim Table1Point As Range
     Set Table1Point = StartingPoint.Offset(3, 0)

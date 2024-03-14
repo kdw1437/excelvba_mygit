@@ -91,9 +91,9 @@ Function IsDuplicate(ByVal dataId1 As String, ByVal dataId2 As String, ByRef uni
     IsDuplicate = uniquePairs.Exists(dataId1 & ":" & dataId2) Or uniquePairs.Exists(dataId2 & ":" & dataId1)
 End Function
 
-Function MapDataIdToCode(dataId As String) As String
+Function MapDataIdToCode(DataId As String) As String
     ' mapping함수
-    Select Case dataId
+    Select Case DataId
         Case "KOSPI200_LOC"
             MapDataIdToCode = "KOSPI_LV"
         Case "HSI_LOC"
@@ -104,7 +104,7 @@ Function MapDataIdToCode(dataId As String) As String
             MapDataIdToCode = "HSCEI_LV"
         
         Case Else
-            MapDataIdToCode = dataId ' mapping에 해당되는 경우가 없을 때는, 그대로 return한다.
+            MapDataIdToCode = DataId ' mapping에 해당되는 경우가 없을 때는, 그대로 return한다.
     End Select
 End Function
 

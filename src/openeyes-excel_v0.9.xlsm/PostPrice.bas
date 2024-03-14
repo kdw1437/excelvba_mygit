@@ -6,7 +6,7 @@ Sub PostPrice()
     Set ws = ThisWorkbook.Sheets("Market Data")
     
     Dim StartingPoint As Range
-    Set StartingPoint = ws.Range(ws.Range("P2").value)
+    Set StartingPoint = ws.Range(ws.Range("P2").Value)
     
     Dim Table1Point As Range
     Set Table1Point = StartingPoint.Offset(3, 0)
@@ -19,15 +19,15 @@ Sub PostPrice()
     DataString = "["
 
     For i = Table1Point.Row + 1 To fxRow.Row - 2
-        Dim dataId As String
+        Dim DataId As String
         Dim closePric As String
         
-        dataId = ws.Cells(i, Table1Point.Column).value
-        closePric = ws.Cells(i, Table1Point.Column + 1).value
+        DataId = ws.Cells(i, Table1Point.Column).Value
+        closePric = ws.Cells(i, Table1Point.Column + 1).Value
         
         ' 현재 row에 대해 JSON object를 만든다.
         Dim jsonObject As String
-        jsonObject = "{""dataId"": """ & dataId & """, ""price"": " & closePric & "}"
+        jsonObject = "{""dataId"": """ & DataId & """, ""price"": " & closePric & "}"
         
         ' 첫번째 item이 아니라면, comma 분리자를 추가한다.
         If Len(DataString) > 1 Then

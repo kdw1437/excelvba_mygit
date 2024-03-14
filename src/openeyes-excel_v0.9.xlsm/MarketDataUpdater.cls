@@ -48,9 +48,9 @@ Private Sub UpdatePriceForCodes(StartRow As Integer)
     
     For Each codeCell In pWs.Range(pWs.Cells(StartRow, 1), pWs.Cells(pWs.Rows.Count, 1))
         
-        If IsEmpty(codeCell.value) Then Exit For
+        If IsEmpty(codeCell.Value) Then Exit For
 
-        codeValue = codeCell.value
+        codeValue = codeCell.Value
 
         ' 맞는 데이터가 있을 시, 가격을 업데이트 시켜준다.
         UpdatePriceIfMatchFound codeCell, codeValue
@@ -68,7 +68,7 @@ Private Sub UpdatePriceIfMatchFound(codeCell As Range, codeValue As String)
         
         If priceInfo("dataId") = codeValue Then
             
-            codeCell.Offset(0, 1).value = priceInfo("price")
+            codeCell.Offset(0, 1).Value = priceInfo("price")
             Exit For
         End If
     Next i

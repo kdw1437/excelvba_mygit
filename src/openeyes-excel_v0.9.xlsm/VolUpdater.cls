@@ -40,13 +40,13 @@ End Property
 Public Sub ProcessVolCurve(volCurves As Collection)
     Dim volCurve As Variant
     Dim termVol As Variant
-    Dim dataId As String
+    Dim DataId As String
     Dim code As String
     Dim r As Long, c As Long
     
     For Each volCurve In volCurves
-        dataId = volCurve("dataId")
-        code = MapDataIdToCode(dataId)
+        DataId = volCurve("dataId")
+        code = MapDataIdToCode(DataId)
         
         
     Next volCurve

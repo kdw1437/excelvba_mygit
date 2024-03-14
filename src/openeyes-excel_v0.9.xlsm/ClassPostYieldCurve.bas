@@ -7,7 +7,7 @@ Sub ClassPostYieldCurve()
 
     Dim ws As Worksheet
     Set ws = ThisWorkbook.Sheets("Market Data")
-    StartingPoint = Sheets("Market Data").Range("P2").value 'StartingPoint 참조변수에 P2셀의 값 부여
+    StartingPoint = Sheets("Market Data").Range("P2").Value 'StartingPoint 참조변수에 P2셀의 값 부여
         
     Dim Table1Point As Range
     Set Table1Point = Sheets("Market Data").Range(StartingPoint).Offset(3, 0) 'startingPoint(M4)명 (셀명)에서 3 row 밑의 셀을 Table1Point에 할당한다.

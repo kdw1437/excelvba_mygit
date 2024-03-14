@@ -43,7 +43,7 @@ End Property
 Public Sub ImportData()
     Dim volCurve As Variant
     Dim termVol As Variant
-    Dim dataId As String
+    Dim DataId As String
     Dim code As String
     Dim r As Long, c As Long
     Dim codeRow As Range
@@ -51,8 +51,8 @@ Public Sub ImportData()
     
     
     For Each volCurve In pVolatilities
-        dataId = volCurve("dataId")
-        code = MapDataIdToCode(dataId)
+        DataId = volCurve("dataId")
+        code = MapDataIdToCode(DataId)
         
         Set codeRow = pWs.Columns(pCodeColumn).Find(What:=code, LookIn:=xlValues, LookAt:=xlWhole)
         
@@ -78,7 +78,7 @@ Public Sub ImportData()
                     
                     If Not tenorCell Is Nothing Then
                         r = tenorCell.Row
-                        pWs.Cells(r, c).value = volEntry("vol")
+                        pWs.Cells(r, c).Value = volEntry("vol")
                     End If
                 Next volEntry
             Next termVol
@@ -94,11 +94,11 @@ Public Sub FillEmptyCells()
     Dim code As String
     Dim codeRow As Range
     Dim volCurve As Variant
-    Dim dataId As String
+    Dim DataId As String
             
     For Each volCurve In pVolatilities
-        dataId = volCurve("dataId")
-        code = MapDataIdToCode(dataId)
+        DataId = volCurve("dataId")
+        code = MapDataIdToCode(DataId)
         
         Set codeRow = pWs.Columns(pCodeColumn).Find(What:=code, LookIn:=xlValues, LookAt:=xlWhole)
         
@@ -111,8 +111,8 @@ Public Sub FillEmptyCells()
             For Each headerCell In searchRange1
                 For Each rowHeaderCell In searchRange2
                     Set dataCell = pWs.Cells(rowHeaderCell.Row, headerCell.Column)
-                    If IsEmpty(dataCell.value) Then
-                        dataCell.value = 0
+                    If IsEmpty(dataCell.Value) Then
+                        dataCell.Value = 0
                     End If
                 Next rowHeaderCell
             Next headerCell
