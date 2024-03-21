@@ -1,15 +1,13 @@
-Attribute VB_Name = "Module1"
+Attribute VB_Name = "AppWait"
+'이 방식으로 할 시, 문제가 발생한다. excel이 responsive가 자주 끊겼다가 돌아와서 문제 발생. 그냥 Forloop에 doevent를 사용하는 Module1을 사용하는 것이 낫다.
 Sub SendJSON()
     Dim JsonString As String
     Dim xmlhttp As Object
-    Dim baseUrl As String
     
     Set xmlhttp = CreateObject("WinHttp.WinHttpRequest.5.1")
-    baseUrl = ThisWorkbook.Sheets("Sheet1").Range("A8").Value
     
     Dim url As String
-    'url = "http://urosys-web.juroinstruments.com/app/createValWebJob"
-    url = baseUrl & "createValWebJob"
+    url = "http://urosys-web.juroinstruments.com/app/createValWebJob"
     
     xmlhttp.Open "POST", url, False
     
@@ -48,7 +46,7 @@ Sub SendJSON()
     ThisWorkbook.Sheets("Sheet1").Range("B5").Value = jobId
     
     Dim url2 As String
-    url2 = baseUrl & "selectValJob?jobId=" & jobId
+    url2 = "http://urosys-web.juroinstruments.com/app/selectValJob?jobId=" & jobId
     
     Do
         Dim xmlhttp2 As Object
@@ -81,17 +79,19 @@ Sub SendJSON()
         ThisWorkbook.Sheets("Sheet1").Range("C5").Value = ParsedJson("jobStateCode")
         ThisWorkbook.Sheets("Sheet1").Range("D5").Value = "'" & ParsedJson("creDtime")
         
-        'Start timing (StartTime은 Timer의 현재 시간을 assign받고,
-        startTime = Timer
+        Dim endTime As Date
+        endTime = Now + TimeValue("00:00:10") ' 끝나는 시간을 지금으로 부터 10초 후로 세팅한다.
         
-        '10초 마다 loop
-        Do While Timer < startTime + 10
-            DoEvents  'Excel이 responsive하도록
+        Do While Now < endTime
+            DoEvents ' 엑셀이 responsive하도록 유지한다.
+            ' CPU 사용을 줄이기 위해 매우 짧은 시간 기다림: 선택사항
+            Application.Wait (Now + TimeValue("0:00:01"))
         Loop
+
     Loop
     
     Dim url3 As String
-    url3 = baseUrl & "SelectJob1?jobid=" & jobId
+    url3 = "http://urosys-web.juroinstruments.com/app/SelectJob1?jobid=" & jobId
     
     Dim xmlhttp3 As Object
     Set xmlhttp3 = CreateObject("WinHttp.WinHttpRequest.5.1")
@@ -122,3 +122,4 @@ Sub SendJSON()
         DoEvents
     Next job
 End Sub
+
