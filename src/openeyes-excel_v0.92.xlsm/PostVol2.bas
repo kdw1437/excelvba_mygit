@@ -80,7 +80,7 @@ End Function
 Sub RunFunc()
     Dim jsonString As String
     jsonString = ConvertRangeToJSON()
-    'Debug.Print jsonString
+    Debug.Print jsonString
     jsonString = URLEncode(jsonString)
     
     
