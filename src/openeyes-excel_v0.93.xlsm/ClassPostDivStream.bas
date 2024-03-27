@@ -20,5 +20,11 @@ Sub ClassPostDivStream()
         
     Debug.Print DataString
     
-    
+    DataString = URLEncode(DataString)
+
+    Dim url As String
+    url = "http://localhost:8080/val/marketdata/v1/saveDividendStream?baseDt=20231228&dataSetId=TEST1"
+
+    ' POST request를 보낸다.
+    SendPostRequest DataString, url
 End Sub
