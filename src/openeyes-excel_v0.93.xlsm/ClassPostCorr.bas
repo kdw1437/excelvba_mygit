@@ -10,10 +10,10 @@ Sub PrintJsonString()
     Dim postCorrUpdater As New postCorrUpdater
     With postCorrUpdater
         ' vertical range를 설정한다. (Equity cell로 부터 특정 범위에 있는)
-        Set .VerticalRange = equityCell.Offset(4, 0).Resize(Ws.Range(equityCell.Offset(4, 0), Ws.Cells(Ws.Rows.Count, equityCell.Column)).End(xlDown).Row - equityCell.Offset(4, 0).Row + 1)
+        Set .VerticalRange = equityCell.Offset(4, 0).Resize(Ws.Range(equityCell.Offset(4, 0), Ws.Cells(Ws.Rows.Count, equityCell.Column)).End(xlDown).row - equityCell.Offset(4, 0).row + 1)
         
         ' horizontal range를 설정한다. (Equity cell로 부터 특정 범위에 있는)
-        Set .HorizontalRange = equityCell.Offset(3, 2).Resize(, Ws.Range(equityCell.Offset(3, 2), Ws.Cells(equityCell.Offset(3, 2).Row, Ws.Columns.Count)).End(xlToRight).Column - equityCell.Offset(3, 2).Column + 1)
+        Set .HorizontalRange = equityCell.Offset(3, 2).Resize(, Ws.Range(equityCell.Offset(3, 2), Ws.Cells(equityCell.Offset(3, 2).row, Ws.Columns.Count)).End(xlToRight).Column - equityCell.Offset(3, 2).Column + 1)
         
         
         'Debug.Print .CorrJson()
@@ -40,10 +40,10 @@ Sub PrintJsonString2()
     Dim postCorrUpdater As New postCorrUpdater
     With postCorrUpdater
         ' VerticalRange property의 값을 부여한다. (setter이용)
-        Set .VerticalRange = FXCell.Offset(4, 0).Resize(Ws.Range(FXCell.Offset(4, 0), Ws.Cells(Ws.Rows.Count, FXCell.Column)).End(xlDown).Row - FXCell.Offset(4, 0).Row + 1)
+        Set .VerticalRange = FXCell.Offset(4, 0).Resize(Ws.Range(FXCell.Offset(4, 0), Ws.Cells(Ws.Rows.Count, FXCell.Column)).End(xlDown).row - FXCell.Offset(4, 0).row + 1)
         
         'HorizontalRange property의 값을 부여한다. (setter이용)
-        Set .HorizontalRange = FXCell.Offset(3, 3).Resize(, Ws.Range(FXCell.Offset(3, 3), Ws.Cells(FXCell.Offset(3, 3).Row, Ws.Columns.Count)).End(xlToRight).Column - FXCell.Offset(3, 3).Column + 1)
+        Set .HorizontalRange = FXCell.Offset(3, 3).Resize(, Ws.Range(FXCell.Offset(3, 3), Ws.Cells(FXCell.Offset(3, 3).row, Ws.Columns.Count)).End(xlToRight).Column - FXCell.Offset(3, 3).Column + 1)
         
         
     End With

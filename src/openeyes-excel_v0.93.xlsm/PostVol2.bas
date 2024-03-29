@@ -12,8 +12,8 @@ Function ConvertRangeToJSON() As String
     jsonString = "["
     
     firstObject = True
-    For Each cell In Ws.Range("AD1:AD" & Ws.Cells(Ws.Rows.Count, "AD").End(xlUp).Row)
-        Select Case cell.Value
+    For Each cell In Ws.Range("AD1:AD" & Ws.Cells(Ws.Rows.Count, "AD").End(xlUp).row)
+        Select Case cell.value
             Case "KOSPI_LV"
                 dataId = "KOSPI200_LOC"
             Case "NKY_LV"
@@ -64,11 +64,11 @@ Function GenerateObjectJSON(Ws As Worksheet, RefCell As Range, dataId As String)
             If Not firstTermVol Then
                 objectJSON = objectJSON & ","
             End If
-            objectJSON = objectJSON & "{" & """tenor"": " & termVolCell.Value & "," & """vol"": " & Ws.Cells(termVolCell.Row, volFactorCell.Column).Value & "}"
+            objectJSON = objectJSON & "{" & """tenor"": " & termVolCell.value & "," & """vol"": " & Ws.Cells(termVolCell.row, volFactorCell.Column).value & "}"
             firstTermVol = False
         Next termVolCell
         
-        objectJSON = objectJSON & "]," & """volFactor"": " & volFactorCell.Value & "}"
+        objectJSON = objectJSON & "]," & """volFactor"": " & volFactorCell.value & "}"
         firstVolCurve = False
     Next volFactorCell
     

@@ -66,15 +66,15 @@ Public Sub UpdateWorksheet()
         Set findCell = Nothing
         
         For Each findCell In pSearchRange.Cells
-            If findCell.Value = dataSet("dataId") Then Exit For
+            If findCell.value = dataSet("dataId") Then Exit For
             
         Next findCell
         
         If Not findCell Is Nothing Then
             For j = 1 To dataSet("dividends").Count
                 Set divValue = dataSet("dividends")(j)
-                findCell.Offset(j + 1, 0).Value = divValue("date")
-                findCell.Offset(j + 1, 1).Value = divValue("value")
+                findCell.Offset(j + 1, 0).value = divValue("date")
+                findCell.Offset(j + 1, 1).value = divValue("value")
             Next j
         Else
             Debug.Print "DataId " & dataSet("dataId") & " not found in the searchRange."

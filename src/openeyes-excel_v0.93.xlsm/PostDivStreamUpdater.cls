@@ -15,8 +15,8 @@ Private pStartCell As Range
 Private pWs As Worksheet
 
 ' Setter for pWs
-Public Property Set Ws(ByVal Value As Worksheet)
-    Set pWs = Value
+Public Property Set Ws(ByVal value As Worksheet)
+    Set pWs = value
 End Property
 
 ' Getter for pWs
@@ -30,8 +30,8 @@ Public Property Get ArrayOfIndex() As Variant
 End Property
 
 ' Setter for pArrayOfIndex
-Public Property Let ArrayOfIndex(ByVal Value As Variant)
-    pArrayOfIndex = Value
+Public Property Let ArrayOfIndex(ByVal value As Variant)
+    pArrayOfIndex = value
 End Property
 
 ' Getter for pTitleCell
@@ -40,18 +40,18 @@ Public Property Get TitleCell() As Range
 End Property
 
 ' Setter for pTitleCell
-Public Property Set TitleCell(ByVal Value As Range)
-    Set pTitleCell = Value
+Public Property Set TitleCell(ByVal value As Range)
+    Set pTitleCell = value
 End Property
 
 ' Setter for pStartCell
-Public Property Set StartCell(Value As Range)
-    Set pStartCell = Value
+Public Property Set startCell(value As Range)
+    Set pStartCell = value
 End Property
 
 ' Getter for pStartCell
-Public Property Get StartCell() As Range
-    Set StartCell = pStartCell
+Public Property Get startCell() As Range
+    Set startCell = pStartCell
 End Property
 
 Private Sub Class_Initialize()
@@ -68,14 +68,14 @@ Public Sub PopulateArrayOfIndex()
     
     Do
         ' currency cell이 비었는지 확인한다.
-        If IsEmpty(currentCell.Value) Then
+        If IsEmpty(currentCell.value) Then
             Exit Do ' 빈 셀이 발견되면 loop를 빠져 나간다.
         End If
         
         ' array를 Resize하고, current cell의 값을 부여한다.
         cellCount = cellCount + 1
         ReDim Preserve pArrayOfIndex(1 To cellCount)
-        pArrayOfIndex(cellCount) = currentCell.Value
+        pArrayOfIndex(cellCount) = currentCell.value
         
         ' 오른쪽으로 2 칼럼 이동한다.
         Set currentCell = currentCell.Offset(0, 2)
@@ -91,7 +91,7 @@ Public Function GenerateDataString() As String
     
     If arraySize > 0 Then
         Dim i As Integer, j As Integer
-        Dim IndexName As String, DateTime As String, Value As Double
+        Dim IndexName As String, DateTime As String, value As Double
         Dim dividendsArray As String
         
         For i = 1 To arraySize
@@ -99,14 +99,14 @@ Public Function GenerateDataString() As String
             j = 1 ' inner loop counter를 초기화한다.
             dividendsArray = "["
             
-            Do While Not IsEmpty(pTitleCell.Offset(3 + j, (i - 1) * 2).Value) ' property TitleCell를 사용한다.
-                DateTime = pTitleCell.Offset(3 + j, (i - 1) * 2).Value
-                Value = pTitleCell.Offset(3 + j, (i - 1) * 2 + 1).Value
+            Do While Not IsEmpty(pTitleCell.Offset(3 + j, (i - 1) * 2).value) ' property TitleCell를 사용한다.
+                DateTime = pTitleCell.Offset(3 + j, (i - 1) * 2).value
+                value = pTitleCell.Offset(3 + j, (i - 1) * 2 + 1).value
                 
                 
                 ' yield object를 만들고, 이 것을 yieldsArray에 추가한다.
                 If dividendsArray <> "[" Then dividendsArray = dividendsArray & ","
-                dividendsArray = dividendsArray & "{""date"": """ & DateTime & """, ""value"": " & Value & "}"
+                dividendsArray = dividendsArray & "{""date"": """ & DateTime & """, ""value"": " & value & "}"
                 
                 j = j + 1
             Loop

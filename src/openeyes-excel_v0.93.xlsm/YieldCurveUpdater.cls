@@ -20,8 +20,8 @@ Public Property Get YieldCurves() As Collection
     Set YieldCurves = pYieldCurves
 End Property
 
-Public Property Set YieldCurves(Value As Collection)
-    Set pYieldCurves = Value
+Public Property Set YieldCurves(value As Collection)
+    Set pYieldCurves = value
 End Property
 
 ' Worksheet 프로퍼티
@@ -29,8 +29,8 @@ Public Property Get Worksheet() As Worksheet
     Set Worksheet = pWorksheet
 End Property
 
-Public Property Set Worksheet(Value As Worksheet)
-    Set pWorksheet = Value
+Public Property Set Worksheet(value As Worksheet)
+    Set pWorksheet = value
 End Property
 
 ' CurrencyCell 프로퍼티 (Range)
@@ -38,8 +38,8 @@ Public Property Get CurrencyCell() As Range
     Set CurrencyCell = pCurrencyCell
 End Property
 
-Public Property Set CurrencyCell(Value As Range)
-    Set pCurrencyCell = Value
+Public Property Set CurrencyCell(value As Range)
+    Set pCurrencyCell = value
 End Property
 
 ' yield curve data로 worksheet를 채우는 메소드
@@ -68,15 +68,15 @@ Public Sub PopulateYieldCurveData()
             Dim rateColumn As Integer
             rateColumn = tenorColumn + 1 ' tenor옆에 rate가 있다.
             
-            dataRow = foundCurrencyCell.Row + 2
+            dataRow = foundCurrencyCell.row + 2
             
             ' 테이블을 정리하는 코드
             'pWorksheet.Range(pWorksheet.Cells(dataRow, tenorColumn), pWorksheet.Cells(pWorksheet.Rows.Count, rateColumn)).ClearContents
             
             For Each yieldData In yieldCurve("yields")
                 'Tenor와 rate 데이터를 채워넣는다.
-                pWorksheet.Cells(dataRow, tenorColumn).Value = yieldData("tenor")
-                pWorksheet.Cells(dataRow, rateColumn).Value = yieldData("rate")
+                pWorksheet.Cells(dataRow, tenorColumn).value = yieldData("tenor")
+                pWorksheet.Cells(dataRow, rateColumn).value = yieldData("rate")
                 dataRow = dataRow + 1
             Next yieldData
         End If

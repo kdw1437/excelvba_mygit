@@ -36,9 +36,9 @@ Public Function CorrJsonh() As String
             Dim dataId2 As String
             Dim corrValue As Variant
 
-            dataId1 = hCell.Value
-            dataId2 = vCell.Value
-            corrValue = vCell.Worksheet.Cells(vCell.Row, hCell.Column).Value
+            dataId1 = hCell.value
+            dataId2 = vCell.value
+            corrValue = vCell.Worksheet.Cells(vCell.row, hCell.Column).value
 
             If Not IsEmpty(corrValue) Then
                 ' Check if the pair is a duplicate
@@ -75,9 +75,9 @@ Public Function CorrJsonv() As String
             Dim dataId2 As String
             Dim corrValue As Variant
 
-            dataId1 = vCell.Value
-            dataId2 = hCell.Value
-            corrValue = vCell.Worksheet.Cells(vCell.Row, hCell.Column).Value
+            dataId1 = vCell.value
+            dataId2 = hCell.value
+            corrValue = vCell.Worksheet.Cells(vCell.row, hCell.Column).value
 
             If Not IsEmpty(corrValue) Then
                 ' Check if the pair is a duplicate

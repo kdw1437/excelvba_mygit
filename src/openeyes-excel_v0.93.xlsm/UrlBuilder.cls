@@ -22,56 +22,56 @@ Public Property Get baseURL() As String
     baseURL = pBaseURL
 End Property
 
-Public Property Let baseURL(Value As String)
-    pBaseURL = Value
+Public Property Let baseURL(value As String)
+    pBaseURL = value
 End Property
 
 Public Property Get DataParameter() As String
     DataParameter = pDateParameter
 End Property
 
-Public Property Let DataParameter(Value As String)
-    pDataParameter = Value
+Public Property Let DataParameter(value As String)
+    pDataParameter = value
 End Property
 
 Public Property Get DataIds() As String
     DataIds = pDataIds
 End Property
 
-Public Property Let DataIds(Value As String)
-    pDataIds = Value
+Public Property Let DataIds(value As String)
+    pDataIds = value
 End Property
 
 Public Property Get dataSetId() As String
     dataSetId = pdataSetId
 End Property
 
-Public Property Let dataSetId(Value As String)
-    pdataSetId = Value
+Public Property Let dataSetId(value As String)
+    pdataSetId = value
 End Property
 
 Public Property Get Version() As String
     Version = pVersion
 End Property
 
-Public Property Let Version(Value As String)
-    pVersion = Value
+Public Property Let Version(value As String)
+    pVersion = value
 End Property
 
 Public Property Get MatrixId() As String
     MatrixId = pMatrixId
 End Property
 
-Public Property Let MatrixId(Value As String)
-    pMatrixId = Value
+Public Property Let MatrixId(value As String)
+    pMatrixId = value
 End Property
 
 Public Property Get baseDt() As String
     baseDt = pBaseDt
 End Property
 
-Public Property Let baseDt(Value As String)
-    pBaseDt = Value
+Public Property Let baseDt(value As String)
+    pBaseDt = value
 
 End Property
 'URL을 만드는 method(property(field)값을 바탕으로 호출 시, URL을 return한다.)

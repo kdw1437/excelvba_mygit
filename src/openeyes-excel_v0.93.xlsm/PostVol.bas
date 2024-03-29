@@ -22,7 +22,7 @@ Function ConvertRangeToJSON() As String
     Dim found As Boolean
     
     For Each cell In Ws.Range("AD:AD")
-        If cell.Value = "KOSPI_LV" Then
+        If cell.value = "KOSPI_LV" Then
             Set RefCell = cell
             found = True
             Exit For
@@ -52,7 +52,7 @@ Function ConvertRangeToJSON() As String
         
     firstVolCurve = True
     For Each volFactorCell In volFactorRange
-        volFactor = volFactorCell.Value
+        volFactor = volFactorCell.value
         If Not firstVolCurve Then
             jsonString = jsonString & ","
         End If
@@ -60,8 +60,8 @@ Function ConvertRangeToJSON() As String
         
         firstTermVol = True
         For Each termVolCell In tenorRange
-            tenor = termVolCell.Value
-            vol = Ws.Cells(termVolCell.Row, volFactorCell.Column).Value
+            tenor = termVolCell.value
+            vol = Ws.Cells(termVolCell.row, volFactorCell.Column).value
             If Not firstTermVol Then
                 jsonString = jsonString & ","
             End If

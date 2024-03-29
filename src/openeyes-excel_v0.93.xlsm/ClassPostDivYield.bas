@@ -1,8 +1,8 @@
 Attribute VB_Name = "ClassPostDivYield"
 Sub ClassPostDivYield()
     
-    Dim divYieldUpdater As postDivYieldUpdater
-    Set divYieldUpdater = New postDivYieldUpdater
+    Dim divYieldUpdater As PostDivYieldUpdater
+    Set divYieldUpdater = New PostDivYieldUpdater
     
     Set divYieldUpdater.Worksheet = ThisWorkbook.Sheets("Dividend")
     Set divYieldUpdater.DivCell = divYieldUpdater.Worksheet.Range("F3")

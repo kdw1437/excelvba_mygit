@@ -30,9 +30,9 @@ Sub InputCorrelation()
     Set Ws = ThisWorkbook.Sheets("Market Data")
     
     Dim equityRow As Integer
-    equityRow = Ws.Columns(1).Find(What:="Equity", LookIn:=xlValues, LookAt:=xlPart).Row
+    equityRow = Ws.Columns(1).Find(What:="Equity", LookIn:=xlValues, LookAt:=xlPart).row
     Dim fxRow As Integer
-    fxRow = Ws.Columns(1).Find(What:="FX", LookIn:=xlValues, LookAt:=xlWhole).Row
+    fxRow = Ws.Columns(1).Find(What:="FX", LookIn:=xlValues, LookAt:=xlWhole).row
     
     'Call UpdateCellsWithCorrelation(ws, SelCorrelation, equityRow + 3, equityRow + 4, "CORR", 3)
     'Call UpdateCellsWithCorrelation(ws, SelCorrelation, FXRow + 3, FXRow + 4, "CORR", 4)

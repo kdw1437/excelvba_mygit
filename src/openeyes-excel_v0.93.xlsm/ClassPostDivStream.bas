@@ -11,7 +11,7 @@ Sub ClassPostDivStream()
     
     Set divStreamUpdater.Ws = Wst
     Set divStreamUpdater.TitleCell = divStreamUpdater.Ws.Cells(3, 10)
-    Set divStreamUpdater.StartCell = divStreamUpdater.TitleCell.Offset(2, 0)
+    Set divStreamUpdater.startCell = divStreamUpdater.TitleCell.Offset(2, 0)
     
     divStreamUpdater.PopulateArrayOfIndex
     

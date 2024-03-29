@@ -58,7 +58,7 @@ Public Sub ImportData()
         
         If Not codeRow Is Nothing Then
             Dim codeRowNumber As Long
-            codeRowNumber = codeRow.Row
+            codeRowNumber = codeRow.row
             Dim searchRange1 As Range
             Dim searchRange2 As Range
             Set searchRange1 = pWs.Range(pWs.Cells(codeRowNumber, 3), pWs.Cells(codeRowNumber, 3).End(xlToRight))
@@ -77,8 +77,8 @@ Public Sub ImportData()
                     Set tenorCell = searchRange2.Find(What:=tenor, LookIn:=xlValues, LookAt:=xlWhole)
                     
                     If Not tenorCell Is Nothing Then
-                        r = tenorCell.Row
-                        pWs.Cells(r, c).Value = volEntry("vol")
+                        r = tenorCell.row
+                        pWs.Cells(r, c).value = volEntry("vol")
                     End If
                 Next volEntry
             Next termVol
@@ -104,15 +104,15 @@ Public Sub FillEmptyCells()
         
         If Not codeRow Is Nothing Then
             Dim codeRowNumber As Long
-            codeRowNumber = codeRow.Row
+            codeRowNumber = codeRow.row
            
             Set searchRange1 = pWs.Range(pWs.Cells(codeRowNumber, 3), pWs.Cells(codeRowNumber, 3).End(xlToRight))
             Set searchRange2 = pWs.Range(pWs.Cells(codeRowNumber + 1, 2), pWs.Cells(codeRowNumber + 1, 2).End(xlDown))
             For Each headerCell In searchRange1
                 For Each rowHeaderCell In searchRange2
-                    Set dataCell = pWs.Cells(rowHeaderCell.Row, headerCell.Column)
-                    If IsEmpty(dataCell.Value) Then
-                        dataCell.Value = 0
+                    Set dataCell = pWs.Cells(rowHeaderCell.row, headerCell.Column)
+                    If IsEmpty(dataCell.value) Then
+                        dataCell.value = 0
                     End If
                 Next rowHeaderCell
             Next headerCell

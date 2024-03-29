@@ -19,8 +19,8 @@ Public Property Get Worksheet() As Worksheet
     Set Worksheet = pWorksheet
 End Property
 
-Public Property Set Worksheet(Value As Worksheet)
-    Set pWorksheet = Value
+Public Property Set Worksheet(value As Worksheet)
+    Set pWorksheet = value
 End Property
 
 ' reference cell property
@@ -28,8 +28,8 @@ Public Property Get RefCell() As Range
     Set RefCell = pRefCell
 End Property
 
-Public Property Set RefCell(Value As Range)
-    Set pRefCell = Value
+Public Property Set RefCell(value As Range)
+    Set pRefCell = value
 End Property
 
 ' dataId property
@@ -37,8 +37,8 @@ Public Property Get dataId() As String
     dataId = pDataId
 End Property
 
-Public Property Let dataId(Value As String)
-    pDataId = Value
+Public Property Let dataId(value As String)
+    pDataId = value
 End Property
 
 ' GenerateObjectJSON method
@@ -67,11 +67,11 @@ Public Function GenerateObjectJSON() As String
             If Not firstTermVol Then
                 objectJSON = objectJSON & ","
             End If
-            objectJSON = objectJSON & "{" & """tenor"": " & termVolCell.Value & "," & """vol"": " & pWorksheet.Cells(termVolCell.Row, volFactorCell.Column).Value & "}"
+            objectJSON = objectJSON & "{" & """tenor"": " & termVolCell.value & "," & """vol"": " & pWorksheet.Cells(termVolCell.row, volFactorCell.Column).value & "}"
             firstTermVol = False
         Next termVolCell
         
-        objectJSON = objectJSON & "]," & """volFactor"": " & volFactorCell.Value & "}"
+        objectJSON = objectJSON & "]," & """volFactor"": " & volFactorCell.value & "}"
         firstVolCurve = False
     Next volFactorCell
     

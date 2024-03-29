@@ -11,8 +11,8 @@ Sub RunFunc()
     jsonString = "["
     
     firstObject = True
-    For Each cell In Ws.Range("AD1:AD" & Ws.Cells(Ws.Rows.Count, "AD").End(xlUp).Row)
-        Select Case cell.Value
+    For Each cell In Ws.Range("AD1:AD" & Ws.Cells(Ws.Rows.Count, "AD").End(xlUp).row)
+        Select Case cell.value
             Case "KOSPI_LV"
                 dataId = "KOSPI200_LOC"
             Case "NKY_LV"

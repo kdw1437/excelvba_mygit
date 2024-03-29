@@ -15,15 +15,15 @@ Sub PostYieldCurve()
     'targetDate = Sheets("Market Data").Range("A2").Value
     
     'baseDt = Format(targetDate, "yyyymmdd")
-    dataSetId = Sheets("Market Data").Range("O2").Value 'dataSetId 참조변수에 O2셀의 값 부여
-    StartingPoint = Sheets("Market Data").Range("P2").Value 'StartingPoint 참조변수에 P2셀의 값 부여
+    dataSetId = Sheets("Market Data").Range("O2").value 'dataSetId 참조변수에 O2셀의 값 부여
+    StartingPoint = Sheets("Market Data").Range("P2").value 'StartingPoint 참조변수에 P2셀의 값 부여
         
     Dim Table1Point As Range
     Set Table1Point = Sheets("Market Data").Range(StartingPoint).Offset(3, 0) 'startingPoint(M4)명 (셀명)에서 3 row 밑의 셀을 Table1Point에 할당한다.
     
     Dim lastRow As Long
     
-    lastRow = Ws.Cells(Ws.Rows.Count, Table1Point.Column).End(xlUp).Row 'Table1Point와 같은 column에 있는 마지막으로 사용되어진 row를 찾는다.
+    lastRow = Ws.Cells(Ws.Rows.Count, Table1Point.Column).End(xlUp).row 'Table1Point와 같은 column에 있는 마지막으로 사용되어진 row를 찾는다.
     
     ' Find the cell that contains "FX" after "Equity" table
     Dim fxRow As Range 'Range객체는 하나 혹은 다수의 cell을 참조한다.
@@ -38,7 +38,7 @@ Sub PostYieldCurve()
     'Debug.Print Table2Point.value
 
     Dim DATA_ID_Cell1 As Range
-    Set DATA_ID_Cell1 = Ws.Cells(YieldCurveRow.Row + 2, YieldCurveRow.Column)
+    Set DATA_ID_Cell1 = Ws.Cells(YieldCurveRow.row + 2, YieldCurveRow.Column)
     'Debug.Print DATA_ID_Cell1.value
     Dim DATA_ID_Cells() As Variant
     Dim colIndex As Long
@@ -51,17 +51,17 @@ Sub PostYieldCurve()
    '빈 셀이 나올 때까지 loop가 돌아간다.
     Do
         '현재 셀이 비었는지 아닌지 확인한다.
-        If IsEmpty(currentCell.Value) Then
+        If IsEmpty(currentCell.value) Then
             Exit Do '빈 셀이 발견 되었을 때, loop에서 빠져나온다.
         End If
         
         ' array를 resize하고, 현재 셀의 값을 array에 할당한다.
         cellCount = cellCount + 1
         ReDim Preserve DATA_ID_Cells(1 To cellCount)
-        DATA_ID_Cells(cellCount) = currentCell.Value
+        DATA_ID_Cells(cellCount) = currentCell.value
         
         ' Move to the next cell 2 columns to the right
-        Set currentCell = Ws.Cells(currentCell.Row, currentCell.Column + 2)
+        Set currentCell = Ws.Cells(currentCell.row, currentCell.Column + 2)
     Loop
     Dim arraySize As Integer
     arraySize = UBound(DATA_ID_Cells) 'arraySize에 DATA_ID_Cells의 size를 할당한다.
@@ -81,9 +81,9 @@ Sub PostYieldCurve()
             ' Yields array를 만든다.
             Dim yieldsArray As String
             yieldsArray = "["
-            Do While Not IsEmpty(Ws.Cells(YieldCurveRow.Row + 3 + j, YieldCurveRow.Column + (i - 1) * 2))
-                tenor = Ws.Cells(YieldCurveRow.Row + 3 + j, YieldCurveRow.Column + (i - 1) * 2).Value 'value값을 특정 변수 (Double type)에 할당한다.
-                Rate = Ws.Cells(YieldCurveRow.Row + 3 + j, YieldCurveRow.Column + (i - 1) * 2 + 1).Value
+            Do While Not IsEmpty(Ws.Cells(YieldCurveRow.row + 3 + j, YieldCurveRow.Column + (i - 1) * 2))
+                tenor = Ws.Cells(YieldCurveRow.row + 3 + j, YieldCurveRow.Column + (i - 1) * 2).value 'value값을 특정 변수 (Double type)에 할당한다.
+                Rate = Ws.Cells(YieldCurveRow.row + 3 + j, YieldCurveRow.Column + (i - 1) * 2 + 1).value
                 RiskCode = Format(tenor * 360, "00000")
     
                 ' yield 객체를 만들고 이를 array yield에 할당한다.

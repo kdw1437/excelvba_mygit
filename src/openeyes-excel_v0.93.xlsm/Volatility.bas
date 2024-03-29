@@ -39,7 +39,7 @@ Sub vol()
         
         If Not codeRow Is Nothing Then
             Dim codeRowNumber As Long
-            codeRowNumber = codeRow.Row
+            codeRowNumber = codeRow.row
             Dim searchRange1 As Range
             Set searchRange1 = Ws.Range(Ws.Cells(codeRowNumber, 3), Ws.Cells(codeRowNumber, 3).End(xlToRight))
             Dim searchRange2 As Range
@@ -61,8 +61,8 @@ Sub vol()
                     Set tenorCell = searchRange2.Find(What:=tenor, LookIn:=xlValues, LookAt:=xlWhole)
                     
                     If Not tenorCell Is Nothing Then
-                        r = tenorCell.Row
-                        Ws.Cells(r, c).Value = volEntry("vol")
+                        r = tenorCell.row
+                        Ws.Cells(r, c).value = volEntry("vol")
                     End If
                 Next volEntry
             Next termVol
@@ -72,9 +72,9 @@ Sub vol()
         
         For Each headerCell In searchRange1
             For Each rowHeaderCell In searchRange2
-                Set dataCell = Ws.Cells(rowHeaderCell.Row, headerCell.Column)
-                If IsEmpty(dataCell.Value) Then
-                    dataCell.Value = 0
+                Set dataCell = Ws.Cells(rowHeaderCell.row, headerCell.Column)
+                If IsEmpty(dataCell.value) Then
+                    dataCell.value = 0
                 End If
             Next rowHeaderCell
         Next headerCell

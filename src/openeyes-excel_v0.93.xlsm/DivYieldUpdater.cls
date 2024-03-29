@@ -47,8 +47,8 @@ Public Sub UpdateWorksheet()
     Dim cell As Range
     For Each element In pDivData
         For Each cell In pDivRange
-            If element("dataId") = cell.Value + "_C" Then
-                cell.Offset(0, 1).Value = element("yield")
+            If element("dataId") = cell.value + "_C" Then
+                cell.Offset(0, 1).value = element("yield")
             End If
         Next cell
     Next element
@@ -77,12 +77,12 @@ Public Sub UpdateWorksheetEfficient()
     ' 특정 Range의 cell을 iterate한다.
     For Each cell In pDivRange
         Dim cellDataId As String
-        cellDataId = cell.Value + "_C"
+        cellDataId = cell.value + "_C"
         
         ' 현재 cell의 dataId가 Dictionary에 있는지 확인한다.
         If divDataDict.Exists(cellDataId) Then
             ' 옆 칼럼에 있는 cell을 yield값으로 update한다.
-            cell.Offset(0, 1).Value = divDataDict(cellDataId)
+            cell.Offset(0, 1).value = divDataDict(cellDataId)
         End If
     Next cell
 

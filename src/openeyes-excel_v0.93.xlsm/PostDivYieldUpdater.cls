@@ -17,8 +17,8 @@ Public Property Get Worksheet() As Worksheet
 End Property
 
 ' Setter for Worksheet
-Public Property Set Worksheet(Value As Worksheet)
-    Set pWs = Value
+Public Property Set Worksheet(value As Worksheet)
+    Set pWs = value
 End Property
 
 ' Getter for DivCell Range
@@ -27,8 +27,8 @@ Public Property Get DivCell() As Range
 End Property
 
 ' Setter for DivCell Range
-Public Property Set DivCell(Value As Range)
-    Set pDivCell = Value
+Public Property Set DivCell(value As Range)
+    Set pDivCell = value
 End Property
 
 ' Getter for DataIdRange
@@ -37,8 +37,8 @@ Public Property Get DataIdRange() As Range
 End Property
 
 ' Setter for DataIdRange
-Public Property Set DataIdRange(Value As Range)
-    Set pdataIdRange = Value
+Public Property Set DataIdRange(value As Range)
+    Set pdataIdRange = value
 End Property
 
 ' Setter for DivCell Range using a string to define the range
@@ -60,8 +60,8 @@ Public Function GenerateJson() As String
     Dim yield As Double
     
     For Each cell In pdataIdRange
-        dataId = cell.Value
-        yield = cell.Offset(0, 1).Value
+        dataId = cell.value
+        yield = cell.Offset(0, 1).value
         Dim jsonObject As String
         jsonObject = "{""dataId"": """ & dataId & """, ""yield"": " & yield & "}"
         
