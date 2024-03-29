@@ -32,8 +32,8 @@ Sub InputPrice()
     divYieldUpdater.SetDivRange "A5:A7"
     divYieldUpdater.SetDivData divYields
     
-    divYieldUpdater.UpdateWorksheet
-    
+    'divYieldUpdater.UpdateWorksheet
+    divYieldUpdater.UpdateWorksheetEfficient
     
     
 End Sub
