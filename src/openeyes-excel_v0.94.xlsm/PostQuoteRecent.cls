@@ -32,59 +32,6 @@ Public Property Set Range(value As Range)
     Set pRange = value
 End Property
 
-Public Function make() As String
-
-    Dim jsonString As String
-    Dim row As Range
-    Dim cell As Range
-    Dim i As Long
-    Dim jsonRow As String
-    Dim propertyNames As Collection
-    Dim rowIndex As Long
-    Dim colIndex As Long
-    Dim isNumericColumn As Boolean
-    Dim numericColumns As Collection
-    
-    Set propertyNames = New Collection
-    
-    propertyNames.Add "productId"
-    propertyNames.Add "effectiveDate"
-    propertyNames.Add "productType"
-    propertyNames.Add "earlyRedempCycle"
-    propertyNames.Add "settleDateOffset"
-    propertyNames.Add "maturityEvaluationDays"
-    propertyNames.Add "underlyingAsset1"
-    propertyNames.Add "underlyingAsset2"
-    propertyNames.Add "underlyingAsset3"
-    propertyNames.Add "exercisePrices"
-    propertyNames.Add "coupon"
-    propertyNames.Add "dummyCoupon"
-    propertyNames.Add "lossParticipationRate"
-    propertyNames.Add "kiBarrier"
-    propertyNames.Add "kiBarrierCheckType"
-    propertyNames.Add "koBarrier"
-    propertyNames.Add "lizardBarriers"
-    propertyNames.Add "lizardCoupons"
-    propertyNames.Add "calculationCurrency"
-    propertyNames.Add "valuation"
-    
-    'value가 numeric인 column의 경우, 새로운 collection을 만들어서 이 column의 값들을 numeric으로 처리해준다.
-    Set numericColumns = New Collection
-    numericColumns.Add "earlyRedempCycle"
-    numericColumns.Add "settleDateOffset"
-    numericColumns.Add "maturityEvaluationDays"
-    numericColumns.Add "coupon"
-    numericColumns.Add "dummyCoupon"
-    numericColumns.Add "lossParticipationRate"
-    numericColumns.Add "kiBarrier"
-    numericColumns.Add "koBarrier"
-    numericColumns.Add "valuation"
-
-    jsonString = "["
-    
-    make = jsonString
-    
-End Function
 
 Public Function makeJson() As String
     Dim jsonString As String
@@ -251,30 +198,3 @@ Private Function ConstructLizardString(cell1 As Range, cell2 As Range) As String
         ConstructLizardString = part1 & "-" & part2
     End If
 End Function
-
-' Utility function to map column index to property name
-Private Function GetPropertyName(index As Long) As String
-    Select Case index
-        Case 1: GetPropertyName = "productId"
-        Case 2: GetPropertyName = "effectiveDate"
-        Case 3: GetPropertyName = "productType"
-        Case 4: GetPropertyName = "earlyRedempCycle"
-        Case 5: GetPropertyName = "settleDateOffset"
-        Case 6: GetPropertyName = "maturityEvaluationDays"
-        Case 7: GetPropertyName = "underlyingAsset1"
-        Case 8: GetPropertyName = "underlyingAsset2"
-        Case 9: GetPropertyName = "underlyingAsset3"
-        ' Cases 10 to 15 are handled collectively as "exercisePrices" in your main function
-        Case 16: GetPropertyName = "coupon"
-        Case 17: GetPropertyName = "dummyCoupon"  ' Assuming this property requires manual calculation
-        Case 18: GetPropertyName = "lossParticipationRate"
-        Case 19: GetPropertyName = "kiBarrier"
-        Case 20: GetPropertyName = "kiBarrierCheckType"
-        Case 21: GetPropertyName = "koBarrier"
-        ' Cases 22 to 23 and 25 to 26 are handled collectively as "lizardBarriers" and "lizardCoupons" in your main function
-        Case 27: GetPropertyName = "calculationCurrency"
-        Case 28: GetPropertyName = "valuation"
-        Case Else: GetPropertyName = ""
-    End Select
-End Function
-
