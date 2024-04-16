@@ -103,9 +103,16 @@ Sub ConvertRangeToJson()
     Set postQuoteUpdaterNew.Range = postQuoteUpdaterNew.Worksheet.Range("A9:Y13")
 
     ' Convert the range to JSON
-    jsonString = postQuoteUpdaterNew.ToJsonString
+    jsonString = postQuoteUpdaterNew.makeJsonString()
 
     ' Do something with the JSON string, for example, output to Immediate Window
     Debug.Print jsonString
+    
+    jsonString = URLEncode(jsonString)
+    Dim url As String
+    url = "http://localhost:8080/val/marketdata/v1/saveQuoteIssueInfo?baseDt=20231228&dataSetId=TEST2"
+    
+    ' JSON data와 POST request를 보내기 위해 subroutine을 호출한다.
+    SendPostRequest jsonString, url
 End Sub
 

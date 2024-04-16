@@ -32,69 +32,56 @@ Public Property Set Range(value As Range)
     Set pRange = value
 End Property
 
-' Function to convert range to JSON string
-Public Function ToJsonString() As String
-    Dim dict As Object
-    Dim cell As Range
+Public Function makeJsonString() As String
+    Dim jsonString As String
     Dim row As Range
-    Dim colHeaders As Range
-    Dim jsonArr As Object
-    Dim i As Long
-    Dim c As Long
-    Dim jsonStr As String
+    Dim jsonRow As String
+    Dim adjustedRange As Range
+    Set adjustedRange = pRange.Offset(1, 0).Resize(pRange.Rows.Count - 1, pRange.Columns.Count)
     
-    ' Initialize JSON array
-    Set jsonArr = CreateObject("Scripting.Dictionary")
+    jsonString = "["
     
-    ' Set the range for column headers
-    Set colHeaders = pWs.Range(pRange.Cells(1, 1), pRange.Cells(1, pRange.Columns.Count))
-    
-    ' Loop through each row in the range
-    For Each row In pRange.Rows
-        ' Skip the header row
-        If row.row <> pRange.Rows(1).row Then
-            ' Initialize a new dictionary for each row
-            Set dict = CreateObject("Scripting.Dictionary")
-            For c = 1 To pRange.Columns.Count
-                ' Use column headers as keys and cell values as values
-                ' If the cell is empty, add "null" as the value
-                If Len(row.Cells(1, c).value) > 0 Then
-                    dict(colHeaders.Cells(1, c).value) = row.Cells(1, c).value
-                Else
-                    dict(colHeaders.Cells(1, c).value) = Null
-                End If
-            Next c
-            ' Add the dictionary to the JSON array
-            jsonArr.Add "row" & i, dict
-            i = i + 1
-        End If
+    For Each row In adjustedRange.Rows
+        jsonRow = "{" & _
+            """productId"":" & Nz(row.Cells(1, 1).value, False) & "," & _
+            """effectiveDate"":""" & row.Cells(1, 2).Text & """," & _
+            """productType"":" & Nz(row.Cells(1, 3).value, True) & "," & _
+            """earlyRedempCycle"":" & Nz(row.Cells(1, 4).value, False) & "," & _
+            """settleDateOffset"":" & Nz(row.Cells(1, 5).value, False) & "," & _
+            """maturityEvaluationDays"":" & Nz(row.Cells(1, 6).value, False) & "," & _
+            """underlyingAsset1"":" & Nz(row.Cells(1, 7).value, True) & "," & _
+            """underlyingAsset2"":" & Nz(row.Cells(1, 8).value, True) & "," & _
+            """underlyingAsset3"":" & Nz(row.Cells(1, 9).value, True) & "," & _
+            """exercisePrices"":" & Nz(row.Cells(1, 10).value, True) & "," & _
+            """coupon"":" & Nz(row.Cells(1, 11).value, False) & "," & _
+            """lizardCoupon"":" & Nz(row.Cells(1, 12).value, False) & "," & _
+            """lossParticipationRate"":" & Nz(row.Cells(1, 13).value, False) & "," & _
+            """kiBarrier"":" & Nz(row.Cells(1, 14).value, False) & "," & _
+            """principalProtectedRate"":" & Nz(row.Cells(1, 15).value, False) & "," & _
+            """callBarrier"":" & Nz(row.Cells(1, 16).value, False) & "," & _
+            """callParticipationRate"":" & Nz(row.Cells(1, 17).value, False) & "," & _
+            """koBarrierUpSide"":" & Nz(row.Cells(1, 18).value, False) & "," & _
+            """dummyCouponUpSide"":" & Nz(row.Cells(1, 19).value, False) & "," & _
+            """putBarrier"":" & Nz(row.Cells(1, 20).value, False) & "," & """putParticipationRate"":" & Nz(row.Cells(1, 21).value, False) & "," & """koBarrierDownSide"":" & Nz(row.Cells(1, 22).value, False) & "," & _
+            """dummyCouponDownSide"":" & Nz(row.Cells(1, 23).value, False) & "," & _
+            """calculationCurrency"":" & Nz(row.Cells(1, 24).value, True) & "," & _
+            """valuation"":" & Nz(row.Cells(1, 25).value, False) & _
+            "},"
+            
+        jsonString = jsonString & jsonRow
     Next row
     
-    ' Convert JSON array to JSON string
-    Dim Key As Variant
-    jsonStr = "[" & vbCrLf
-    For Each Key In jsonArr
-        jsonStr = jsonStr & DictionaryToJSONString(jsonArr(Key)) & "," & vbCrLf ' Updated line
-    Next Key
-    ' Remove the last comma from the string
-    If jsonArr.Count > 0 Then
-        jsonStr = Left(jsonStr, Len(jsonStr) - 3) & vbCrLf ' Updated line
-    End If
-    jsonStr = jsonStr & "]"
-    
-    ToJsonString = jsonStr
+    jsonString = Left(jsonString, Len(jsonString) - 1) & "]"
+    makeJsonString = jsonString
 End Function
 
-' Helper function to convert a dictionary to JSON string
-Function DictionaryToJSONString(dict As Object) As String
-    Dim sc As Object
-    Set sc = CreateObject("ScriptControl")
-    sc.Language = "JScript"
-    
-    With sc
-        .AddCode "function toJSON(obj) { return JSON.stringify(obj); }"
-        DictionaryToJSONString = .Run("toJSON", dict)
-    End With
-    
-    Set sc = Nothing
+Private Function Nz(value As Variant, Optional isString As Boolean = False) As String
+    If IsEmpty(value) Or value = "" Or value = "null" Then
+        Nz = "null"
+    ElseIf isString Then
+        Nz = """" & value & """"
+    Else
+        Nz = value
+    End If
 End Function
+
