@@ -1,8 +1,8 @@
 Attribute VB_Name = "ClassPostQuote"
 Sub ClassPostQuote()
     
-    Dim quoteUpdater As postQuoteUpdater
-    Set quoteUpdater = New postQuoteUpdater
+    Dim quoteUpdater As PostQuoteUpdater
+    Set quoteUpdater = New PostQuoteUpdater
     
     Set quoteUpdater.Worksheet = ThisWorkbook.Sheets("Quote")
     
@@ -88,22 +88,22 @@ Sub ClassPostQuoteRecent()
 End Sub
 
 Sub ConvertRangeToJson()
-    Dim postQuoteUpdaterNew As New postQuoteUpdaterNew ' Replace with the actual name of your class
+    Dim PostQuoteUpdaterNew As New PostQuoteUpdaterNew ' Replace with the actual name of your class
     Dim ws As Worksheet
     Dim rng As Range
     Dim jsonString As String
 
     ' Set the worksheet
     
-    Set postQuoteUpdaterNew.Worksheet = ThisWorkbook.Sheets("Quote_2")
+    Set PostQuoteUpdaterNew.Worksheet = ThisWorkbook.Sheets("Quote_2")
     
     ' Define the range that you want to convert
     ' Assuming A9 is the top left cell of your data and the range extends to column R with 4 data rows
     ' You would adjust the range according to your actual data
-    Set postQuoteUpdaterNew.Range = postQuoteUpdaterNew.Worksheet.Range("A9:Y13")
+    Set PostQuoteUpdaterNew.Range = PostQuoteUpdaterNew.Worksheet.Range("A9:Y13")
 
     ' Convert the range to JSON
-    jsonString = postQuoteUpdaterNew.makeJsonString()
+    jsonString = PostQuoteUpdaterNew.makeJsonString()
 
     ' Do something with the JSON string, for example, output to Immediate Window
     Debug.Print jsonString
