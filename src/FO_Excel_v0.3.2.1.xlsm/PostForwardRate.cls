@@ -9,45 +9,83 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
-Private pArrayOfDataId As Variant
-Private pYieldCurveRow As Range
+Private pWorksheet As Worksheet
 Private pStartCell As Range
+Private pK As Long
 
-' Getter for pArrayOfDataId
-Public Property Get ArrayOfDataId() As Variant
-    ArrayOfDataId = pArrayOfDataId
+' Property for the worksheet
+Public Property Get Worksheet() As Worksheet
+    Set Worksheet = pWorksheet
 End Property
 
-' Setter for pArrayOfDataId
-Public Property Let ArrayOfDataId(ByVal value As Variant)
-    pArrayOfDataId = value
+Public Property Set Worksheet(value As Worksheet)
+    Set pWorksheet = value
 End Property
 
-' Getter for pBaseCurrencyRow
-Public Property Get BaseCurrencyRow() As Range
-    Set BaseCurrencyRow = pBaseCurrencyRow
+' Property for the start cell
+Public Property Get StartCell() As Range
+    Set StartCell = pStartCell
 End Property
 
-' Setter for pBaseCurrencyRow
-Public Property Set BaseCurrencyRow(ByVal value As Range)
-    Set pBaseCurrencyRow = value
-End Property
-
-
-' Setter for pStartCell
-Public Property Set startCell(value As Range)
+Public Property Set StartCell(value As Range)
     Set pStartCell = value
 End Property
 
-' Getter for pStartCell
-Public Property Get startCell() As Range
-    Set startCell = pStartCell
+' Property for the number of currencies
+Public Property Get K() As Long
+    K = pK
 End Property
 
-Sub makeJsonString()
+Public Property Let K(value As Long)
+    pK = value
+End Property
+
+Public Sub GenerateJSON()
+    Dim currenciesCollection As New Collection
+    Dim i As Long, j As Long
     
-    Dim ws As Worksheet
-    Set ws = ThisWorkbook.Sheets("Missing Data - Fx Forward")
+    For i = 1 To pK ' Use the K property here
+        Dim relCurrencyCell As Range
+        Dim currencyCode As String
+        currencyCode = pStartCell.Offset(4, 1 + 3 * (i - 1)).value
+        
+        Set relCurrencyCell = pWorksheet.Rows(7).Find(What:=currencyCode, Lookat:=xlWhole)
+        
+        Dim currencyData As Object
+        Set currencyData = CreateObject("Scripting.Dictionary")
+        
+        Dim dataId As String
+        dataId = "F_FX_" & currencyCode & pStartCell.Offset(3, 1 + 3 * (i - 1)).value
+        currencyData("dataId") = dataId
+        
+        Dim yieldsCollection As New Collection
+        Set yieldsCollection = New Collection '재초기화
+        
+        j = 2 ' Start row offset for yields
+        Do While pWorksheet.Cells(relCurrencyCell.Row + j, relCurrencyCell.Column).value <> ""
+            Dim yieldData As Object
+            Set yieldData = CreateObject("Scripting.Dictionary")
+            yieldData("tenor") = pWorksheet.Cells(relCurrencyCell.Row + j, relCurrencyCell.Column - 1).value
+            yieldData("value") = pWorksheet.Cells(relCurrencyCell.Row + j, relCurrencyCell.Column).value
+            yieldsCollection.Add yieldData
+            j = j + 1
+        Loop
+        
+        Dim yieldsArray() As Variant
+        Dim idx As Long
+        
+        ReDim yieldsArray(1 To yieldsCollection.Count)
+        For idx = 1 To yieldsCollection.Count
+            Set yieldsArray(idx) = yieldsCollection(idx)
+        Next idx
+        
+        currencyData("yields") = yieldsArray
+        currenciesCollection.Add currencyData
+    Next i
     
-    ws.pStartCell
+    Dim jsonString As String
+    jsonString = JsonConverter.ConvertToJson(currenciesCollection)
+    
+    Debug.Print jsonString
 End Sub
+
