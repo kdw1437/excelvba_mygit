@@ -12,10 +12,10 @@ Sub postForwardFXModule()
     Dim i As Long
     Dim relCurrencyCol As Collection
     Set relCurrencyCol = New Collection
-    Dim K As Long
-    K = 4
+    Dim k As Long
+    k = 4
     
-    For i = 1 To K '이거 column dynamic하게 들어오는 것을 대비해서 To 다음 4가 수정되야 함.
+    For i = 1 To k '이거 column dynamic하게 들어오는 것을 대비해서 To 다음 4가 수정되야 함.
         relCurrencyCol.Add StartCell.Offset(4, 1 + 3 * (i - 1)).value
     Next i
     
@@ -23,14 +23,14 @@ Sub postForwardFXModule()
     Dim CurrencyCol As Collection
     Set CurrencyCol = New Collection
     
-    For j = 1 To K
+    For j = 1 To k
         CurrencyCol.Add StartCell.Offset(3, 1 + 3 * (j - 1)).value
     Next j
     
     Dim jsonString As String
     jsonString = "["
     
-    For i = 1 To K
+    For i = 1 To k
         Dim relCurrencyCell As Range
         Set relCurrencyCell = ws.Range("7:7").Find(What:=relCurrencyCol(i), Lookat:=xlWhole)
         jsonString = jsonString & "{" & Chr(34) & "dataId" & Chr(34) & ": " & Chr(34) & "F_FX_" & relCurrencyCol(i) & CurrencyCol(i) & Chr(34) & ", " & Chr(34) & "yields" & Chr(34) & ": ["
@@ -51,7 +51,7 @@ Sub postForwardFXModule()
         jsonString = Left(jsonString, Len(jsonString) - 1) & "]}"
         
         ' Add a comma between JSON objects if not at the last object
-        If i < K Then
+        If i < k Then
             jsonString = jsonString & ","
         End If
     Next i
@@ -69,11 +69,11 @@ Sub postForwardFXModule3()
     Set StartCell = ws.Range("A:A").Find(What:="FX Forward Curve", Lookat:=xlWhole)
     
     Dim currenciesCollection As New Collection
-    Dim i As Long, j As Long, K As Long
-    K = 4  ' This should be dynamically determined if possible
+    Dim i As Long, j As Long, k As Long
+    k = 4  ' This should be dynamically determined if possible
     
     ' Loop through each currency block and collect the data
-    For i = 1 To K
+    For i = 1 To k
         Dim relCurrencyCell As Range
         Dim currencyCode As String
         currencyCode = StartCell.Offset(4, 1 + 3 * (i - 1)).value
@@ -127,7 +127,7 @@ Sub UseFXForwardData()
     
     Set fxData.Worksheet = ThisWorkbook.Sheets("Missing Data - Fx Forward")
     Set fxData.StartCell = fxData.Worksheet.Range("A:A").Find(What:="FX Forward Curve", Lookat:=xlWhole)
-    fxData.K = 4  ' Setting how many currencies to process
+    fxData.k = 4  ' Setting how many currencies to process
     
     fxData.GenerateJSON
 End Sub

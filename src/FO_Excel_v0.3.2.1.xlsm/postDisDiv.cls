@@ -31,10 +31,10 @@ Public Property Set StartCell(value As Range)
 End Property
 
 ' Property for K
-Public Property Get K() As Long
-    K = pK
+Public Property Get k() As Long
+    k = pK
 End Property
-Public Property Let K(value As Long)
+Public Property Let k(value As Long)
     pK = value
 End Property
 

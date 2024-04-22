@@ -15,11 +15,11 @@ Sub postDisDivModule()
 
     
     Dim dividendStreamCollection As New Collection '가장 바깥의 array는 Collection으로 선언한다.
-    Dim i As Long, j As Long, K As Long
-    K = 4  ' This should be dynamically determined if possible
+    Dim i As Long, j As Long, k As Long
+    k = 4  ' This should be dynamically determined if possible
     
     ' Loop through each currency block and collect the data
-    For i = 1 To K
+    For i = 1 To k
         Dim dataIdCell As Range
         
         'Debug.Print "Trying to access: " & startCell.Offset(3, 1 + 3 * (i - 1)).Address
@@ -87,7 +87,7 @@ Sub UseDividendDataProcessor()
     
     Set dp.Worksheet = ThisWorkbook.Worksheets("Missing Data - D_Dividend")
     Set dp.StartCell = dp.Worksheet.Range("A:A").Find(What:="Discrete Dividend", Lookat:=xlWhole)
-    dp.K = 4 ' Assuming K is a known value or dynamically determined elsewhere (K가 알려진 값이고 dynamic하게 결정되어질 때는 거기에 맞춰서 코드 작성)
+    dp.k = 4 ' Assuming K is a known value or dynamically determined elsewhere (K가 알려진 값이고 dynamic하게 결정되어질 때는 거기에 맞춰서 코드 작성)
     
     If Not dp.StartCell Is Nothing Then
         dp.GenerateJSON
