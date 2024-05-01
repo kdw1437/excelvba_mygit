@@ -129,6 +129,15 @@ Sub UseFXForwardData()
     Set fxData.StartCell = fxData.Worksheet.Range("A:A").Find(What:="FX Forward Curve", Lookat:=xlWhole)
     fxData.k = 4  ' Setting how many currencies to process
     
-    fxData.GenerateJSON
+    'fxData.GenerateJSON
+    
+    Dim jsonString As String
+    jsonString = fxData.ReturnJSON
+    
+    Dim url As String
+    url = "http://localhost:8080/val/marketdata/v1/saveForwardFX?baseDt=20240412&dataSetId=official"
+    
+    ' JSON data와 POST request를 보내는 subroutine을 호출한다.
+    SendPostRequest jsonString, url
 End Sub
 

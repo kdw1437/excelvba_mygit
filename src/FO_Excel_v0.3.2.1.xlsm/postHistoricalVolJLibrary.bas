@@ -45,6 +45,13 @@ Sub UseHistoricalVolProcessor()
     volProcessor.StartRow = 5
     
     ' Call the method to process data
-    volProcessor.ProcessData
+    Dim jsonString As String
+    jsonString = volProcessor.ReturnData
+    
+    Dim url As String
+    url = "http://localhost:8080/val/marketdata/v1/saveHistoricalVol?baseDt=20240412&dataSetId=official"
+    
+    ' JSON data와 POST request를 보내는 subroutine을 호출한다.
+    SendPostRequest jsonString, url
 End Sub
 

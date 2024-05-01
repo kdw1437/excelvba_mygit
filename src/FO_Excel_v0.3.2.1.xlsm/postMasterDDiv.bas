@@ -47,4 +47,10 @@ Sub postMasterDDiv()
     jsonString = JsonConverter.ConvertToJson(masterDDivCollection)
     
     Debug.Print jsonString
+    
+    Dim url As String
+    url = "http://localhost:8080/val/saveDisDividendMaster"
+    
+    ' JSON data와 POST request를 보내는 subroutine을 호출한다.
+    SendPostRequest jsonString, url
 End Sub
