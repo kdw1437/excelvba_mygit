@@ -68,3 +68,27 @@ Public Function GenerateJson() As String
     GenerateJson = DataString
 End Function
 
+
+Public Function GenerateJson2() As String
+    ' Create a collection to hold each row's data as a dictionary
+    Dim dataList As Collection
+    Set dataList = New Collection
+    
+    Dim i As Integer
+    For i = pTable1Point.row + 1 To pFxRow.row - 2
+        ' Create a dictionary to store dataId and price for each row
+        Dim dataDict As Object
+        Set dataDict = CreateObject("Scripting.Dictionary")
+        
+        ' Retrieve data from the worksheet
+        dataDict("dataId") = pWs.Cells(i, pTable1Point.Column).value
+        dataDict("price") = pWs.Cells(i, pTable1Point.Column + 1).value
+        
+        ' Add the dictionary to the collection
+        dataList.Add dataDict
+    Next i
+    
+    ' Use JsonConverter to convert the collection to JSON
+    GenerateJson2 = JsonConverter.ConvertToJson(dataList, Whitespace:=2)
+End Function
+

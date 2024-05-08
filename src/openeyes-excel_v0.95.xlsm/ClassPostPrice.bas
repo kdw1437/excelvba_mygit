@@ -21,7 +21,7 @@ Sub ClassPostPrice()
     End With
     
     Dim DataString As String
-    DataString = PostPriceUpdater.GenerateJson() ' JSON string을 만든다.
+    DataString = PostPriceUpdater.GenerateJson2() ' JSON string을 만든다.
     
     Debug.Print DataString
     DataString = URLEncode(DataString)

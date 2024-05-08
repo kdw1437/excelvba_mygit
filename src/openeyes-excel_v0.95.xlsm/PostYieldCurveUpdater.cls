@@ -118,4 +118,39 @@ Public Function GenerateDataString() As String
 End Function
 
 
+Public Function GenerateDataString2() As String
+    Dim dataArray As New Collection
+    Dim arraySize As Integer
+    arraySize = UBound(pArrayOfCurrency)
+    
+    If arraySize > 0 Then
+        Dim i As Integer, j As Integer
+        Dim InterestName As String
+        Dim yieldsArray As Collection
+        Dim yieldObject As Dictionary
+        
+        For i = 1 To arraySize
+            InterestName = pArrayOfCurrency(i)
+            Set yieldsArray = New Collection
+            
+            j = 1
+            Do While Not IsEmpty(pYieldCurveRow.Offset(3 + j, (i - 1) * 2).value)
+                Set yieldObject = New Dictionary
+                yieldObject.Add "tenor", pYieldCurveRow.Offset(3 + j, (i - 1) * 2).value
+                yieldObject.Add "rate", pYieldCurveRow.Offset(3 + j, (i - 1) * 2 + 1).value
+                yieldsArray.Add yieldObject
+                j = j + 1
+            Loop
+            
+            Dim currencyData As New Dictionary
+            currencyData.Add "dataId", InterestName
+            currencyData.Add "currency", Left(InterestName, 3)
+            currencyData.Add "yields", yieldsArray
+            dataArray.Add currencyData
+        Next i
+    End If
+    
+    ' Convert the Collection of Dictionaries to JSON
+    GenerateDataString2 = JsonConverter.ConvertToJson(dataArray, Whitespace:=2)
+End Function
 
