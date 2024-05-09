@@ -103,7 +103,7 @@ Sub ConvertRangeToJson()
     Set PostQuoteUpdaterNew.Range = PostQuoteUpdaterNew.Worksheet.Range("A9:Y13")
 
     ' Convert the range to JSON
-    JsonString = PostQuoteUpdaterNew.makeJsonString()
+    JsonString = PostQuoteUpdaterNew.makeJsonString2()
 
     ' Do something with the JSON string, for example, output to Immediate Window
     Debug.Print JsonString
