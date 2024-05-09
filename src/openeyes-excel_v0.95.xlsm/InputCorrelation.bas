@@ -17,11 +17,11 @@ Sub InputCorrelation()
     
     Debug.Print corrUrl
     
-    Dim jsonString As String
-    jsonString = GetHttpResponseText(corrUrl)
-    Debug.Print jsonString
+    Dim JsonString As String
+    JsonString = GetHttpResponseText(corrUrl)
+    Debug.Print JsonString
     Dim JsonResponse As Object
-    Set JsonResponse = JsonConverter.ParseJson(jsonString)
+    Set JsonResponse = JsonConverter.ParseJson(JsonString)
     
     Dim corrs As Collection
     Set corrs = JsonResponse("response")("correlations")

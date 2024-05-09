@@ -15,11 +15,11 @@ Sub InputDivStream()
     Dim discreteDivUrl As String
     discreteDivUrl = discreteDivUrlBuilder.MakeUrl
     
-    Dim jsonString As String
-    jsonString = GetHttpResponseText(discreteDivUrl)
+    Dim JsonString As String
+    JsonString = GetHttpResponseText(discreteDivUrl)
     
     Dim JsonResponse As Object
-    Set JsonResponse = JsonConverter.ParseJson(jsonString)
+    Set JsonResponse = JsonConverter.ParseJson(JsonString)
     
     Dim dividendStreams As Collection
     Set dividendStreams = JsonResponse("response")("dividendStreams")

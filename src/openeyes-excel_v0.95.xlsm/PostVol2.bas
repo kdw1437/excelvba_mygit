@@ -4,12 +4,12 @@ Option Explicit
 Function ConvertRangeToJson() As String
     Dim ws As Worksheet
     Dim cell As Range
-    Dim jsonString As String
+    Dim JsonString As String
     Dim dataId As String
     Dim firstObject As Boolean
     
     Set ws = ThisWorkbook.Sheets("Vol")
-    jsonString = "["
+    JsonString = "["
     
     firstObject = True
     For Each cell In ws.Range("AD1:AD" & ws.Cells(ws.Rows.Count, "AD").End(xlUp).row)
@@ -28,15 +28,15 @@ Function ConvertRangeToJson() As String
         
         If dataId <> "" Then
             If Not firstObject Then
-                jsonString = jsonString & ","
+                JsonString = JsonString & ","
             End If
-            jsonString = jsonString & GenerateObjectJSON(ws, cell, dataId)
+            JsonString = JsonString & GenerateObjectJSON(ws, cell, dataId)
             firstObject = False
         End If
     Next cell
     
-    jsonString = jsonString & "]"
-    ConvertRangeToJson = jsonString
+    JsonString = JsonString & "]"
+    ConvertRangeToJson = JsonString
 End Function
 
 Function GenerateObjectJSON(ws As Worksheet, RefCell As Range, dataId As String) As String
@@ -78,17 +78,17 @@ Function GenerateObjectJSON(ws As Worksheet, RefCell As Range, dataId As String)
 End Function
 
 Sub RunFunc()
-    Dim jsonString As String
-    jsonString = ConvertRangeToJson()
-    Debug.Print jsonString
-    jsonString = URLEncode(jsonString)
+    Dim JsonString As String
+    JsonString = ConvertRangeToJson()
+    Debug.Print JsonString
+    JsonString = URLEncode(JsonString)
     
     
     ' request¸¦ º¸³¾ URL
     Dim url As String
     url = "http://localhost:8080/val/marketdata/v1/vols?baseDt=20231228&dataSetId=TEST11"
     
-    SendPostRequest jsonString, url
+    SendPostRequest JsonString, url
 
 End Sub
 

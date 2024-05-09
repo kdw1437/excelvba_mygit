@@ -53,8 +53,8 @@ End Property
 
 
 Public Function GenerateJson() As String
-    Dim jsonString As String
-    jsonString = "["
+    Dim JsonString As String
+    JsonString = "["
     Dim cell As Range
     Dim dataId As String
     Dim yield As Double
@@ -65,15 +65,45 @@ Public Function GenerateJson() As String
         Dim jsonObject As String
         jsonObject = "{""dataId"": """ & dataId & """, ""yield"": " & yield & "}"
         
-        If Len(jsonString) > 1 Then
-            jsonString = jsonString & ", "
+        If Len(JsonString) > 1 Then
+            JsonString = JsonString & ", "
         End If
         
-        jsonString = jsonString & jsonObject
+        JsonString = JsonString & jsonObject
         
     Next cell
     
-    jsonString = jsonString & "]"
+    JsonString = JsonString & "]"
     
-    GenerateJson = jsonString
+    GenerateJson = JsonString
 End Function
+
+' Ensure you have included a reference to the jsonConverter library
+' This might typically involve importing a jsonConverter.bas file into your project
+
+Public Function GenerateJson2() As String
+    Dim dataList As Collection
+    Set dataList = New Collection
+    
+    Dim cell As Range
+    Dim item As Dictionary
+    Dim dataId As String
+    Dim yield As Double
+    
+    For Each cell In pdataIdRange
+        Set item = New Dictionary
+        dataId = cell.value
+        yield = cell.Offset(0, 1).value
+        
+        With item
+            .Add "dataId", dataId
+            .Add "yield", yield
+        End With
+        
+        dataList.Add item
+    Next cell
+    
+    ' Convert the collection to a JSON string using jsonConverter
+    GenerateJson2 = JsonConverter.ConvertToJson(dataList)
+End Function
+

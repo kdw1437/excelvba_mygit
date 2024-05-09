@@ -14,7 +14,7 @@ Sub PrintJsonString()
         'Debug.Print .CorrJson()
     End With
     Dim DataString As String
-    DataString = postCorrUpdater.CorrJsonv()
+    DataString = postCorrUpdater.CorrJsonv2()
     Debug.Print DataString
     DataString = URLEncode(DataString)
     Dim url As String
@@ -36,7 +36,7 @@ Sub PrintJsonString2()
         
     End With
     Dim DataString As String
-    DataString = postCorrUpdater.CorrJsonh()
+    DataString = postCorrUpdater.CorrJsonh2()
     Debug.Print DataString
     DataString = URLEncode(DataString)
     

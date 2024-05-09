@@ -16,11 +16,11 @@ Sub InputYieldCurve()
     
     Dim JsonResponse As Object
     Set JsonResponse = GetJsonResponse(YCUrl)
-    Dim YieldCurves As Collection
-    Set YieldCurves = JsonResponse("response")("yieldCurves")
+    Dim yieldCurves As Collection
+    Set yieldCurves = JsonResponse("response")("yieldCurves")
     
     Dim yieldCurve As Variant
-    Set yieldCurve = YieldCurves(1)
+    Set yieldCurve = yieldCurves(1)
     
     Dim FX As String
     FX = yieldCurve("dataId")
@@ -33,7 +33,7 @@ Sub InputYieldCurve()
     
     With yieldCurveUpdater1
         Set .Worksheet = ws
-        Set .YieldCurves = YieldCurves
+        Set .yieldCurves = yieldCurves
         Set .CurrencyCell = ws.Range("A27:J27")
         .PopulateYieldCurveData
                 

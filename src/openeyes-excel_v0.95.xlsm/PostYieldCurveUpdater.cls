@@ -132,7 +132,7 @@ Public Function GenerateDataString2() As String
         For i = 1 To arraySize
             InterestName = pArrayOfCurrency(i)
             Set yieldsArray = New Collection
-            
+
             j = 1
             Do While Not IsEmpty(pYieldCurveRow.Offset(3 + j, (i - 1) * 2).value)
                 Set yieldObject = New Dictionary
@@ -141,16 +141,19 @@ Public Function GenerateDataString2() As String
                 yieldsArray.Add yieldObject
                 j = j + 1
             Loop
-            
+
             Dim currencyData As New Dictionary
+            Set currencyData = New Dictionary
+            
             currencyData.Add "dataId", InterestName
             currencyData.Add "currency", Left(InterestName, 3)
             currencyData.Add "yields", yieldsArray
             dataArray.Add currencyData
         Next i
+         
     End If
     
     ' Convert the Collection of Dictionaries to JSON
-    GenerateDataString2 = JsonConverter.ConvertToJson(dataArray, Whitespace:=2)
+    GenerateDataString2 = JsonConverter.ConvertToJson(dataArray)
 End Function
 

@@ -33,13 +33,13 @@ Public Property Set Range(value As Range)
 End Property
 
 Public Function makeJsonString() As String
-    Dim jsonString As String
+    Dim JsonString As String
     Dim row As Range
     Dim jsonRow As String
     Dim adjustedRange As Range
     Set adjustedRange = pRange.Offset(1, 0).Resize(pRange.Rows.Count - 1, pRange.Columns.Count)
     
-    jsonString = "["
+    JsonString = "["
     
     For Each row In adjustedRange.Rows
         jsonRow = "{" & _
@@ -68,11 +68,11 @@ Public Function makeJsonString() As String
             """valuation"":" & Nz(row.Cells(1, 25).value, False) & _
             "},"
             
-        jsonString = jsonString & jsonRow
+        JsonString = JsonString & jsonRow
     Next row
     
-    jsonString = Left(jsonString, Len(jsonString) - 1) & "]"
-    makeJsonString = jsonString
+    JsonString = Left(JsonString, Len(JsonString) - 1) & "]"
+    makeJsonString = JsonString
 End Function
 
 Private Function Nz(value As Variant, Optional isString As Boolean = False) As String

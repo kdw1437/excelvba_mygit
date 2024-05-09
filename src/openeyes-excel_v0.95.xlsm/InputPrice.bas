@@ -16,11 +16,11 @@ Sub InputPrice()
     
     Debug.Print priceUrl
     
-    Dim jsonString As String
-    jsonString = GetHttpResponseText(priceUrl)
+    Dim JsonString As String
+    JsonString = GetHttpResponseText(priceUrl)
     
     Dim JsonResponse As Object
-    Set JsonResponse = JsonConverter.ParseJson(jsonString)
+    Set JsonResponse = JsonConverter.ParseJson(JsonString)
     
     Dim prices As Collection
     Set prices = JsonResponse("response")("prices")

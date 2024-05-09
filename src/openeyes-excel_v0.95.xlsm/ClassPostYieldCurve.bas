@@ -47,7 +47,7 @@ Sub ClassPostYieldCurve()
 
     ' DataString을 만든다.
     Dim DataString As String
-    DataString = ycUpdater.GenerateDataString
+    DataString = ycUpdater.GenerateDataString2
 
     
     Debug.Print DataString

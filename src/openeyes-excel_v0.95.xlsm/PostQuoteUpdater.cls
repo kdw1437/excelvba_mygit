@@ -34,7 +34,7 @@ End Property
 
 Public Function makeJsonString() As String
 
-    Dim jsonString As String
+    Dim JsonString As String
     Dim row As Range
     Dim cell As Range
     Dim i As Long
@@ -99,13 +99,13 @@ Public Function makeJsonString() As String
     numericColumns.Add "valuation"
     
     
-    jsonString = "["
+    JsonString = "["
     
     For rowIndex = 2 To pRange.Rows.Count
-        If rowIndex > 2 Then jsonString = jsonString & ", "
+        If rowIndex > 2 Then JsonString = JsonString & ", "
         jsonRow = "{"
         For colIndex = 1 To pRange.Columns.Count
-            jsonRow = jsonRow & """" & propertyNames.Item(colIndex) & """:""" & Replace(pRange.Cells(rowIndex, colIndex).value, """", "\""") & """"
+            jsonRow = jsonRow & """" & propertyNames.item(colIndex) & """:""" & Replace(pRange.Cells(rowIndex, colIndex).value, """", "\""") & """"
             If colIndex < pRange.Columns.Count Then
                 jsonRow = jsonRow & ", "
             End If
@@ -117,12 +117,12 @@ Public Function makeJsonString() As String
 '            jsonRow = jsonRow & ", "
 '        End If
         
-        jsonString = jsonString & jsonRow
+        JsonString = JsonString & jsonRow
     Next rowIndex
     
-    jsonString = jsonString & "]"
+    JsonString = JsonString & "]"
     
-    makeJsonString = jsonString
+    makeJsonString = JsonString
 End Function
 
 

@@ -16,11 +16,11 @@ Sub InputPrice()
     
     Debug.Print divUrl
     
-    Dim jsonString As String
-    jsonString = GetHttpResponseText(divUrl)
+    Dim JsonString As String
+    JsonString = GetHttpResponseText(divUrl)
     
     Dim JsonResponse As Object
-    Set JsonResponse = JsonConverter.ParseJson(jsonString)
+    Set JsonResponse = JsonConverter.ParseJson(JsonString)
     
     Dim divYields As Collection
     Set divYields = JsonResponse("response")("dividendYields")

@@ -16,7 +16,7 @@ Sub ClassPostDivStream()
     divStreamUpdater.PopulateArrayOfIndex
     
     Dim DataString As String
-    DataString = divStreamUpdater.GenerateDataString
+    DataString = divStreamUpdater.GenerateDataString2()
         
     Debug.Print DataString
     

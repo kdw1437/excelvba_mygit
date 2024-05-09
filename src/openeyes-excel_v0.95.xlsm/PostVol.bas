@@ -9,13 +9,13 @@ Function ConvertRangeToJson() As String
     Dim i As Long, j As Long
     'Dim volFactor As Double, tenor As Double, vol As Double
     Dim dataId As String
-    Dim jsonString As String
+    Dim JsonString As String
     
     
     
     Set ws = ThisWorkbook.Sheets("Vol")
     
-    jsonString = "["
+    JsonString = "["
     
     Dim RefCell As Range
     Dim cell As Range
@@ -38,7 +38,7 @@ Function ConvertRangeToJson() As String
     ' Set the dataRange based on the volFactorRange and tenorRange
     Set dataRange = ws.Range(volFactorRange.Offset(1, 0), tenorRange.Offset(0, volFactorRange.Columns.Count - 1))
     
-    jsonString = jsonString & "{" & """dataId"": ""KOSPI200_LOC""," & """volCurves"": ["
+    JsonString = JsonString & "{" & """dataId"": ""KOSPI200_LOC""," & """volCurves"": ["
     
     
     Dim volFactorCell As Range
@@ -54,39 +54,39 @@ Function ConvertRangeToJson() As String
     For Each volFactorCell In volFactorRange
         volFactor = volFactorCell.value
         If Not firstVolCurve Then
-            jsonString = jsonString & ","
+            JsonString = JsonString & ","
         End If
-        jsonString = jsonString & "{" & """termVols"": ["
+        JsonString = JsonString & "{" & """termVols"": ["
         
         firstTermVol = True
         For Each termVolCell In tenorRange
             tenor = termVolCell.value
             vol = ws.Cells(termVolCell.row, volFactorCell.Column).value
             If Not firstTermVol Then
-                jsonString = jsonString & ","
+                JsonString = JsonString & ","
             End If
-            jsonString = jsonString & "{" & """tenor"": " & tenor & "," & """vol"": " & vol & "}"
+            JsonString = JsonString & "{" & """tenor"": " & tenor & "," & """vol"": " & vol & "}"
             
             firstTermVol = False
         Next termVolCell
         
-        jsonString = jsonString & "]," & """volFactor"": " & volFactor & "}"
+        JsonString = JsonString & "]," & """volFactor"": " & volFactor & "}"
         
         firstVolCurve = False
     Next volFactorCell
     
-    jsonString = jsonString & "]" & "}"
+    JsonString = JsonString & "]" & "}"
     
     ' Close JSON array
-    jsonString = jsonString & "]"
-    Debug.Print jsonString
+    JsonString = JsonString & "]"
+    Debug.Print JsonString
 ' Now you have volFactorRange, tenorRange, and dataRange as per the specified cells
-    ConvertRangeToJson = jsonString
+    ConvertRangeToJson = JsonString
 End Function
 
 
 Sub RunFunc()
-    Dim jsonString As String
-    jsonString = ConvertRangeToJson()
+    Dim JsonString As String
+    JsonString = ConvertRangeToJson()
 End Sub
 

@@ -16,11 +16,11 @@ Private pWorksheet As Worksheet
 Private pCurrencyCell As Range
 
 ' YieldCurves 프로퍼티 (Collection)
-Public Property Get YieldCurves() As Collection
-    Set YieldCurves = pYieldCurves
+Public Property Get yieldCurves() As Collection
+    Set yieldCurves = pYieldCurves
 End Property
 
-Public Property Set YieldCurves(value As Collection)
+Public Property Set yieldCurves(value As Collection)
     Set pYieldCurves = value
 End Property
 

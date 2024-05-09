@@ -34,7 +34,7 @@ End Property
 
 
 Public Function makeJson() As String
-    Dim jsonString As String
+    Dim JsonString As String
     Dim row As Range
     Dim i As Long
     Dim jsonRow As String
@@ -47,7 +47,7 @@ Public Function makeJson() As String
     Dim adjustedRange As Range
     Set adjustedRange = pRange.Offset(1, 0).Resize(pRange.Rows.Count - 1, pRange.Columns.Count)
     
-    jsonString = "["
+    JsonString = "["
     
     ' Skip the first row by starting with the second row (Offset(1, 0))
     For Each row In adjustedRange.Rows
@@ -108,27 +108,27 @@ Public Function makeJson() As String
         jsonRow = jsonRow & """valuation"":" & row.Cells(1, 28).value
         
         jsonRow = jsonRow & "},"
-        jsonString = jsonString & jsonRow
+        JsonString = JsonString & jsonRow
     Next row
     
     ' Remove the last comma
-    If Len(jsonString) > 1 Then
-        jsonString = Left(jsonString, Len(jsonString) - 1)
+    If Len(JsonString) > 1 Then
+        JsonString = Left(JsonString, Len(JsonString) - 1)
     End If
     
-    jsonString = jsonString & "]"
+    JsonString = JsonString & "]"
     
-    makeJsonString = jsonString
+    makeJsonString = JsonString
 End Function
 
 Public Function makeJsonString() As String
-    Dim jsonString As String
+    Dim JsonString As String
     Dim row As Range
     Dim jsonRow As String
     Dim adjustedRange As Range
     Set adjustedRange = pRange.Offset(1, 0).Resize(pRange.Rows.Count - 1, pRange.Columns.Count)
     
-    jsonString = "["
+    JsonString = "["
     
     For Each row In adjustedRange.Rows
         jsonRow = "{" & _
@@ -154,11 +154,11 @@ Public Function makeJsonString() As String
             """valuation"":" & Nz(row.Cells(1, 28).value, False) & _
             "},"
             
-        jsonString = jsonString & jsonRow
+        JsonString = JsonString & jsonRow
     Next row
     
-    jsonString = Left(jsonString, Len(jsonString) - 1) & "]"
-    makeJsonString = jsonString
+    JsonString = Left(JsonString, Len(JsonString) - 1) & "]"
+    makeJsonString = JsonString
 End Function
 
 Private Function Nz(value As Variant, Optional isString As Boolean = False) As String

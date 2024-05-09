@@ -169,22 +169,22 @@ Public JsonOptions As json_Options
 ' @return {Object} (Dictionary or Collection)
 ' @throws 10001 - JSON parse error
 ''
-Public Function ParseJson(ByVal jsonString As String) As Object
+Public Function ParseJson(ByVal JsonString As String) As Object
     Dim json_Index As Long
     json_Index = 1
 
     ' Remove vbCr, vbLf, and vbTab from json_String
-    jsonString = VBA.Replace(VBA.Replace(VBA.Replace(jsonString, VBA.vbCr, ""), VBA.vbLf, ""), VBA.vbTab, "")
+    JsonString = VBA.Replace(VBA.Replace(VBA.Replace(JsonString, VBA.vbCr, ""), VBA.vbLf, ""), VBA.vbTab, "")
 
-    json_SkipSpaces jsonString, json_Index
-    Select Case VBA.Mid$(jsonString, json_Index, 1)
+    json_SkipSpaces JsonString, json_Index
+    Select Case VBA.Mid$(JsonString, json_Index, 1)
     Case "{"
-        Set ParseJson = json_ParseObject(jsonString, json_Index)
+        Set ParseJson = json_ParseObject(JsonString, json_Index)
     Case "["
-        Set ParseJson = json_ParseArray(jsonString, json_Index)
+        Set ParseJson = json_ParseArray(JsonString, json_Index)
     Case Else
         ' Error: Invalid JSON string
-        Err.Raise 10001, "JSONConverter", json_ParseErrorMessage(jsonString, json_Index, "Expecting '{' or '['")
+        Err.Raise 10001, "JSONConverter", json_ParseErrorMessage(JsonString, json_Index, "Expecting '{' or '['")
     End Select
 End Function
 
@@ -482,9 +482,9 @@ Private Function json_ParseObject(json_String As String, ByRef json_Index As Lon
             json_Key = json_ParseKey(json_String, json_Index)
             json_NextChar = json_Peek(json_String, json_Index)
             If json_NextChar = "[" Or json_NextChar = "{" Then
-                Set json_ParseObject.Item(json_Key) = json_ParseValue(json_String, json_Index)
+                Set json_ParseObject.item(json_Key) = json_ParseValue(json_String, json_Index)
             Else
-                json_ParseObject.Item(json_Key) = json_ParseValue(json_String, json_Index)
+                json_ParseObject.item(json_Key) = json_ParseValue(json_String, json_Index)
             End If
         Loop
     End If

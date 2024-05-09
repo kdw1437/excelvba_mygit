@@ -34,7 +34,7 @@ End Property
 
 Public Function makeJsonString() As String
 
-    Dim jsonString As String
+    Dim JsonString As String
     Dim row As Range
     Dim cell As Range
     Dim i As Long
@@ -100,23 +100,23 @@ Public Function makeJsonString() As String
     numericColumns.Add "valuation"
     
     
-    jsonString = "["
-    Dim Item As Variant
+    JsonString = "["
+    Dim item As Variant
     Dim cellValue As Variant
     
     For rowIndex = 2 To pRange.Rows.Count
-        If rowIndex > 2 Then jsonString = jsonString & ", "
+        If rowIndex > 2 Then JsonString = JsonString & ", "
         jsonRow = "{"
         
         For colIndex = 1 To pRange.Columns.Count
             ' 현재 column이 numeric column인지 확인한다.
             isNumericColumn = False
-            For Each Item In numericColumns
-                If propertyNames.Item(colIndex) = Item Then
+            For Each item In numericColumns
+                If propertyNames.item(colIndex) = item Then
                     isNumericColumn = True
                     Exit For
                 End If
-            Next Item
+            Next item
             
             cellValue = pRange.Cells(rowIndex, colIndex).value
             
@@ -124,17 +124,17 @@ Public Function makeJsonString() As String
             If IsEmpty(cellValue) Then
                 If isNumericColumn Then
                     ' numeric column인 경우 null을 사용해서 빈 값을 표현한다.
-                    jsonRow = jsonRow & """" & propertyNames.Item(colIndex) & """:null"
+                    jsonRow = jsonRow & """" & propertyNames.item(colIndex) & """:null"
                 Else
                     ' string column인 경우 요구 사항에 따라서, empty string 혹은 null을 사용한다.
-                    jsonRow = jsonRow & """" & propertyNames.Item(colIndex) & """:null"
+                    jsonRow = jsonRow & """" & propertyNames.item(colIndex) & """:null"
                 End If
             Else
                 ' numeric column이고 empty value가 아닌 경우에는 quote로 값을 감싸지 않는다.
                 If isNumericColumn Then
-                    jsonRow = jsonRow & """" & propertyNames.Item(colIndex) & """:" & cellValue
+                    jsonRow = jsonRow & """" & propertyNames.item(colIndex) & """:" & cellValue
                 Else
-                    jsonRow = jsonRow & """" & propertyNames.Item(colIndex) & """:""" & Replace(cellValue, """", "\""") & """"
+                    jsonRow = jsonRow & """" & propertyNames.item(colIndex) & """:""" & Replace(cellValue, """", "\""") & """"
                 End If
             End If
             
@@ -145,12 +145,12 @@ Public Function makeJsonString() As String
         
         jsonRow = jsonRow & "}"
         
-        jsonString = jsonString & jsonRow
+        JsonString = JsonString & jsonRow
     Next rowIndex
     
-    jsonString = jsonString & "]"
+    JsonString = JsonString & "]"
     
-    makeJsonString = jsonString
+    makeJsonString = JsonString
 End Function
 
 

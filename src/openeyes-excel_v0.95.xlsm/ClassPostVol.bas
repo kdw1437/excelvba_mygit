@@ -2,13 +2,13 @@ Attribute VB_Name = "ClassPostVol"
 Sub RunFunc()
     Dim ws As Worksheet
     Dim cell As Range
-    Dim jsonString As String
+    Dim JsonString As String
     Dim dataId As String
     Dim firstObject As Boolean
     Dim postVolUpdater As postVolUpdater ' 클래스의 인스턴스를 위한 reference variable
     
     Set ws = ThisWorkbook.Sheets("Vol")
-    jsonString = "["
+    JsonString = "["
     
     firstObject = True
     For Each cell In ws.Range("AD1:AD" & ws.Cells(ws.Rows.Count, "AD").End(xlUp).row)
@@ -27,7 +27,7 @@ Sub RunFunc()
         
         If dataId <> "" Then
             If Not firstObject Then
-                jsonString = jsonString & ","
+                JsonString = JsonString & ","
             End If
             
             ' 각 cell에 대해서 postVolUpdater class의 인스턴스를 생성
@@ -39,25 +39,27 @@ Sub RunFunc()
             End With
             
             ' 메소드를 사용해서 jsonString을 만들어 준다.
-            jsonString = jsonString & postVolUpdater.GenerateObjectJSON()
+            JsonString = JsonString & postVolUpdater.GenerateObjectJSON()
             
             firstObject = False
         End If
     Next cell
     
-    jsonString = jsonString & "]"
+    JsonString = JsonString & "]"
     
     
     filePath = "C:\Users\JURO_NEW\Desktop\json_data\volData.json"
-    
+
     fileNumber = FreeFile()
     Open filePath For Output As #fileNumber
-    
-    Print #fileNumber, jsonString
-    
+
+    Print #fileNumber, JsonString
+
     Close #fileNumber
+    Debug.Print JsonString
+    
     ' 필요하다면 jsonString을 URLEncode하고, POST request를 한다.
-    jsonString = URLEncode(jsonString)
+    JsonString = URLEncode(JsonString)
     
 
     ' request에 대한 URL
@@ -65,6 +67,6 @@ Sub RunFunc()
     url = "http://localhost:8080/val/marketdata/v1/vols?baseDt=20231228&dataSetId=TEST11"
     
     ' Send the POST request - Assuming SendPostRequest is a subroutine you have defined elsewhere
-    SendPostRequest jsonString, url
+    SendPostRequest JsonString, url
 End Sub
 

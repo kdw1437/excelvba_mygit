@@ -9,9 +9,9 @@ Sub ClassPostDivYield()
     'divYieldUpdater.DataIdRange = "F5:F7"
     Set divYieldUpdater.DataIdRange = divYieldUpdater.Worksheet.Range("F5:F7")
     
-    Dim jsonString As String
-    jsonString = divYieldUpdater.GenerateJson()
+    Dim JsonString As String
+    JsonString = divYieldUpdater.GenerateJson2()
     
-    Debug.Print jsonString
+    Debug.Print JsonString
     
 End Sub

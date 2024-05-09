@@ -21,10 +21,10 @@ Sub ClassPostQuote()
     
     'Set quoteUpdater.Range = quoteUpdater.Worksheet.Range("A9:AA11")
     
-    Dim jsonString As String
-    jsonString = quoteUpdater.makeJsonString()
+    Dim JsonString As String
+    JsonString = quoteUpdater.makeJsonString()
     
-    Debug.Print jsonString
+    Debug.Print JsonString
     
 End Sub
 
@@ -47,10 +47,10 @@ Sub ClassPostQuoteNumeric()
     
     'Set quoteUpdater.Range = quoteUpdater.Worksheet.Range("A9:AA11")
     
-    Dim jsonString As String
-    jsonString = quoteUpdater.makeJsonString()
+    Dim JsonString As String
+    JsonString = quoteUpdater.makeJsonString()
     
-    Debug.Print jsonString
+    Debug.Print JsonString
     
     
 End Sub
@@ -74,24 +74,24 @@ Sub ClassPostQuoteRecent()
     
     'Set quoteUpdater.Range = quoteUpdater.Worksheet.Range("A9:AA11")
     
-    Dim jsonString As String
-    jsonString = quoteUpdater.makeJsonString()
+    Dim JsonString As String
+    JsonString = quoteUpdater.makeJsonString()
     
-    Debug.Print jsonString
+    Debug.Print JsonString
     
-    jsonString = URLEncode(jsonString)
+    JsonString = URLEncode(JsonString)
     Dim url As String
     url = "http://localhost:8080/val/marketdata/v1/saveQuoteIssueInfo?baseDt=20231228&dataSetId=TEST2"
     
     ' JSON data와 POST request를 보내기 위해 subroutine을 호출한다.
-    SendPostRequest jsonString, url
+    SendPostRequest JsonString, url
 End Sub
 
 Sub ConvertRangeToJson()
     Dim PostQuoteUpdaterNew As New PostQuoteUpdaterNew ' Replace with the actual name of your class
     Dim ws As Worksheet
     Dim rng As Range
-    Dim jsonString As String
+    Dim JsonString As String
 
     ' Set the worksheet
     
@@ -103,16 +103,16 @@ Sub ConvertRangeToJson()
     Set PostQuoteUpdaterNew.Range = PostQuoteUpdaterNew.Worksheet.Range("A9:Y13")
 
     ' Convert the range to JSON
-    jsonString = PostQuoteUpdaterNew.makeJsonString()
+    JsonString = PostQuoteUpdaterNew.makeJsonString()
 
     ' Do something with the JSON string, for example, output to Immediate Window
-    Debug.Print jsonString
+    Debug.Print JsonString
     
-    jsonString = URLEncode(jsonString)
+    JsonString = URLEncode(JsonString)
     Dim url As String
     url = "http://localhost:8080/val/marketdata/v1/saveQuoteIssueInfo?baseDt=20231228&dataSetId=TEST2"
     
     ' JSON data와 POST request를 보내기 위해 subroutine을 호출한다.
-    SendPostRequest jsonString, url
+    SendPostRequest JsonString, url
 End Sub
 

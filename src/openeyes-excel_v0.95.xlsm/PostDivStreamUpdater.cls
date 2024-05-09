@@ -125,6 +125,43 @@ Public Function GenerateDataString() As String
 End Function
 
 
+Public Function GenerateDataString2() As String
+    Dim arrayOfIndexData As Collection
+    Set arrayOfIndexData = New Collection
+    
+    Dim arraySize As Integer
+    arraySize = UBound(pArrayOfIndex)
+    
+    If arraySize > 0 Then
+        Dim i As Integer, j As Integer
+        Dim indexData As Dictionary
+        
+        For i = 1 To arraySize
+            Set indexData = New Dictionary
+            indexData.Add "dataId", pArrayOfIndex(i)
+            
+            Dim dividends As Collection
+            Set dividends = New Collection
+            
+            j = 1 ' Initialize inner loop counter
+            Do While Not IsEmpty(pTitleCell.Offset(3 + j, (i - 1) * 2).value)
+                Dim dividend As Dictionary
+                Set dividend = New Dictionary
+                dividend.Add "date", CStr(pTitleCell.Offset(3 + j, (i - 1) * 2).value)
+                dividend.Add "value", pTitleCell.Offset(3 + j, (i - 1) * 2 + 1).value
+                
+                dividends.Add dividend
+                j = j + 1
+            Loop
+            
+            indexData.Add "dividends", dividends
+            arrayOfIndexData.Add indexData
+        Next i
+    End If
+    
+    ' Convert the entire collection to a JSON string using jsonConverter
+    GenerateDataString2 = JsonConverter.ConvertToJson(arrayOfIndexData)
+End Function
 
 
 
