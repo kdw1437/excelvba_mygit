@@ -26,7 +26,7 @@ Sub ClassPostPrice()
     Debug.Print DataString
     DataString = URLEncode(DataString)
     Dim url As String
-    url = "http://localhost:8080/val/marketdata/v1/prices?baseDt=20231228&dataSetId=TEST11"
+    url = "http://localhost:8080/val/marketdata/v1/savePrices?baseDt=20231228&dataSetId=TEST13"
     
     ' JSON data와 POST request를 보내기 위해 subroutine을 호출한다.
     SendPostRequest DataString, url

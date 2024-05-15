@@ -22,16 +22,25 @@ Sub InputPrice()
     Dim JsonResponse As Object
     Set JsonResponse = JsonConverter.ParseJson(JsonString)
     
-    Dim prices As Collection
-    Set prices = JsonResponse("response")("prices")
-    
-    Dim priceMarketDataUpdater As MarketDataUpdater
-    Set priceMarketDataUpdater = New MarketDataUpdater
-    
-    Set priceMarketDataUpdater.Worksheet = ThisWorkbook.Sheets("Market Data")
-    Set priceMarketDataUpdater.PricesCollection = prices
-    
-    priceMarketDataUpdater.UpdatePrices
-    
-       
+    If JsonResponse.Exists("code") Then
+        If JsonResponse("code") = "ERROR" Then
+            Dim errMsg As String
+            errMsg = "Error: " & JsonResponse("message")
+            MsgBox errMsg, vbCritical ' Display the error message in a message box
+            Exit Sub
+        
+        ElseIf JsonResponse("code") = "SUCCESS" Then
+            Dim prices As Collection
+            Set prices = JsonResponse("response")("prices")
+            
+            Dim priceMarketDataUpdater As MarketDataUpdater
+            Set priceMarketDataUpdater = New MarketDataUpdater
+            
+            Set priceMarketDataUpdater.Worksheet = ThisWorkbook.Sheets("Market Data")
+            Set priceMarketDataUpdater.PricesCollection = prices
+            
+            priceMarketDataUpdater.UpdatePrices
+        End If
+        
+    End If
 End Sub

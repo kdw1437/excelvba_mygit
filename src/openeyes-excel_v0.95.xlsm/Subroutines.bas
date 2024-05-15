@@ -34,3 +34,5 @@ End Sub
 
 'Internal State는 모든 field를 포함한다. 하지만, 직접적으로 개개의 field에 mapping되지 않는 부가적인 상태 정보도 포함한다. (예) 메소드로 관리되어지는 flag, counter, state variable
 '객체의 Internal state는 현재 데이터(field)와 data가 메서드에 의해서 조작되어진 역사 및 맥락의 결합이다.
+
+

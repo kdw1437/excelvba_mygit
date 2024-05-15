@@ -1,4 +1,6 @@
 Attribute VB_Name = "ClassPostVol"
+Dim requestHandler As CAsyncRequestHandler
+
 Sub RunFunc()
     Dim ws As Worksheet
     Dim cell As Range
@@ -48,14 +50,14 @@ Sub RunFunc()
     JsonString = JsonString & "]"
     
     
-    filePath = "C:\Users\JURO_NEW\Desktop\json_data\volData.json"
-
-    fileNumber = FreeFile()
-    Open filePath For Output As #fileNumber
-
-    Print #fileNumber, JsonString
-
-    Close #fileNumber
+'    filePath = "C:\Users\JURO_NEW\Desktop\json_data\volData.json"
+'
+'    fileNumber = FreeFile()
+'    Open filePath For Output As #fileNumber
+'
+'    Print #fileNumber, JsonString
+'
+'    Close #fileNumber
     Debug.Print JsonString
     
     ' 필요하다면 jsonString을 URLEncode하고, POST request를 한다.
@@ -64,9 +66,11 @@ Sub RunFunc()
 
     ' request에 대한 URL
     Dim url As String
-    url = "http://localhost:8080/val/marketdata/v1/vols?baseDt=20231228&dataSetId=TEST11"
+    url = "http://localhost:8080/val/marketdata/v1/saveVols?baseDt=20231228&dataSetId=TEST16"
     
     ' Send the POST request - Assuming SendPostRequest is a subroutine you have defined elsewhere
-    SendPostRequest JsonString, url
+'     SendPostRequest JsonString, url
+    Set requestHandler = New CAsyncRequestHandler
+    requestHandler.SendPostRequestAsync JsonString, url
 End Sub
 

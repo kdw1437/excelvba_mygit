@@ -133,9 +133,10 @@ Sub UseFXForwardData()
     
     Dim jsonString As String
     jsonString = fxData.ReturnJSON
+    'Debug.Print jsonString
     
     Dim url As String
-    url = "http://localhost:8080/val/marketdata/v1/saveForwardFX?baseDt=20240412&dataSetId=official"
+    url = "http://localhost:8080/val/marketdata/v1/saveForwardFX?baseDt=20240412&dataSetId=TEST2"
     
     ' JSON data와 POST request를 보내는 subroutine을 호출한다.
     SendPostRequest jsonString, url

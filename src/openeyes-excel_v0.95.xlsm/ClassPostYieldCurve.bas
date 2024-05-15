@@ -1,4 +1,5 @@
 Attribute VB_Name = "ClassPostYieldCurve"
+Dim requestHandler As CAsyncRequestHandler
 'YieldCurve를 POST하는 코드(클래스 모듈 이용)
 Sub ClassPostYieldCurve()
 
@@ -57,9 +58,11 @@ Sub ClassPostYieldCurve()
 
     
     Dim url As String
-    url = "http://localhost:8080/val/marketdata/v1/yieldcurves?baseDt=20231228&dataSetId=TEST13"
-
+    url = "http://localhost:8080/val/marketdata/v1/saveYieldcurves?baseDt=20231228&dataSetId=TEST19"
+    'url = "http://localhost:8080/val/marketdata/v1/saveYieldcurves?baseDt=20231229"
+    
+    Set requestHandler = New CAsyncRequestHandler
     ' POST request를 보낸다.
-    SendPostRequest DataString, url
-
+    'SendPostRequest DataString, url
+    requestHandler.SendPostRequestAsync DataString, url
 End Sub

@@ -17,21 +17,31 @@ Sub Inputvol()
     
     Dim JsonResponse As Object
     Set JsonResponse = GetJsonResponse(VoUrl)
-    Dim Volatilities As Collection
-    Set Volatilities = JsonResponse("response")("volatilities")
     
-    Dim ws As Worksheet
-    Set ws = ThisWorkbook.Sheets("Vol")
+    If JsonResponse.Exists("code") Then
+        If JsonResponse("code") = "ERROR" Then
+            Dim errMsg As String
+            errMsg = "Error: " & JsonResponse("message")
+            MsgBox errMsg, vbCritical ' Display the error message in a message box
+            Exit Sub
     
-    Dim importer As New VolUpdaterNew
-    With importer
-        Set .Worksheet = ws
-        Set .Volatilities = Volatilities
-        .CodeColumn = "A"
-        .ImportData
-        .FillEmptyCells
-                
-    End With
-    
+        ElseIf JsonResponse("code") = "SUCCESS" Then
+            Dim Volatilities As Collection
+            Set Volatilities = JsonResponse("response")("volatilities")
+            
+            Dim ws As Worksheet
+            Set ws = ThisWorkbook.Sheets("Vol")
+            
+            Dim importer As New VolUpdaterNew
+            With importer
+                Set .Worksheet = ws
+                Set .Volatilities = Volatilities
+                .CodeColumn = "A"
+                .ImportData
+                .FillEmptyCells
+                        
+            End With
+        End If
+    End If
     
 End Sub

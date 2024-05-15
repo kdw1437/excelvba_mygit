@@ -23,7 +23,7 @@ Sub PrintJsonString()
     Debug.Print DataString
     DataString = URLEncode(DataString)
     Dim url As String
-    url = "http://localhost:8080/val/marketdata/v1/corrs?baseDt=20231228&dataSetId=TEST11&matrixId=CORR"
+    url = "http://localhost:8080/val/marketdata/v1/saveCorrs?baseDt=20231228&dataSetId=TEST11&matrixId=CORR"
     
     ' JSON data와 POST request를 보내기 위해 subroutine을 호출한다.
     SendPostRequest DataString, url
