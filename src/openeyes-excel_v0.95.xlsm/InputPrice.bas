@@ -39,7 +39,11 @@ Sub InputPrice()
             Set priceMarketDataUpdater.Worksheet = ThisWorkbook.Sheets("Market Data")
             Set priceMarketDataUpdater.PricesCollection = prices
             
-            priceMarketDataUpdater.UpdatePrices
+            'priceMarketDataUpdater.UpdatePrices
+            'priceMarketDataUpdater.UpdatePrices2
+            priceMarketDataUpdater.UpdatePricesOptimized
+            
+            
         End If
         
     End If

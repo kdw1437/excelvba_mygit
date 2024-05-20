@@ -17,4 +17,11 @@ Sub ClassPostDivYield()
     
     Debug.Print JsonString
     
+    JsonString = URLEncode(JsonString)
+
+    Dim url As String
+    url = "http://localhost:8080/val/marketdata/v1/saveDividends?baseDt=20231228&dataSetId=TEST2"
+
+    ' POST request를 보낸다.
+    SendPostRequest JsonString, url
 End Sub
