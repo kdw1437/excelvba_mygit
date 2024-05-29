@@ -1,4 +1,9 @@
 Attribute VB_Name = "ConvertRangeToJson"
+Option Explicit
+
+Dim httpHandler As New clsXMLHTTPHandler
+
+
 Sub ConvertRangeToJson()
     Dim PostQuoteUpdaterNew As New PostQuoteUpdaterNew ' Replace with the actual name of your class
     Dim ws As Worksheet
@@ -35,8 +40,11 @@ Sub ConvertRangeToJson()
     Dim url As String
     url = "http://localhost:8080/val/marketdata/v1/saveQuoteIssueInfo?baseDt=20231228&dataSetId=TEST2"
     
-    ' JSON data와 POST request를 보내기 위해 subroutine을 호출한다.
-    SendPostRequest JsonString, url
+    
+    
+    ' Call the method to send the POST request
+    httpHandler.SendPostRequest JsonString, url
+
 End Sub
 
 

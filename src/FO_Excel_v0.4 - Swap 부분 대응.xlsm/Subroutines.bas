@@ -11,13 +11,18 @@ Sub SendPostRequest(DataString As String, url As String)
     Set xmlhttp = CreateObject("WinHttp.WinHttpRequest.5.1")
     
     ' xmlhttp 객체를 세팅한다. 특정 URL에 synchronous하게 POST request를 한다. xmlhttp객체의 내부 상태를 configure한다.
-    xmlhttp.Open "POST", url, False
+    xmlhttp.Open "POST", url, True
     
     ' request content-type header를 application/x-www-form-urlencoded로 세팅한다.
     xmlhttp.setRequestHeader "Content-Type", "application/x-www-form-urlencoded"
     
     ' Send the request with the DataString
     xmlhttp.Send "a=" & DataString
+    
+    ' Wait for the request to complete
+    Do While xmlhttp.readyState <> 4
+        DoEvents
+    Loop
     
     ' Check the status of the request
     If xmlhttp.Status = 200 Then
