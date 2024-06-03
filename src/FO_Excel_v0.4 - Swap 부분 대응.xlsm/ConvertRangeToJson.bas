@@ -5,20 +5,20 @@ Dim httpHandler As New clsXMLHTTPHandler
 
 
 Sub ConvertRangeToJson()
-    Dim PostQuoteUpdaterNew As New PostQuoteUpdaterNew ' Replace with the actual name of your class
+    Dim PostQuoteUpdaterNew As New PostQuoteUpdaterNew ' 실제 클래스 이름 넣기
     Dim ws As Worksheet
     Dim rng As Range
     Dim JsonString As String
 
-    ' Set the worksheet
+    ' worksheet 세팅
     
     Set PostQuoteUpdaterNew.Worksheet = ThisWorkbook.Sheets("Quote")
     Set ws = PostQuoteUpdaterNew.Worksheet
     
-    ' Define the range that you want to convert
-    ' Assuming A9 is the top left cell of your data and the range extends to column R with 4 data rows
-    ' You would adjust the range according to your actual data
-    'Set PostQuoteUpdaterNew.Range = PostQuoteUpdaterNew.Worksheet.Range("A9:Y13")
+    ' range를 정의한다.
+    ' A9이 가장 왼쪽 위의 cell이다.
+    ' 실제 데이터에 따라서 range를 조정한다.
+    'Set PostQuoteUpdaterNew.Range = PostQuoteUpdaterNew.Worksheet.Range("A9:Y13") (하드코딩 적으로 range를 정해줄 때)
     Dim lastCol As Range
     Dim lastRow As Range
     Dim endCell As Range
@@ -30,10 +30,10 @@ Sub ConvertRangeToJson()
     Set rng = ws.Range("A9", endCell)
     Set PostQuoteUpdaterNew.Range = rng
     
-    ' Convert the range to JSON
+    ' range를 JSON으로 바꾼다.
     JsonString = PostQuoteUpdaterNew.makeJsonString2()
 
-    ' Do something with the JSON string, for example, output to Immediate Window
+    ' JSONString 콘솔에 출력
     Debug.Print JsonString
     
     JsonString = URLEncode(JsonString)
@@ -42,7 +42,7 @@ Sub ConvertRangeToJson()
     
     
     
-    ' Call the method to send the POST request
+    ' POST request를 보내기 위해 method를 호출한다.
     httpHandler.SendPostRequest JsonString, url
 
 End Sub
