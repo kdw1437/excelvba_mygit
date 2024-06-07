@@ -16,57 +16,100 @@ Private pStartRow As Integer
 Private pMatrixId As String
 Private pStartColumn As Integer
 
+' Worksheet property
+' @method Worksheet
+' @return {Worksheet}
+' @usage - pWorksheet 값을 가져온다.
 Public Property Get Worksheet() As Worksheet
     Set Worksheet = pWorksheet
 End Property
 
+' @method Worksheet
+' @param {Worksheet} value
+' @usage - pWorksheet 값을 설정한다.
 Public Property Set Worksheet(value As Worksheet)
     Set pWorksheet = value
 End Property
 
+' SelCorrelation property
+' @method SelCorrelation
+' @return {Collection}
+' @usage - pSelCorrelation 값을 가져온다.
 Public Property Get SelCorrelation() As Collection
     Set SelCorrelation = pSelCorrelation
 End Property
 
+' @method SelCorrelation
+' @param {Collection} value
+' @usage - pSelCorrelation 값을 설정한다.
 Public Property Set SelCorrelation(value As Collection)
     Set pSelCorrelation = value
 End Property
 
+' ColumnNameRow property
+' @method ColumnNameRow
+' @return {Integer}
+' @usage - pColumnNameRow 값을 가져온다.
 Public Property Get ColumnNameRow() As Integer
     ColumnNameRow = pColumnNameRow
 End Property
 
+' @method ColumnNameRow
+' @param {Integer} value
+' @usage - pColumnNameRow 값을 설정한다.
 Public Property Let ColumnNameRow(value As Integer)
     pColumnNameRow = value
 End Property
 
+' StartRow property
+' @method StartRow
+' @return {Integer}
+' @usage - pStartRow 값을 가져온다.
 Public Property Get StartRow() As Integer
     StartRow = pStartRow
-    
 End Property
 
+' @method StartRow
+' @param {Integer} value
+' @usage - pStartRow 값을 설정한다.
 Public Property Let StartRow(value As Integer)
     pStartRow = value
 End Property
 
+' MatrixId property
+' @method MatrixId
+' @return {String}
+' @usage - pMatrixId 값을 가져온다.
 Public Property Get MatrixId() As String
     MatrixId = pMatrixId
-    
 End Property
 
+' @method MatrixId
+' @param {String} value
+' @usage - pMatrixId 값을 설정한다.
 Public Property Let MatrixId(value As String)
     pMatrixId = value
 End Property
 
+' StartColumn property
+' @method StartColumn
+' @return {Integer}
+' @usage - pStartColumn 값을 가져온다.
 Public Property Get StartColumn() As Integer
     StartColumn = pStartColumn
-
 End Property
 
+' @method StartColumn
+' @param {Integer} value
+' @usage - pStartColumn 값을 설정한다.
 Public Property Let StartColumn(value As Integer)
     pStartColumn = value
 End Property
 
+' correlation 데이터를 worksheet에 업데이트하는 함수
+' @method UpdateCorrelations
+' @return {Boolean}
+' @usage - SelCorrelation 컬렉션의 데이터를 기반으로 worksheet의 correlation 값을 업데이트한다.
 Public Function UpdateCorrelations() As Boolean
     
     Dim LastContiguousColumn As Integer

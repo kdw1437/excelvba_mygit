@@ -14,43 +14,65 @@ Private pYieldCurveRow As Range
 Private pStartCell As Range
 
 ' Getter for pArrayOfCurrency
+' @method ArrayOfCurrency
+' @return {Variant}
+' @usage - pArrayOfCurrency 값을 가져온다.
 Public Property Get ArrayOfCurrency() As Variant
     ArrayOfCurrency = pArrayOfCurrency
 End Property
 
 ' Setter for pArrayOfCurrency
+' @method ArrayOfCurrency
+' @param {Variant} value
+' @usage - pArrayOfCurrency 값을 설정한다.
 Public Property Let ArrayOfCurrency(ByVal value As Variant)
     pArrayOfCurrency = value
 End Property
 
-
-
 ' Getter for pYieldCurveRow
+' @method YieldCurveRow
+' @return {Range}
+' @usage - pYieldCurveRow 값을 가져온다.
 Public Property Get YieldCurveRow() As Range
     Set YieldCurveRow = pYieldCurveRow
 End Property
 
 ' Setter for pYieldCurveRow
+' @method YieldCurveRow
+' @param {Range} value
+' @usage - pYieldCurveRow 값을 설정한다.
 Public Property Set YieldCurveRow(ByVal value As Range)
     Set pYieldCurveRow = value
 End Property
 
-
 ' Setter for pStartCell
+' @method startCell
+' @param {Range} value
+' @usage - pStartCell 값을 설정한다.
 Public Property Set startCell(value As Range)
     Set pStartCell = value
 End Property
 
 ' Getter for pStartCell
+' @method startCell
+' @return {Range}
+' @usage - pStartCell 값을 가져온다.
 Public Property Get startCell() As Range
     Set startCell = pStartCell
 End Property
+
+' 클래스 초기화 시 실행되는 메서드
+' @method Class_Initialize
+' @usage - pArrayOfCurrency를 빈 배열로 초기화한다.
 Private Sub Class_Initialize()
     ' Initialize the pArrayOfCurrency as an empty array
     ' This ensures that the array is ready to be used, even before any elements are added to it
     ReDim pArrayOfCurrency(0 To 0)
 End Sub
+
 ' pStartCell에 근거해서 pArrayOfCurrency를 채운다.
+' @method PopulateArrayOfCurrency
+' @usage - pStartCell을 시작으로 pArrayOfCurrency를 채운다.
 Public Sub PopulateArrayOfCurrency()
     Dim currentCell As Range
     Set currentCell = pStartCell ' class property pStartCell
@@ -73,51 +95,10 @@ Public Sub PopulateArrayOfCurrency()
     Loop
 End Sub
 
-
-' DataString을 만드는 메소드
-Public Function GenerateDataString() As String
-    Dim arraySize As Integer
-    arraySize = UBound(pArrayOfCurrency) ' ArrayofCurrency의 사이즈
-    Dim DataString As String
-    DataString = "["
-    
-    If arraySize > 0 Then
-        Dim i As Integer, j As Integer
-        Dim InterestName As String, tenor As Double, Rate As Double, RiskCode As String
-        Dim yieldsArray As String
-        
-        For i = 1 To arraySize
-            InterestName = pArrayOfCurrency(i) ' ArrayofCurrency의 원소(String)을 InterestName 참조변수로 받는다.
-            j = 1 ' inner loop counter를 초기화한다.
-            yieldsArray = "["
-            
-            Do While Not IsEmpty(pYieldCurveRow.Offset(3 + j, (i - 1) * 2).value) ' property YieldCurveRow를 사용한다.
-                tenor = pYieldCurveRow.Offset(3 + j, (i - 1) * 2).value
-                Rate = pYieldCurveRow.Offset(3 + j, (i - 1) * 2 + 1).value
-                RiskCode = Format(tenor * 360, "00000")
-                
-                ' yield object를 만들고, 이 것을 yieldsArray에 추가한다.
-                If yieldsArray <> "[" Then yieldsArray = yieldsArray & ","
-                yieldsArray = yieldsArray & "{""tenor"": " & tenor & ", ""rate"": " & Rate & "}"
-                
-                j = j + 1
-            Loop
-            yieldsArray = yieldsArray & "]"
-            
-            ' main JSON object에 Interest이름과 Yields array를 추가한다.
-            If i > 1 Then DataString = DataString & ","
-            DataString = DataString & "{" & _
-                                         """dataId"": """ & InterestName & """, " & _
-                                         """currency"": """ & Left(InterestName, 3) & """, " & _
-                                         """yields"": " & yieldsArray & "}"
-        Next i
-    End If
-    DataString = DataString & "]"
-    
-    GenerateDataString = DataString ' DataString을 함수의 output으로 return한다.
-End Function
-
-
+' 데이터를 JSON 형식의 문자열로 생성한다.
+' @method GenerateDataString2
+' @return {String}
+' @usage - pArrayOfCurrency와 pYieldCurveRow 데이터를 JSON 문자열로 변환한다.
 Public Function GenerateDataString2() As String
     Dim dataArray As New Collection
     Dim arraySize As Integer
@@ -153,7 +134,7 @@ Public Function GenerateDataString2() As String
          
     End If
     
-    ' Convert the Collection of Dictionaries to JSON
+    ' Dictionary의 collection을 JSON으로 변경한다.
     GenerateDataString2 = JsonConverter.ConvertToJson(dataArray)
 End Function
 

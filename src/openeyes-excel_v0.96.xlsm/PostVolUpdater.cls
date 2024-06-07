@@ -15,33 +15,54 @@ Private pRefCell As Range
 Private pDataId As String
 
 ' worksheet property
+' @method Worksheet
+' @return {Worksheet}
+' @usage - worksheet의 getter
 Public Property Get Worksheet() As Worksheet
     Set Worksheet = pWorksheet
 End Property
 
+' @method Worksheet
+' @param {Worksheet} value
+' @usage - worksheet의 setter
 Public Property Set Worksheet(value As Worksheet)
     Set pWorksheet = value
 End Property
 
 ' reference cell property
+' @method RefCell
+' @return {Range}
+' @usage - reference cell의 getter
 Public Property Get RefCell() As Range
     Set RefCell = pRefCell
 End Property
 
+' @method RefCell
+' @param {Range} value
+' @usage - reference cell의 setter
 Public Property Set RefCell(value As Range)
     Set pRefCell = value
 End Property
 
 ' dataId property
+' @method dataId
+' @return {String}
+' @usage - dataId의 getter
 Public Property Get dataId() As String
     dataId = pDataId
 End Property
 
+' @method dataId
+' @param {String} value
+' @usage - dataId의 setter
 Public Property Let dataId(value As String)
     pDataId = value
 End Property
 
 ' GenerateObjectJSON method
+' @method GenerateObjectJSON
+' @return {String}
+' @usage - worksheet의 tenor, vol, volFactor data를 바탕으로 JSON string을 생성
 Public Function GenerateObjectJSON() As String
     Dim volFactorRange As Range, tenorRange As Range, dataRange As Range
     Dim volFactorCell As Range, termVolCell As Range
@@ -80,6 +101,10 @@ Public Function GenerateObjectJSON() As String
     GenerateObjectJSON = objectJSON
 End Function
 
+' GenerateObjectJSON2 method
+' @method GenerateObjectJSON
+' @return {String}
+' @usage - worksheet의 tenor, vol, volFactor data를 바탕으로 JSON string을 생성
 Public Function GenerateObjectJSON2() As String
     Dim volFactorRange As Range, tenorRange As Range, dataRange As Range
     Dim volFactorCell As Range, termVolCell As Range

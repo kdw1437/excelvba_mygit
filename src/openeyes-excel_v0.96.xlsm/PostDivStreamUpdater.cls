@@ -15,41 +15,65 @@ Private pStartCell As Range
 Private pWs As Worksheet
 
 ' Setter for pWs
+' @method ws
+' @param {Worksheet} value
+' @usage - worksheet setter이다.
 Public Property Set ws(ByVal value As Worksheet)
     Set pWs = value
 End Property
 
 ' Getter for pWs
+' @method ws
+' @return {Worksheet}
+' @usage - worksheet getter이다.
 Public Property Get ws() As Worksheet
     Set ws = pWs
 End Property
 
 ' Getter for pArrayOfIndex
+' @method ArrayOfIndex
+' @return {Variant}
+' @usage - array of index getter이다.
 Public Property Get ArrayOfIndex() As Variant
     ArrayOfIndex = pArrayOfIndex
 End Property
 
 ' Setter for pArrayOfIndex
+' @method ArrayOfIndex
+' @param {Variant} value
+' @usage - array of index setter이다.
 Public Property Let ArrayOfIndex(ByVal value As Variant)
     pArrayOfIndex = value
 End Property
 
 ' Getter for pTitleCell
+' @method TitleCell
+' @return {Range}
+' @usage - title cell의 getter이다.
 Public Property Get TitleCell() As Range
     Set TitleCell = pTitleCell
 End Property
 
 ' Setter for pTitleCell
+' @method TitleCell
+' @param {Range} value
+' @usage - title cell의 setter이다.
 Public Property Set TitleCell(ByVal value As Range)
     Set pTitleCell = value
 End Property
 
 ' Setter for pStartCell
+' @method startCell
+' @param {Range} value
+' @usage - start cell의 setter이다.
 Public Property Set startCell(value As Range)
     Set pStartCell = value
 End Property
 
 ' Getter for pStartCell
+' @method startCell
+' @return {Range}
+' @usage - start cell의 getter이다.
 Public Property Get startCell() As Range
     Set startCell = pStartCell
 End Property
@@ -59,7 +83,8 @@ Private Sub Class_Initialize()
     ' 어떤 element가 array에 추가되기 전에도, array가 사용될 준비가 되있다.
     ReDim pArrayOfIndex(0 To 0)
 End Sub
-' pStartCell에 근거해서 pArrayOfIndex를 채운다.
+' @method PopulateArrayOfIndex
+' @usage - pStartCell에 근거해서 pArrayOfIndex를 채운다.
 Public Sub PopulateArrayOfIndex()
     Dim currentCell As Range
     Set currentCell = pStartCell ' class property pStartCell
@@ -82,49 +107,9 @@ Public Sub PopulateArrayOfIndex()
     Loop
 End Sub
 
-' DataString을 만드는 메소드
-Public Function GenerateDataString() As String
-    Dim arraySize As Integer
-    arraySize = UBound(pArrayOfIndex) ' ArrayofIndex의 사이즈
-    Dim DataString As String
-    DataString = "["
-    
-    If arraySize > 0 Then
-        Dim i As Integer, j As Integer
-        Dim IndexName As String, DateTime As String, value As Double
-        Dim dividendsArray As String
-        
-        For i = 1 To arraySize
-            IndexName = pArrayOfIndex(i) ' ArrayofIndex의 원소(String)을 IndexName 참조변수로 받는다.
-            j = 1 ' inner loop counter를 초기화한다.
-            dividendsArray = "["
-            
-            Do While Not IsEmpty(pTitleCell.Offset(3 + j, (i - 1) * 2).value) ' property TitleCell를 사용한다.
-                DateTime = pTitleCell.Offset(3 + j, (i - 1) * 2).value
-                value = pTitleCell.Offset(3 + j, (i - 1) * 2 + 1).value
-                
-                
-                ' yield object를 만들고, 이 것을 yieldsArray에 추가한다.
-                If dividendsArray <> "[" Then dividendsArray = dividendsArray & ","
-                dividendsArray = dividendsArray & "{""date"": """ & DateTime & """, ""value"": " & value & "}"
-                
-                j = j + 1
-            Loop
-            dividendsArray = dividendsArray & "]"
-            
-            ' main JSON object에 Interest이름과 Yields array를 추가한다.
-            If i > 1 Then DataString = DataString & ","
-            DataString = DataString & "{" & _
-                                         """dataId"": """ & IndexName & """, " & _
-                                         """dividends"": " & dividendsArray & "}"
-        Next i
-    End If
-    DataString = DataString & "]"
-    
-    GenerateDataString = DataString ' DataString을 함수의 output으로 return한다.
-End Function
-
-
+' @method GenerateDataString2
+' @return {String}
+' @usage - array of index 데이터로부터 JSON string을 생성한다.
 Public Function GenerateDataString2() As String
     Dim arrayOfIndexData As Collection
     Set arrayOfIndexData = New Collection
@@ -143,7 +128,7 @@ Public Function GenerateDataString2() As String
             Dim dividends As Collection
             Set dividends = New Collection
             
-            j = 1 ' Initialize inner loop counter
+            j = 1 ' inner loop counter를 초기화한다.
             Do While Not IsEmpty(pTitleCell.Offset(3 + j, (i - 1) * 2).value)
                 Dim dividend As Dictionary
                 Set dividend = New Dictionary
@@ -159,7 +144,7 @@ Public Function GenerateDataString2() As String
         Next i
     End If
     
-    ' Convert the entire collection to a JSON string using jsonConverter
+    ' jsonConverter를 사용해서 전체 collection을 JSON string으로 변경한다.
     GenerateDataString2 = JsonConverter.ConvertToJson(arrayOfIndexData)
 End Function
 

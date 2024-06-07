@@ -12,35 +12,56 @@ Private pDivRange As Range
 Private pDivData As Collection
 
 ' Setter for the Worksheet
+' @method SetWorksheet
+' @param {String} sheetName - 워크시트 이름
+' @usage - 주어진 이름으로 워크시트를 설정한다.
 Public Sub SetWorksheet(sheetName As String)
     Set pWs = ThisWorkbook.Sheets(sheetName)
 End Sub
 
 ' Getter for the Worksheet
+' @method GetWorksheet
+' @return {Worksheet}
+' @usage - 설정된 워크시트를 가져온다.
 Public Function GetWorksheet() As Worksheet
     Set GetWorksheet = pWs
 End Function
 
 ' Setter for DivData Collection
+' @method SetDivData
+' @param {Collection} col - DivData 컬렉션
+' @usage - DivData 컬렉션을 설정한다.
 Public Sub SetDivData(col As Collection)
     Set pDivData = col
 End Sub
 
 ' Getter for DivData Collection
+' @method GetDivData
+' @return {Collection}
+' @usage - 설정된 DivData 컬렉션을 가져온다.
 Public Function GetDivData() As Collection
     Set GetDivData = pDivData
 End Function
 
 'Setter for DivRange
+' @method SetDivRange
+' @param {String} rng - 범위 주소
+' @usage - DivRange 범위를 설정한다.
 Public Sub SetDivRange(rng As String)
     Set pDivRange = pWs.Range(rng)
 End Sub
 
 'Getter for DivRange
+' @method GetDivRange
+' @return {Range}
+' @usage - 설정된 DivRange 범위를 가져온다.
 Public Function GetDivRange() As Range
     Set GetDivRange = pDivRange
 End Function
 
+' DivData를 사용하여 Worksheet를 업데이트하는 메서드
+' @method UpdateWorksheet
+' @usage - DivData 컬렉션의 데이터를 사용하여 Worksheet를 업데이트한다.
 Public Sub UpdateWorksheet()
 
     Dim element As Variant
@@ -55,6 +76,9 @@ Public Sub UpdateWorksheet()
 
 End Sub
 
+' 효율적으로 Worksheet를 업데이트하는 메서드
+' @method UpdateWorksheetEfficient
+' @usage - Dictionary 객체를 사용하여 Worksheet를 효율적으로 업데이트한다.
 Public Sub UpdateWorksheetEfficient()
 
     ' dataIds의 yields에 대한 mapping을 가지는 Dictionary 객체를 만든다.

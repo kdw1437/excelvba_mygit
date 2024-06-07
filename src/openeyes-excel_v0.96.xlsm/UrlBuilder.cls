@@ -74,7 +74,11 @@ Public Property Let baseDt(value As String)
     pBaseDt = value
 
 End Property
-'URL을 만드는 method(property(field)값을 바탕으로 호출 시, URL을 return한다.)
+
+' URL을 만드는 method
+' @method MakeUrl
+' @return {String}
+' @usage - property(field)값을 바탕으로 URL을 생성하여 반환한다.
 Public Function MakeUrl() As String
     Dim url As String
     url = pBaseURL & pVersion & pDataParameter & pBaseDt & pDataIds & pdataSetId & pMatrixId

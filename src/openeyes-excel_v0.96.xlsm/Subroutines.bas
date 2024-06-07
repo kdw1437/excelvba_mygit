@@ -36,3 +36,44 @@ End Sub
 '객체의 Internal state는 현재 데이터(field)와 data가 메서드에 의해서 조작되어진 역사 및 맥락의 결합이다.
 
 
+' 주어진 data string과 함께 POST request를 특정 URL에 보낸다. response는 message box에 보여진다.
+'
+' @subroutine SendPostRequestAsync
+' @param {String} DataString - POST request에서 보내질 데이터
+' @param {String} url - POST request가 보내질 URL
+Sub SendPostRequestAsync(DataString As String, url As String)
+    Dim xmlhttp As Object
+    
+    ' 새로운 XML HTTP request를 만든다.
+    Set xmlhttp = CreateObject("WinHttp.WinHttpRequest.5.1")
+    
+    ' xmlhttp 객체를 세팅한다. 특정 URL에 asynchronous하게 POST request를 한다.
+    xmlhttp.Open "POST", url, True
+    
+    ' request content-type header를 application/x-www-form-urlencoded로 세팅한다.
+    xmlhttp.setRequestHeader "Content-Type", "application/x-www-form-urlencoded"
+    
+    ' Event handlers to handle the response and state changes
+    ' Note: These handlers need to be added to your VBA project in a class module.
+    
+    ' Send the request with the DataString
+    xmlhttp.Send "a=" & DataString
+    
+    ' Wait for the response
+    Do While xmlhttp.readyState <> 4
+        DoEvents ' Keep Excel responsive
+    Loop
+    
+    ' Check the status of the request
+    If xmlhttp.Status = 200 Then
+        ' If the request was successful, output the response
+        MsgBox xmlhttp.responseText
+    Else
+        ' If the request failed, output the status
+        MsgBox "Error: " & xmlhttp.Status & " - " & xmlhttp.statusText
+    End If
+    
+    ' Clean up
+    Set xmlhttp = Nothing
+End Sub
+

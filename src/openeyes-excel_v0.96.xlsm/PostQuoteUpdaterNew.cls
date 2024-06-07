@@ -12,69 +12,43 @@ Option Explicit
 Private pWs As Worksheet
 Private pRange As Range
 
-'Getter for pWs
+' Getter for pWs
+' @method Worksheet
+' @return {Worksheet}
+' @usage - worksheet을 get한다.
 Public Property Get Worksheet() As Worksheet
     Set Worksheet = pWs
 End Property
 
-'Setter for pWs
+' Setter for pWs
+' @method Worksheet
+' @param {Worksheet} value
+' @usage - worksheet을 set한다.
 Public Property Set Worksheet(value As Worksheet)
     Set pWs = value
 End Property
 
-'Getter for pRange
+' Getter for pRange
+' @method Range
+' @return {Range}
+' @usage - range를 get한다.
 Public Property Get Range() As Range
     Set Range = pRange
 End Property
 
-'Setter for pRange
+' Setter for pRange
+' @method Range
+' @param {Range} value
+' @usage - range를 set한다.
 Public Property Set Range(value As Range)
     Set pRange = value
 End Property
 
-Public Function makeJsonString() As String
-    Dim JsonString As String
-    Dim row As Range
-    Dim jsonRow As String
-    Dim adjustedRange As Range
-    Set adjustedRange = pRange.Offset(1, 0).Resize(pRange.Rows.Count - 1, pRange.Columns.Count)
-    
-    JsonString = "["
-    
-    For Each row In adjustedRange.Rows
-        jsonRow = "{" & _
-            """productId"":" & Nz(row.Cells(1, 1).value, False) & "," & _
-            """effectiveDate"":""" & row.Cells(1, 2).Text & """," & _
-            """productType"":" & Nz(row.Cells(1, 3).value, True) & "," & _
-            """earlyRedempCycle"":" & Nz(row.Cells(1, 4).value, False) & "," & _
-            """settleDateOffset"":" & Nz(row.Cells(1, 5).value, False) & "," & _
-            """maturityEvaluationDays"":" & Nz(row.Cells(1, 6).value, False) & "," & _
-            """underlyingAsset1"":" & Nz(row.Cells(1, 7).value, True) & "," & _
-            """underlyingAsset2"":" & Nz(row.Cells(1, 8).value, True) & "," & _
-            """underlyingAsset3"":" & Nz(row.Cells(1, 9).value, True) & "," & _
-            """exercisePrices"":" & Nz(row.Cells(1, 10).value, True) & "," & _
-            """coupon"":" & Nz(row.Cells(1, 11).value, False) & "," & _
-            """lizardCoupon"":" & Nz(row.Cells(1, 12).value, False) & "," & _
-            """lossParticipationRate"":" & Nz(row.Cells(1, 13).value, False) & "," & _
-            """kiBarrier"":" & Nz(row.Cells(1, 14).value, False) & "," & _
-            """principalProtectedRate"":" & Nz(row.Cells(1, 15).value, False) & "," & _
-            """callBarrier"":" & Nz(row.Cells(1, 16).value, False) & "," & _
-            """callParticipationRate"":" & Nz(row.Cells(1, 17).value, False) & "," & _
-            """koBarrierUpSide"":" & Nz(row.Cells(1, 18).value, False) & "," & _
-            """dummyCouponUpSide"":" & Nz(row.Cells(1, 19).value, False) & "," & _
-            """putBarrier"":" & Nz(row.Cells(1, 20).value, False) & "," & """putParticipationRate"":" & Nz(row.Cells(1, 21).value, False) & "," & """koBarrierDownSide"":" & Nz(row.Cells(1, 22).value, False) & "," & _
-            """dummyCouponDownSide"":" & Nz(row.Cells(1, 23).value, False) & "," & _
-            """calculationCurrency"":" & Nz(row.Cells(1, 24).value, True) & "," & _
-            """valuation"":" & Nz(row.Cells(1, 25).value, False) & _
-            "},"
-            
-        JsonString = JsonString & jsonRow
-    Next row
-    
-    JsonString = Left(JsonString, Len(JsonString) - 1) & "]"
-    makeJsonString = JsonString
-End Function
 
+' 특정 영역에 있는 data로 부터 JSON string을 만든다.
+' @method makeJsonString2
+' @return {String}
+' @usage - 특정 영역에 있는 data로 부터 JSON string을 만든다.
 Public Function makeJsonString2() As String
 
     Dim JsonString As String
@@ -124,20 +98,14 @@ Public Function makeJsonString2() As String
     
 End Function
 
-Private Function Nz(value As Variant, Optional isString As Boolean = False) As String
-    If IsEmpty(value) Or value = "" Or value = "null" Then
-        Nz = "null"
-    ElseIf isString Then
-        Nz = """" & value & """"
-    Else
-        Nz = value
-    End If
-End Function
-
-' Helper function to convert empty cells to Null
+' empty cell을 Null로 변경하는 Helper 함수
+' @method IfEmpty
+' @param {Variant} value
+' @return {Variant}
+' @usage - empty cell을 Null로 변경, 다른 경우에는 cell값을 return.
 Function IfEmpty(value As Variant) As Variant
     If IsEmpty(value) Or value = "" Then
-        IfEmpty = Null  ' Assign Null if cell is empty
+        IfEmpty = Null  ' 빈 cell인 경우, Null 할당.
     Else
         IfEmpty = value
     End If

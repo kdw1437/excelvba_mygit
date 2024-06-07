@@ -13,82 +13,78 @@ Private pTable1Point As Range
 Private pFxRow As Range
 Private pWs As Worksheet
 
+' Setter for Table1Point
+' @method Table1Point
+' @param {Range} value
+' @usage - Table1 range의 시작점을 set
 Public Property Set Table1Point(value As Range)
     Set pTable1Point = value
 End Property
 
+' Getter for Table1Point
+' @method Table1Point
+' @return {Range}
+' @usage - Table1 range의 시작점을 get
 Public Property Get Table1Point() As Range
     Set Table1Point = pTable1Point
 End Property
 
+' Setter for fxRow
+' @method fxRow
+' @param {Range} value
+' @usage - fxRow range를 set
 Public Property Set fxRow(value As Range)
     Set pFxRow = value
 End Property
 
+' Getter for fxRow
+' @method fxRow
+' @return {Range}
+' @usage - fxRow range를 get
 Public Property Get fxRow() As Range
     Set fxRow = pFxRow
 End Property
 
+' Setter for Worksheet
+' @method Worksheet
+' @param {Worksheet} value
+' @usage - worksheet의 setter
 Public Property Set Worksheet(value As Worksheet)
     Set pWs = value
 End Property
 
+' Getter for Worksheet
+' @method Worksheet
+' @return {Worksheet}
+' @usage - worksheet의 getter
 Public Property Get Worksheet() As Worksheet
     Set Worksheet = pWs
 End Property
 
-' Method to construct JSON string
-Public Function GenerateJson() As String
-    Dim DataString As String
-    DataString = "[" ' Initialize the DataString as an empty JSON array
-    
-    Dim i As Integer
-    For i = pTable1Point.row + 1 To pFxRow.row - 2
-        Dim dataId As String
-        Dim closePric As String
-        
-        dataId = pWs.Cells(i, pTable1Point.Column).value
-        closePric = pWs.Cells(i, pTable1Point.Column + 1).value
-        
-        ' Construct the JSON object for the current row
-        Dim jsonObject As String
-        jsonObject = "{""dataId"": """ & dataId & """, ""price"": " & closePric & "}"
-        
-        ' If not the first item, add a comma separator
-        If Len(DataString) > 1 Then
-            DataString = DataString & ", "
-        End If
-        
-        ' Append the JSON object to the DataString (JSON array)
-        DataString = DataString & jsonObject
-    Next i
-
-    DataString = DataString & "]" ' Close the JSON array
-    
-    GenerateJson = DataString
-End Function
-
-
+' data의 JSON string을 만든다.
+' @method GenerateJson2
+' @return {String}
+' @usage - Table1Point와 fxRow 사이에 있는 data로 JSON string을 만든다.
 Public Function GenerateJson2() As String
-    ' Create a collection to hold each row's data as a dictionary
+    ' jsonArray를 만들기 위한 collection 생성. jsonObject는 jsonArray의 요소.
     Dim dataList As Collection
     Set dataList = New Collection
     
     Dim i As Integer
     For i = pTable1Point.row + 1 To pFxRow.row - 2
-        ' Create a dictionary to store dataId and price for each row
+        ' jsonObject를 만들기 위한 dictionary 객체 생성.
         Dim dataDict As Object
         Set dataDict = CreateObject("Scripting.Dictionary")
         
-        ' Retrieve data from the worksheet
+        ' worksheet으로 부터 data회수
         dataDict("dataId") = pWs.Cells(i, pTable1Point.Column).value
         dataDict("price") = pWs.Cells(i, pTable1Point.Column + 1).value
         
-        ' Add the dictionary to the collection
+        ' dictionary를 collection에 추가한다.
         dataList.Add dataDict
     Next i
     
-    ' Use JsonConverter to convert the collection to JSON
+    ' collection을 JsonString으로 바꾸기 위해, ConvertToJson 메소드를 이용한다.
     GenerateJson2 = JsonConverter.ConvertToJson(dataList, Whitespace:=2)
 End Function
 

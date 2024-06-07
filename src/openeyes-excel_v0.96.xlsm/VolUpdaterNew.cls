@@ -14,32 +14,53 @@ Private pVolatilities As Collection
 Private pCodeColumn As String
 
 ' Worksheet property
+' @method Worksheet
+' @param {Worksheet} ws
+' @usage - pWs 값을 설정한다.
 Public Property Set Worksheet(ws As Worksheet)
     Set pWs = ws
 End Property
 
+' @method Worksheet
+' @return {Worksheet}
+' @usage - pWs 값을 가져온다.
 Public Property Get Worksheet() As Worksheet
     Set Worksheet = pWs
 End Property
 
 ' Volatilities property
+' @method Volatilities
+' @param {Collection} vols
+' @usage - pVolatilities 값을 설정한다.
 Public Property Set Volatilities(vols As Collection)
     Set pVolatilities = vols
 End Property
 
+' @method Volatilities
+' @return {Collection}
+' @usage - pVolatilities 값을 가져온다.
 Public Property Get Volatilities() As Collection
     Set Volatilities = pVolatilities
 End Property
 
 ' CodeColumn property
+' @method CodeColumn
+' @param {String} col
+' @usage - pCodeColumn 값을 설정한다.
 Public Property Let CodeColumn(col As String)
     pCodeColumn = col
 End Property
 
+' @method CodeColumn
+' @return {String}
+' @usage - pCodeColumn 값을 가져온다.
 Public Property Get CodeColumn() As String
     CodeColumn = pCodeColumn
 End Property
 
+' 데이터를 가져오는 메서드
+' @method ImportData
+' @usage - pVolatilities 컬렉션의 데이터를 Excel 워크시트에 가져온다.
 Public Sub ImportData()
     Dim volCurve As Variant
     Dim termVol As Variant
@@ -86,6 +107,9 @@ Public Sub ImportData()
     Next volCurve
 End Sub
 
+' 빈 셀을 채우는 메서드
+' @method FillEmptyCells
+' @usage - pVolatilities 컬렉션의 데이터를 기반으로 Excel 워크시트에서 빈 셀을 0으로 채운다.
 Public Sub FillEmptyCells()
     Dim headerCell As Range
     Dim rowHeaderCell As Range

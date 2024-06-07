@@ -41,7 +41,7 @@ Sub RunFunc()
             End With
             
             ' 메소드를 사용해서 jsonString을 만들어 준다.
-            JsonString = JsonString & postVolUpdater.GenerateObjectJSON()
+            JsonString = JsonString & postVolUpdater.GenerateObjectJSON2()
             
             firstObject = False
         End If
@@ -50,14 +50,14 @@ Sub RunFunc()
     JsonString = JsonString & "]"
     
     
-'    filePath = "C:\Users\JURO_NEW\Desktop\json_data\volData.json"
-'
-'    fileNumber = FreeFile()
-'    Open filePath For Output As #fileNumber
-'
-'    Print #fileNumber, JsonString
-'
-'    Close #fileNumber
+    filePath = "C:\Users\JURO_NEW\Desktop\json_data\volData240607.json"
+
+    fileNumber = FreeFile()
+    Open filePath For Output As #fileNumber
+
+    Print #fileNumber, JsonString
+
+    Close #fileNumber
     Debug.Print JsonString
     
     ' 필요하다면 jsonString을 URLEncode하고, POST request를 한다.
@@ -72,5 +72,6 @@ Sub RunFunc()
 '     SendPostRequest JsonString, url
     Set requestHandler = New CAsyncRequestHandler
     requestHandler.SendPostRequestAsync JsonString, url
+    'SendPostRequestAsync JsonString, url
 End Sub
 

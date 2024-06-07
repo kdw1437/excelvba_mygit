@@ -16,33 +16,53 @@ Private pWorksheet As Worksheet
 Private pCurrencyCell As Range
 
 ' YieldCurves 프로퍼티 (Collection)
+' @method yieldCurves
+' @param {Collection} value
+' @usage - pYieldCurves 값을 설정한다.
 Public Property Get yieldCurves() As Collection
     Set yieldCurves = pYieldCurves
 End Property
 
+' @method yieldCurves
+' @return {Collection}
+' @usage - pYieldCurves 값을 가져온다.
 Public Property Set yieldCurves(value As Collection)
     Set pYieldCurves = value
 End Property
 
 ' Worksheet 프로퍼티
+' @method Worksheet
+' @param {Worksheet} value
+' @usage - pWorksheet 값을 설정한다.
 Public Property Get Worksheet() As Worksheet
     Set Worksheet = pWorksheet
 End Property
 
+' @method Worksheet
+' @return {Worksheet}
+' @usage - pWorksheet 값을 가져온다.
 Public Property Set Worksheet(value As Worksheet)
     Set pWorksheet = value
 End Property
 
 ' CurrencyCell 프로퍼티 (Range)
+' @method CurrencyCell
+' @param {Range} value
+' @usage - pCurrencyCell 값을 설정한다.
 Public Property Get CurrencyCell() As Range
     Set CurrencyCell = pCurrencyCell
 End Property
 
+' @method CurrencyCell
+' @return {Range}
+' @usage - pCurrencyCell 값을 가져온다.
 Public Property Set CurrencyCell(value As Range)
     Set pCurrencyCell = value
 End Property
 
 ' yield curve data로 worksheet를 채우는 메소드
+' @method PopulateYieldCurveData
+' @usage - yield curve 데이터를 이용해 worksheet를 채운다.
 Public Sub PopulateYieldCurveData()
     Dim yieldCurve As Variant
     Dim yieldData As Variant

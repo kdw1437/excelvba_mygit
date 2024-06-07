@@ -12,75 +12,55 @@ Private pDivCell As Range
 Private pdataIdRange As Range
 
 ' Getter for Worksheet
+' @method Worksheet
+' @return {Worksheet}
+' @usage - worksheet의 getter
 Public Property Get Worksheet() As Worksheet
     Set Worksheet = pWs
 End Property
 
 ' Setter for Worksheet
+' @method Worksheet
+' @param {Worksheet} value
+' @usage - worksheet의 setter
 Public Property Set Worksheet(value As Worksheet)
     Set pWs = value
 End Property
 
 ' Getter for DivCell Range
+' @method DivCell
+' @return {Range}
+' @usage - DivCell range의 getter
 Public Property Get DivCell() As Range
     Set DivCell = pDivCell
 End Property
 
 ' Setter for DivCell Range
+' @method DivCell
+' @param {Range} value
+' @usage - DivCell range의 setter
 Public Property Set DivCell(value As Range)
     Set pDivCell = value
 End Property
 
 ' Getter for DataIdRange
+' @method DataIdRange
+' @return {Range}
+' @usage - DataIdRange의 getter
 Public Property Get DataIdRange() As Range
     Set DataIdRange = pdataIdRange
 End Property
 
 ' Setter for DataIdRange
+' @method DataIdRange
+' @param {Range} value
+' @usage - DataIdRange의 setter
 Public Property Set DataIdRange(value As Range)
     Set pdataIdRange = value
 End Property
 
-' Setter for DivCell Range using a string to define the range
-'Public Property Let DivCell(Address As String)
-'    Set pDivCell = pWs.Range(Address)
-'End Property
-
-' Setter for DataIdRange using a string to define the range
-'Public Property Let DataIdRange(Address As String)
-'    Set pdataIdRange = pWs.Range(Address)
-'End Property
-
-
-Public Function GenerateJson() As String
-    Dim JsonString As String
-    JsonString = "["
-    Dim cell As Range
-    Dim dataId As String
-    Dim yield As Double
-    
-    For Each cell In pdataIdRange
-        dataId = cell.value
-        yield = cell.Offset(0, 1).value
-        Dim jsonObject As String
-        jsonObject = "{""dataId"": """ & dataId & """, ""yield"": " & yield & "}"
-        
-        If Len(JsonString) > 1 Then
-            JsonString = JsonString & ", "
-        End If
-        
-        JsonString = JsonString & jsonObject
-        
-    Next cell
-    
-    JsonString = JsonString & "]"
-    
-    GenerateJson = JsonString
-End Function
-
-' Ensure you have included a reference to the jsonConverter library
-' This might typically involve importing a jsonConverter.bas file into your project
-
+' jsonConverter library에 대한 reference를 필요로 한다.
+' jsonConverter.bas file을 project에 import해야 한다.
 Public Function GenerateJson2() As String
     Dim dataList As Collection
     Set dataList = New Collection
@@ -103,7 +83,7 @@ Public Function GenerateJson2() As String
         dataList.Add item
     Next cell
     
-    ' Convert the collection to a JSON string using jsonConverter
+    ' jsonConverter를 사용해서 JSON string으로 collection을 변경한다.
     GenerateJson2 = JsonConverter.ConvertToJson(dataList)
 End Function
 
