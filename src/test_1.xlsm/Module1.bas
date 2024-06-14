@@ -13,7 +13,7 @@ Sub SendJSON()
     
     xmlhttp.Open "POST", url, False
     
-    xmlhttp.setRequestHeader "Content-Type", "application/x-www-form-urlencoded"
+    xmlhttp.SetRequestHeader "Content-Type", "application/x-www-form-urlencoded"
     
     xmlhttp.Send "officeCd=BO&name=TEST4&valDate=20231228&valTypeCode=P&greekLevel=&contextIds=BO&dataSetIds=Test_4,official&simId=&priority=4&itemCodes=ELS3588"
     
@@ -55,7 +55,7 @@ Sub SendJSON()
         Set xmlhttp2 = CreateObject("WinHttp.WinHttpRequest.5.1")
         
         xmlhttp2.Open "GET", url2, False
-        xmlhttp2.setRequestHeader "Content-Type", "application/x-www-form-urlencoded"
+        xmlhttp2.SetRequestHeader "Content-Type", "application/x-www-form-urlencoded"
         xmlhttp2.Send
         
         response = xmlhttp2.ResponseText
@@ -97,7 +97,7 @@ Sub SendJSON()
     Set xmlhttp3 = CreateObject("WinHttp.WinHttpRequest.5.1")
     
     xmlhttp3.Open "GET", url3, False
-    xmlhttp3.setRequestHeader "Content-Type", "application/x-www-form-urlencoded"
+    xmlhttp3.SetRequestHeader "Content-Type", "application/x-www-form-urlencoded"
     xmlhttp3.Send
     
     response = xmlhttp3.ResponseText

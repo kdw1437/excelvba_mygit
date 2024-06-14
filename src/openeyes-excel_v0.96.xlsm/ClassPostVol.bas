@@ -72,6 +72,6 @@ Sub RunFunc()
 '     SendPostRequest JsonString, url
     Set requestHandler = New CAsyncRequestHandler
     requestHandler.SendPostRequestAsync JsonString, url
-    'SendPostRequestAsync JsonString, url
+    
 End Sub
 

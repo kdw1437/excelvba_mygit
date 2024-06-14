@@ -15,32 +15,48 @@ Private pStartRow As Long
 Private pColumn As String
 
 ' workSheet property
+' @property Get Worksheet
+' @return {Worksheet} worksheet 객체
 Public Property Get Worksheet() As Worksheet
     Set Worksheet = pWorksheet
 End Property
 
+' @property Set Worksheet
+' @param {Worksheet} value
 Public Property Set Worksheet(value As Worksheet)
     Set pWorksheet = value
 End Property
 
 ' starting row Property
+' @property Get StartRow
+' @return {Long} 시작 Row 값
 Public Property Get StartRow() As Long
     StartRow = pStartRow
 End Property
 
+' @property Let StartRow
+' @param {Long} value - 시작 Row 값 Set
 Public Property Let StartRow(value As Long)
     pStartRow = value
 End Property
 
 ' column 식별자 property
+' @property Get Column
+' @return {String} column 식별자
 Public Property Get Column() As String
     Column = pColumn
 End Property
 
+' @property Let Column
+' @param {String} value - column 식별자 Set
 Public Property Let Column(value As String)
     pColumn = value
 End Property
 
+' worksheet data로부터 JSON string을 만든다.
+'
+' @method GenerateJSON
+' @return {String} worksheet로 부터 만든 JSON string 데이터
 Public Function GenerateJSON() As String
     Dim dataCollection As New Collection
     Dim i As Long

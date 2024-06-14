@@ -11,26 +11,35 @@ Sub SendPostRequest(DataString As String, url As String)
     Set xmlhttp = CreateObject("WinHttp.WinHttpRequest.5.1")
     
     ' xmlhttp 객체를 세팅한다. 특정 URL에 synchronous하게 POST request를 한다. xmlhttp객체의 내부 상태를 configure한다.
-    xmlhttp.Open "POST", url, False
+    xmlhttp.Open "POST", url, True
     
     ' request content-type header를 application/x-www-form-urlencoded로 세팅한다.
     xmlhttp.setRequestHeader "Content-Type", "application/x-www-form-urlencoded"
     
-    ' Send the request with the DataString
+    ' DataString과 함께 request를 보낸다.
     xmlhttp.Send "a=" & DataString
     
-    ' Check the status of the request
+    ' request가 완료될 때까지 대기한다.
+    Do While xmlhttp.readyState <> 4
+        DoEvents
+    Loop
+    
+    ' request의 상태를 확인한다.
     If xmlhttp.Status = 200 Then
-        ' If the request was successful, output the response
+        ' request가 성공적이었다면, response를 출력한다.
         MsgBox xmlhttp.responseText
     Else
-        ' If the request failed, output the status
+        ' request가 실패했다면, 상태를 출력한다.
         MsgBox "Error: " & xmlhttp.Status & " - " & xmlhttp.statusText
     End If
     
-    ' Clean up
+    ' 정리
     Set xmlhttp = Nothing
 End Sub
 
 'Internal State는 모든 field를 포함한다. 하지만, 직접적으로 개개의 field에 mapping되지 않는 부가적인 상태 정보도 포함한다. (예) 메소드로 관리되어지는 flag, counter, state variable
 '객체의 Internal state는 현재 데이터(field)와 data가 메서드에 의해서 조작되어진 역사 및 맥락의 결합이다.
+
+
+
+
