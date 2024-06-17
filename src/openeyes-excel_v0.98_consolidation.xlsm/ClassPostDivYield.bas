@@ -21,14 +21,14 @@ Sub ClassPostDivYield()
     
     JsonString = URLEncode(JsonString)
     
-    Dim Ws As Worksheet
-    Set Ws = ThisWorkbook.Sheets("Dividend")
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Dividend")
     
     Dim dataSetId As String
-    dataSetId = Ws.Range("F2").value
+    dataSetId = ws.Range("F2").value
     
     Dim baseDt As String
-    baseDt = Format(Ws.Range("A2").value, "yyyymmdd")
+    baseDt = Format(ws.Range("A2").value, "yyyymmdd")
     
     Dim url As String
     url = "http://localhost:8080/val/marketdata/v1/saveDividends?baseDt=" & baseDt & "&dataSetId=" & dataSetId

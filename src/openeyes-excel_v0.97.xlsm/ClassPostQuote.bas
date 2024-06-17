@@ -1,14 +1,14 @@
 Attribute VB_Name = "ClassPostQuote"
 Sub ConvertRangeToJson()
     Dim PostQuoteUpdaterNew As New PostQuoteUpdaterNew ' Replace with the actual name of your class
-    Dim ws As Worksheet
+    Dim Ws As Worksheet
     Dim rng As Range
     Dim JsonString As String
 
     ' worksheet를 세팅한다.
     
     Set PostQuoteUpdaterNew.Worksheet = ThisWorkbook.Sheets("Quote_2")
-    Set ws = PostQuoteUpdaterNew.Worksheet
+    Set Ws = PostQuoteUpdaterNew.Worksheet
     
     ' 변경하고자 하는 range를 정의한다.
     ' A9cell이 첫번째 데이터의 가장 왼쪽 cell이다.
@@ -18,11 +18,11 @@ Sub ConvertRangeToJson()
     Dim lastRow As Range
     Dim endCell As Range
     
-    Set lastCol = ws.Range("A9").End(xlToRight)
-    Set lastRow = ws.Range("A9").End(xlDown)
-    Set endCell = ws.Cells(lastRow.row, lastCol.Column)
+    Set lastCol = Ws.Range("A9").End(xlToRight)
+    Set lastRow = Ws.Range("A9").End(xlDown)
+    Set endCell = Ws.Cells(lastRow.row, lastCol.Column)
     
-    Set rng = ws.Range("A9", endCell)
+    Set rng = Ws.Range("A9", endCell)
     Set PostQuoteUpdaterNew.Range = rng
     
     ' range안의 데이터를 JSON타입 데이터로 바꾼다.

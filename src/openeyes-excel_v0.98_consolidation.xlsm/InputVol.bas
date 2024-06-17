@@ -10,7 +10,7 @@ Sub Inputvol()
     Dim baseDt As String
     baseDt = Format(ws2.Range("A2").value, "yyyymmdd")
     
-    VoUrlBuilder.baseURL = "http://localhost:8080/val/marketdata/"
+    VoUrlBuilder.baseurl = "http://localhost:8080/val/marketdata/"
     VoUrlBuilder.Version = "v1/"
     VoUrlBuilder.DataParameter = "vols?"
     VoUrlBuilder.baseDt = "baseDt=" & baseDt & "&"
@@ -38,12 +38,12 @@ Sub Inputvol()
             Dim Volatilities As Collection
             Set Volatilities = JsonResponse("response")("volatilities")
             
-            Dim Ws As Worksheet
-            Set Ws = ThisWorkbook.Sheets("Vol")
+            Dim ws As Worksheet
+            Set ws = ThisWorkbook.Sheets("Vol")
             
             Dim importer As New VolUpdaterNew
             With importer
-                Set .Worksheet = Ws
+                Set .Worksheet = ws
                 Set .Volatilities = Volatilities
                 .CodeColumn = "A"
                 .ImportData

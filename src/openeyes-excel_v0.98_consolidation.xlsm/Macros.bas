@@ -65,3 +65,19 @@ Sub DivYieldPostMacro()
     Call ClassPostDivYield.ClassPostDivYield
     
 End Sub
+
+Sub QuotePost()
+
+    Call ConvertRangeToJson.ConvertRangeToJson
+        
+End Sub
+
+Sub Valuation()
+
+    Call ValuationRequest.ValuationRequest
+        
+End Sub
+
+Sub TestImport()
+    ImportGreekData "81"
+End Sub

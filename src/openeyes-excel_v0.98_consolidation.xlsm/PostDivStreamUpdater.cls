@@ -18,7 +18,7 @@ Private pWs As Worksheet
 ' @method ws
 ' @param {Worksheet} value
 ' @usage - worksheet setter이다.
-Public Property Set Ws(ByVal value As Worksheet)
+Public Property Set ws(ByVal value As Worksheet)
     Set pWs = value
 End Property
 
@@ -26,8 +26,8 @@ End Property
 ' @method ws
 ' @return {Worksheet}
 ' @usage - worksheet getter이다.
-Public Property Get Ws() As Worksheet
-    Set Ws = pWs
+Public Property Get ws() As Worksheet
+    Set ws = pWs
 End Property
 
 ' Getter for pArrayOfIndex

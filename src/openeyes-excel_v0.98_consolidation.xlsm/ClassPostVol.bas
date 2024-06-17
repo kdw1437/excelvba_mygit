@@ -2,18 +2,18 @@ Attribute VB_Name = "ClassPostVol"
 Dim requestHandler As CAsyncRequestHandler
 
 Sub RunFunc()
-    Dim Ws As Worksheet
+    Dim ws As Worksheet
     Dim cell As Range
     Dim JsonString As String
     Dim dataId As String
     Dim firstObject As Boolean
     Dim postVolUpdater As postVolUpdater ' 클래스의 인스턴스를 위한 reference variable
     
-    Set Ws = ThisWorkbook.Sheets("Vol")
+    Set ws = ThisWorkbook.Sheets("Vol")
     JsonString = "["
     
     firstObject = True
-    For Each cell In Ws.Range("AD1:AD" & Ws.Cells(Ws.Rows.Count, "AD").End(xlUp).row)
+    For Each cell In ws.Range("AD1:AD" & ws.Cells(ws.Rows.Count, "AD").End(xlUp).row)
         Select Case cell.value
             Case "KOSPI_LV"
                 dataId = "KOSPI200_LOC"
@@ -35,7 +35,7 @@ Sub RunFunc()
             ' 각 cell에 대해서 postVolUpdater class의 인스턴스를 생성
             Set postVolUpdater = New postVolUpdater
             With postVolUpdater
-                Set .Worksheet = Ws
+                Set .Worksheet = ws
                 Set .RefCell = cell
                 .dataId = dataId
             End With

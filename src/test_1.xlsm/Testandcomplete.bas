@@ -3,21 +3,22 @@ Sub SendJSON()
     Dim JsonString As String
     Dim xmlhttp As Object
     
-    ' Define the JSON string directly in the code
+    ' code에서 JSON string을 바로 정의한다.
     JsonString = StrConv("test=test1", vbFromUnicode)
     
-    ' Create a new XML HTTP request
+    ' 새로운 XML HTTP request를 만든다.
     Set xmlhttp = CreateObject("WinHttp.WinHttpRequest.5.1")
     
-    ' The URL to send the request to
+    ' 평가를 요청하는 url
     Dim url As String
     url = "http://urosys-web.juroinstruments.com/app/createValWebJob"
     
-    ' Open the HTTP request as a POST method
+    ' post를 위한 xmlhttp의 메소드 Open 호출
     xmlhttp.Open "POST", url, False
     
     ' Set the request content-type header to application/json
     xmlhttp.SetRequestHeader "Content-Type", "application/x-www-form-urlencoded"
+    
     
     ' Send the request with the JSON string
     xmlhttp.Send "officeCd=BO&name=TEST4&valDate=20231228&valTypeCode=P&greekLevel=&contextIds=BO&dataSetIds=Test_4,official&simId=&priority=4&itemCodes=ELS3588"

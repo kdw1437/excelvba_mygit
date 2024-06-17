@@ -12,8 +12,8 @@ Sub ClassPostDivStream()
     Dim Wst As Worksheet
     Set Wst = ThisWorkbook.Sheets("DiscreteDividend")
     
-    Set divStreamUpdater.Ws = Wst
-    Set divStreamUpdater.TitleCell = divStreamUpdater.Ws.Cells(3, 10)
+    Set divStreamUpdater.ws = Wst
+    Set divStreamUpdater.TitleCell = divStreamUpdater.ws.Cells(3, 10)
     Set divStreamUpdater.startCell = divStreamUpdater.TitleCell.Offset(2, 0)
     
     divStreamUpdater.PopulateArrayOfIndex

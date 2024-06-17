@@ -66,21 +66,21 @@ Public Function GenerateJson2() As String
     Set dataList = New Collection
     
     Dim cell As Range
-    Dim item As Dictionary
+    Dim Item As Dictionary
     Dim dataId As String
     Dim yield As Double
     
     For Each cell In pdataIdRange
-        Set item = New Dictionary
+        Set Item = New Dictionary
         dataId = cell.value
         yield = cell.Offset(0, 1).value
         
-        With item
+        With Item
             .Add "dataId", dataId
             .Add "yield", yield
         End With
         
-        dataList.Add item
+        dataList.Add Item
         DoEvents
     Next cell
     

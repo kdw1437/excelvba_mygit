@@ -4,7 +4,7 @@ Sub InputDisDivRefactor()
     Set discreteDivUrlBuilder = New UrlBuilder
     
     'setter를 이용해서 UrlBuilder의 property를 적절하게 세팅해준다.
-    discreteDivUrlBuilder.baseURL = "http://localhost:8080/val/marketdata/"
+    discreteDivUrlBuilder.baseurl = "http://localhost:8080/val/marketdata/"
     discreteDivUrlBuilder.Version = "v1/"
     discreteDivUrlBuilder.DataParameter = "selectDiscreteDividends?"
     discreteDivUrlBuilder.baseDt = "baseDt=20240320&"
@@ -23,11 +23,11 @@ Sub InputDisDivRefactor()
     Dim discreteDiv As Collection
     Set discreteDiv = JsonResponse("response")("discreteDividendCurves")
     
-    Dim Ws As Worksheet
-    Set Ws = ThisWorkbook.Sheets("DiscreteDividend")
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("DiscreteDividend")
     
     Dim DDcell As Range
-    Set DDcell = Ws.Columns(1).Find(What:="Discrete Dividend", LookIn:=xlValues, LookAt:=xlPart)
+    Set DDcell = ws.Columns(1).Find(What:="Discrete Dividend", LookIn:=xlValues, LookAt:=xlPart)
     
 '    If DDcell Is Nothing Then
 '        Debug.Print "Discrete Dividend not found."
@@ -53,7 +53,7 @@ Sub InputDisDivRefactor()
         
         ' 시작 cell로 부터 끝나는 cell까지 searchRange를 정의한다.
         Dim searchRange As Range
-        Set searchRange = Ws.Range(startCell, Ws.Cells(startCell.row, endCell.Column))
+        Set searchRange = ws.Range(startCell, ws.Cells(startCell.row, endCell.Column))
     Else
         Debug.Print "Discrete Dividend not found."
     End If

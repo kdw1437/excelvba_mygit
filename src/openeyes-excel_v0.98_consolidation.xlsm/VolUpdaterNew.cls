@@ -17,8 +17,8 @@ Private pCodeColumn As String
 ' @method Worksheet
 ' @param {Worksheet} ws
 ' @usage - pWs 값을 설정한다.
-Public Property Set Worksheet(Ws As Worksheet)
-    Set pWs = Ws
+Public Property Set Worksheet(ws As Worksheet)
+    Set pWs = ws
 End Property
 
 ' @method Worksheet

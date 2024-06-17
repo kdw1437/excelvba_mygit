@@ -3,13 +3,13 @@ Sub InputYieldCurve()
     Dim YCUrlBuilder As UrlBuilder
     Set YCUrlBuilder = New UrlBuilder
     
-    Dim Ws As Worksheet
-    Set Ws = ThisWorkbook.Sheets("Market Data")
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Market Data")
     
     Dim baseDt As String
-    baseDt = Format(Ws.Range("A2").value, "yyyymmdd")
+    baseDt = Format(ws.Range("A2").value, "yyyymmdd")
     
-    YCUrlBuilder.baseURL = "http://localhost:8080/val/marketdata/"
+    YCUrlBuilder.baseurl = "http://localhost:8080/val/marketdata/"
     YCUrlBuilder.Version = "v1/"
     YCUrlBuilder.DataParameter = "yieldcurves?"
     'YCUrlBuilder.baseDt = "baseDt=20231228&"
@@ -51,9 +51,9 @@ Sub InputYieldCurve()
 '            Set ws = ThisWorkbook.Sheets("Market Data")
             
             With yieldCurveUpdater1
-                Set .Worksheet = Ws
+                Set .Worksheet = ws
                 Set .yieldCurves = yieldCurves
-                Set .CurrencyCell = Ws.Range("A27:J27")
+                Set .CurrencyCell = ws.Range("A27:J27")
                 .PopulateYieldCurveData
                         
             End With

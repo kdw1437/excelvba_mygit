@@ -11,7 +11,7 @@ Sub InputDivStream()
     baseDt = Format(ws2.Range("A2").value, "yyyymmdd")
     
     'setter를 이용해서 UrlBuilder의 property를 적절하게 세팅해준다.
-    discreteDivUrlBuilder.baseURL = "http://localhost:8080/val/marketdata/"
+    discreteDivUrlBuilder.baseurl = "http://localhost:8080/val/marketdata/"
     discreteDivUrlBuilder.Version = "v1/"
     discreteDivUrlBuilder.DataParameter = "selectDividendStream?"
     discreteDivUrlBuilder.baseDt = "baseDt=" & baseDt & "&"
@@ -39,11 +39,11 @@ Sub InputDivStream()
             Dim dividendStreams As Collection
             Set dividendStreams = JsonResponse("response")("dividendStreams")
             
-            Dim Ws As Worksheet
-            Set Ws = ThisWorkbook.Sheets("DiscreteDividend")
+            Dim ws As Worksheet
+            Set ws = ThisWorkbook.Sheets("DiscreteDividend")
             
             Dim DDcell As Range
-            Set DDcell = Ws.Columns(1).Find(What:="Discrete Dividend", LookIn:=xlValues, LookAt:=xlPart)
+            Set DDcell = ws.Columns(1).Find(What:="Discrete Dividend", LookIn:=xlValues, LookAt:=xlPart)
             
             If Not DDcell Is Nothing Then
                 Dim startCell As Range
@@ -63,7 +63,7 @@ Sub InputDivStream()
                 
                 ' 시작 cell로 부터 끝나는 cell까지 searchRange를 정의한다.
                 Dim searchRange As Range
-                Set searchRange = Ws.Range(startCell, Ws.Cells(startCell.row, endCell.Column))
+                Set searchRange = ws.Range(startCell, ws.Cells(startCell.row, endCell.Column))
             Else
                 Debug.Print "Discrete Dividend not found."
             End If
@@ -71,7 +71,7 @@ Sub InputDivStream()
             Dim divStreamUpdater As divStreamUpdater
             Set divStreamUpdater = New divStreamUpdater
             
-            divStreamUpdater.SetWorksheet Ws.Name
+            divStreamUpdater.SetWorksheet ws.name
             divStreamUpdater.SetDivStreamData dividendStreams
             divStreamUpdater.SetSearchRange searchRange
             divStreamUpdater.UpdateWorksheet

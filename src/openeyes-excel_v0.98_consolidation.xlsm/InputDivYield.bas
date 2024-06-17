@@ -3,14 +3,14 @@ Sub InputDivYield()
     Dim divYieldUrlBuilder As UrlBuilder
     Set divYieldUrlBuilder = New UrlBuilder
     
-    Dim Ws As Worksheet
-    Set Ws = ThisWorkbook.Sheets("Dividend")
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Dividend")
     
     Dim baseDt As String
-    baseDt = Format(Ws.Range("A2").value, "yyyymmdd")
+    baseDt = Format(ws.Range("A2").value, "yyyymmdd")
     
     'setter를 이용해서 UrlBuilder의 property를 적절하게 세팅해준다.
-    divYieldUrlBuilder.baseURL = "http://localhost:8080/val/marketdata/"
+    divYieldUrlBuilder.baseurl = "http://localhost:8080/val/marketdata/"
     divYieldUrlBuilder.Version = "v1/"
     divYieldUrlBuilder.DataParameter = "selectDividends?"
     divYieldUrlBuilder.baseDt = "baseDt=" & baseDt & "&"
@@ -46,7 +46,7 @@ Sub InputDivYield()
             'divYieldUpdater.SetDivRange "A5:A7" '이 부분 하드코딩되어 있는데, 수정 필요할 시 수정
             
             Dim lastRow As Long
-            lastRow = Ws.Range("A5").End(xlDown).row
+            lastRow = ws.Range("A5").End(xlDown).row
             Dim divRange As String
             divRange = "A5:A" & lastRow
             

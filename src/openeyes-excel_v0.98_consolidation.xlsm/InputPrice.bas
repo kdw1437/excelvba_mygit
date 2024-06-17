@@ -3,13 +3,13 @@ Sub InputPrice()
     Dim priceUrlBuilder As UrlBuilder
     Set priceUrlBuilder = New UrlBuilder
     
-    Dim Ws As Worksheet
-    Set Ws = ThisWorkbook.Sheets("Market Data")
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Market Data")
     
     Dim baseDt As String
-    baseDt = Format(Ws.Range("A2").value, "yyyymmdd")
+    baseDt = Format(ws.Range("A2").value, "yyyymmdd")
     'setter를 이용해서 UrlBuilder의 property를 적절하게 세팅해준다.
-    priceUrlBuilder.baseURL = "http://localhost:8080/val/marketdata/"
+    priceUrlBuilder.baseurl = "http://localhost:8080/val/marketdata/"
     priceUrlBuilder.Version = "v1/"
     priceUrlBuilder.DataParameter = "prices?"
     priceUrlBuilder.baseDt = "baseDt=" & baseDt & "&"

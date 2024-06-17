@@ -4,13 +4,13 @@ Sub InputCorrelation()
     Dim corrUrlBuilder As UrlBuilder
     Set corrUrlBuilder = New UrlBuilder
     
-    Dim Ws As Worksheet
-    Set Ws = ThisWorkbook.Sheets("Market Data")
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Market Data")
     
     Dim baseDt As String
-    baseDt = Format(Ws.Range("A2").value, "yyyymmdd")
+    baseDt = Format(ws.Range("A2").value, "yyyymmdd")
     'setter를 이용해서 UrlBuilder의 property를 적절하게 세팅해준다.
-    corrUrlBuilder.baseURL = "http://localhost:8080/val/marketdata/"
+    corrUrlBuilder.baseurl = "http://localhost:8080/val/marketdata/"
     corrUrlBuilder.Version = "v1/"
     corrUrlBuilder.DataParameter = "corrs?"
     
@@ -53,9 +53,9 @@ Sub InputCorrelation()
 '            Set ws = ThisWorkbook.Sheets("Market Data")
             
             Dim equityRow As Integer
-            equityRow = Ws.Columns(1).Find(What:="Equity", LookIn:=xlValues, LookAt:=xlPart).row
+            equityRow = ws.Columns(1).Find(What:="Equity", LookIn:=xlValues, LookAt:=xlPart).row
             Dim fxRow As Integer
-            fxRow = Ws.Columns(1).Find(What:="FX", LookIn:=xlValues, LookAt:=xlWhole).row
+            fxRow = ws.Columns(1).Find(What:="FX", LookIn:=xlValues, LookAt:=xlWhole).row
             
             'Call UpdateCellsWithCorrelation(ws, SelCorrelation, equityRow + 3, equityRow + 4, "CORR", 3)
             'Call UpdateCellsWithCorrelation(ws, SelCorrelation, FXRow + 3, FXRow + 4, "CORR", 4)
@@ -63,7 +63,7 @@ Sub InputCorrelation()
             Set corrUpdater1 = New CorrUpdater
             
             With corrUpdater1
-                Set .Worksheet = Ws
+                Set .Worksheet = ws
                 Set .SelCorrelation = corrs
                 .ColumnNameRow = equityRow + 3
                 .StartRow = equityRow + 4

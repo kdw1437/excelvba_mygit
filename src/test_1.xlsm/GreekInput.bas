@@ -76,3 +76,9 @@ Sub ImportGreek()
     
     
 End Sub
+
+
+Sub TestImport()
+    ImportGreekData "81"  ' Replace "12345" with the actual jobId you want to use
+End Sub
+
