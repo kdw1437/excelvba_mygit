@@ -56,9 +56,14 @@ Sub ClassPostYieldCurve()
     ' DataString¿ª encoding«—¥Ÿ. (x-www-form-urlencoded)
     DataString = URLEncode(DataString)
 
+    Dim dataSetId As String
+    dataSetId = ws.Range("O2").value
+    
+    Dim baseDt As String
+    baseDt = Format(ws.Range("A2").value, "yyyymmdd")
     
     Dim url As String
-    url = "http://localhost:8080/val/marketdata/v1/saveYieldcurves?baseDt=20231228&dataSetId=TEST19"
+    url = "http://localhost:8080/val/marketdata/v1/saveYieldcurves?baseDt=" & baseDt & "&dataSetId=" & dataSetId
     'url = "http://localhost:8080/val/marketdata/v1/saveYieldcurves?baseDt=20231229"
     
     Set requestHandler = New CAsyncRequestHandler

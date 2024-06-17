@@ -1,4 +1,5 @@
 Attribute VB_Name = "ClassPostPrice"
+Dim requestHandler As CAsyncRequestHandler
 Sub ClassPostPrice()
     Dim ws As Worksheet
     Set ws = ThisWorkbook.Sheets("Market Data")
@@ -25,10 +26,21 @@ Sub ClassPostPrice()
     
     Debug.Print DataString
     DataString = URLEncode(DataString)
+    
+    Dim dataSetId As String
+    dataSetId = ws.Range("O2").value
+    
+    Dim baseDt As String
+    baseDt = Format(ws.Range("A2").value, "yyyymmdd")
+    
     Dim url As String
-    url = "http://localhost:8080/val/marketdata/v1/savePrices?baseDt=20231228&dataSetId=TEST13"
+    url = "http://localhost:8080/val/marketdata/v1/savePrices?baseDt=" & baseDt & "&dataSetId=" & dataSetId
     
     ' JSON data와 POST request를 보내기 위해 subroutine을 호출한다.
-    SendPostRequest DataString, url
+    ' SendPostRequest DataString, url
+    Set requestHandler = New CAsyncRequestHandler
+    ' POST request를 보낸다.
+    'SendPostRequest DataString, url
+    requestHandler.SendPostRequestAsync DataString, url
 End Sub
 

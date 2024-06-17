@@ -101,9 +101,12 @@ Public Sub ImportData()
                         r = tenorCell.row
                         pWs.Cells(r, c).value = volEntry("vol")
                     End If
+                    DoEvents
                 Next volEntry
+                DoEvents
             Next termVol
         End If
+        DoEvents
     Next volCurve
 End Sub
 
@@ -138,11 +141,14 @@ Public Sub FillEmptyCells()
                     If IsEmpty(dataCell.value) Then
                         dataCell.value = 0
                     End If
+                    DoEvents
                 Next rowHeaderCell
+                DoEvents
             Next headerCell
             
             
         End If
+        DoEvents
     Next volCurve
     
 End Sub

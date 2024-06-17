@@ -1,4 +1,5 @@
 Attribute VB_Name = "ClassPostCorrhardcoded"
+Dim requestHandler As CAsyncRequestHandler
 Sub PrintJsonString()
     Dim ws As Worksheet
     Set ws = ThisWorkbook.Sheets("Market Data")
@@ -22,11 +23,22 @@ Sub PrintJsonString()
     DataString = postCorrUpdater.CorrJsonv2()
     Debug.Print DataString
     DataString = URLEncode(DataString)
-    Dim url As String
-    url = "http://localhost:8080/val/marketdata/v1/saveCorrs?baseDt=20231228&dataSetId=TEST11&matrixId=CORR"
     
+    Dim dataSetId As String
+    dataSetId = ws.Range("O2").value
+    
+    Dim baseDt As String
+    baseDt = Format(ws.Range("A2").value, "yyyymmdd")
+    
+    Dim url As String
+    'url = "http://localhost:8080/val/marketdata/v1/saveCorrs?baseDt=20231228&dataSetId=TEST11&matrixId=CORR"
+    url = "http://localhost:8080/val/marketdata/v1/saveCorrs?baseDt=" & baseDt & "&dataSetId=" & dataSetId & "&matrixId=CORR"
     ' JSON data와 POST request를 보내기 위해 subroutine을 호출한다.
-    SendPostRequest DataString, url
+    'SendPostRequest DataString, url
+    Set requestHandler = New CAsyncRequestHandler
+    ' POST request를 보낸다.
+    'SendPostRequest DataString, url
+    requestHandler.SendPostRequestAsync DataString, url
 End Sub
 
 Sub PrintJsonString2()
@@ -54,7 +66,20 @@ Sub PrintJsonString2()
     DataString = URLEncode(DataString)
     
     
-        
+    Dim dataSetId As String
+    dataSetId = ws.Range("O2").value
+    
+    Dim baseDt As String
+    baseDt = Format(ws.Range("A2").value, "yyyymmdd")
+    
+    Dim url As String
+    'url = "http://localhost:8080/val/marketdata/v1/saveCorrs?baseDt=20231228&dataSetId=TEST11&matrixId=CORR"
+    url = "http://localhost:8080/val/marketdata/v1/saveCorrs?baseDt=" & baseDt & "&dataSetId=" & dataSetId & "&matrixId=CORR"
+    ' JSON data와 POST request를 보내기 위해 subroutine을 호출한다.
+    Set requestHandler = New CAsyncRequestHandler
+    ' POST request를 보낸다.
+    'SendPostRequest DataString, url
+    requestHandler.SendPostRequestAsync DataString, url
         
         
 End Sub

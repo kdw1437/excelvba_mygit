@@ -62,7 +62,9 @@ Public Function CorrJsonh2() As String
                     uniquePairs.Add dataId1 & ":" & dataId2, Nothing
                 End If
             End If
+            DoEvents
         Next hCell
+        DoEvents
     Next vCell
 
     CorrJsonh2 = JsonConverter.ConvertToJson(correlationData)
@@ -100,7 +102,9 @@ Public Function CorrJsonv2() As String
                     uniquePairs.Add dataId1 & ":" & dataId2, Nothing
                 End If
             End If
+            DoEvents
         Next hCell
+        DoEvents
     Next vCell
 
     CorrJsonv2 = JsonConverter.ConvertToJson(correlationData)

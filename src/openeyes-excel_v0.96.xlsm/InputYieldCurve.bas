@@ -3,10 +3,17 @@ Sub InputYieldCurve()
     Dim YCUrlBuilder As UrlBuilder
     Set YCUrlBuilder = New UrlBuilder
     
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Market Data")
+    
+    Dim baseDt As String
+    baseDt = Format(ws.Range("A2").value, "yyyymmdd")
+    
     YCUrlBuilder.baseURL = "http://localhost:8080/val/marketdata/"
     YCUrlBuilder.Version = "v1/"
     YCUrlBuilder.DataParameter = "yieldcurves?"
-    YCUrlBuilder.baseDt = "baseDt=20231228&"
+    'YCUrlBuilder.baseDt = "baseDt=20231228&"
+    YCUrlBuilder.baseDt = "baseDt=" & baseDt & "&"
     YCUrlBuilder.DataIds = "dataIds=KRWIRSZ,JPYIRSZ,EURIRSZ,HKDIRSZ,USDIRSZ"
     
     Dim YCUrl As String
@@ -14,8 +21,11 @@ Sub InputYieldCurve()
     
     Debug.Print YCUrl
     
+    Dim JsonString As String
+    JsonString = GetHttpResponseText2(YCUrl)
+    
     Dim JsonResponse As Object
-    Set JsonResponse = GetJsonResponse(YCUrl)
+    Set JsonResponse = JsonConverter.ParseJson(JsonString)
     
     If JsonResponse.Exists("code") Then
         If JsonResponse("code") = "ERROR" Then
@@ -37,8 +47,8 @@ Sub InputYieldCurve()
             Dim yieldCurveUpdater1 As YieldCurveUpdater
             Set yieldCurveUpdater1 = New YieldCurveUpdater
                 
-            Dim ws As Worksheet
-            Set ws = ThisWorkbook.Sheets("Market Data")
+'            Dim ws As Worksheet
+'            Set ws = ThisWorkbook.Sheets("Market Data")
             
             With yieldCurveUpdater1
                 Set .Worksheet = ws

@@ -176,6 +176,8 @@ Public Sub UpdatePricesOptimized()
             If priceDict.Exists(codeValue) Then
                 pWs.Cells(StartRow + i - 1, 2).value = priceDict(codeValue)
             End If
+            
+            DoEvents
         Next i
     End If
 End Sub

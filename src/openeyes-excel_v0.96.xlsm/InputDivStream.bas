@@ -4,11 +4,17 @@ Sub InputDivStream()
     Dim discreteDivUrlBuilder As UrlBuilder
     Set discreteDivUrlBuilder = New UrlBuilder
     
+    Dim ws2 As Worksheet
+    Set ws2 = ThisWorkbook.Sheets("DiscreteDividend")
+    
+    Dim baseDt As String
+    baseDt = Format(ws2.Range("A2").value, "yyyymmdd")
+    
     'setter를 이용해서 UrlBuilder의 property를 적절하게 세팅해준다.
     discreteDivUrlBuilder.baseURL = "http://localhost:8080/val/marketdata/"
     discreteDivUrlBuilder.Version = "v1/"
     discreteDivUrlBuilder.DataParameter = "selectDividendStream?"
-    discreteDivUrlBuilder.baseDt = "baseDt=20240320&"
+    discreteDivUrlBuilder.baseDt = "baseDt=" & baseDt & "&"
     discreteDivUrlBuilder.DataIds = "dataIds=KOSPI200_D,SPX_D"
     
     '메서드 이용, return값이 full url.
@@ -16,7 +22,7 @@ Sub InputDivStream()
     discreteDivUrl = discreteDivUrlBuilder.MakeUrl
     
     Dim JsonString As String
-    JsonString = GetHttpResponseText(discreteDivUrl)
+    JsonString = GetHttpResponseText2(discreteDivUrl)
     
     Dim JsonResponse As Object
     Set JsonResponse = JsonConverter.ParseJson(JsonString)

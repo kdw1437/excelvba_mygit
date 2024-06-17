@@ -4,11 +4,18 @@ Sub InputCorrelation()
     Dim corrUrlBuilder As UrlBuilder
     Set corrUrlBuilder = New UrlBuilder
     
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Market Data")
+    
+    Dim baseDt As String
+    baseDt = Format(ws.Range("A2").value, "yyyymmdd")
     'setter를 이용해서 UrlBuilder의 property를 적절하게 세팅해준다.
     corrUrlBuilder.baseURL = "http://localhost:8080/val/marketdata/"
     corrUrlBuilder.Version = "v1/"
     corrUrlBuilder.DataParameter = "corrs?"
-    corrUrlBuilder.baseDt = "baseDt=20231228&"
+    
+    corrUrlBuilder.baseDt = "baseDt=" & baseDt & "&"
+    'corrUrlBuilder.baseDt = "baseDt=20231228&"
     corrUrlBuilder.DataIds = "dataIds=FXKRWHKD,HSI,HSCEI,KOSPI200,FXKRWJPY,EUROSTOXX,N225,FXKRWEUR"
     
     '메서드 이용, return값이 full url.
@@ -18,7 +25,7 @@ Sub InputCorrelation()
     Debug.Print corrUrl
     
     Dim JsonString As String
-    JsonString = GetHttpResponseText(corrUrl)
+    JsonString = GetHttpResponseText2(corrUrl)
     Debug.Print JsonString
     Dim JsonResponse As Object
     Set JsonResponse = JsonConverter.ParseJson(JsonString)
@@ -42,8 +49,8 @@ Sub InputCorrelation()
     '    Dim corrs As Collection
     '    Set corrs = JsonResponse("response")("correlations")
         
-            Dim ws As Worksheet
-            Set ws = ThisWorkbook.Sheets("Market Data")
+'            Dim ws As Worksheet
+'            Set ws = ThisWorkbook.Sheets("Market Data")
             
             Dim equityRow As Integer
             equityRow = ws.Columns(1).Find(What:="Equity", LookIn:=xlValues, LookAt:=xlPart).row

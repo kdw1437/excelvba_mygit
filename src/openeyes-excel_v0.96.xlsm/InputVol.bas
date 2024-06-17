@@ -4,10 +4,16 @@ Sub Inputvol()
     Dim VoUrlBuilder As UrlBuilder
     Set VoUrlBuilder = New UrlBuilder
     
+    Dim ws2 As Worksheet
+    Set ws2 = ThisWorkbook.Sheets("Market Data")
+    
+    Dim baseDt As String
+    baseDt = Format(ws2.Range("A2").value, "yyyymmdd")
+    
     VoUrlBuilder.baseURL = "http://localhost:8080/val/marketdata/"
     VoUrlBuilder.Version = "v1/"
     VoUrlBuilder.DataParameter = "vols?"
-    VoUrlBuilder.baseDt = "baseDt=20231228&"
+    VoUrlBuilder.baseDt = "baseDt=" & baseDt & "&"
     VoUrlBuilder.DataIds = "dataIds=HSCEI_LOC,HSI_LOC,N225_LOC,KOSPI200_LOC"
     
     Dim VoUrl As String
@@ -15,8 +21,11 @@ Sub Inputvol()
     
     Debug.Print VoUrl
     
+    Dim JsonString As String
+    JsonString = GetHttpResponseText2(VoUrl)
+    
     Dim JsonResponse As Object
-    Set JsonResponse = GetJsonResponse(VoUrl)
+    Set JsonResponse = JsonConverter.ParseJson(JsonString)
     
     If JsonResponse.Exists("code") Then
         If JsonResponse("code") = "ERROR" Then

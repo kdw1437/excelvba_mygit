@@ -3,11 +3,16 @@ Sub InputPrice()
     Dim priceUrlBuilder As UrlBuilder
     Set priceUrlBuilder = New UrlBuilder
     
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Market Data")
+    
+    Dim baseDt As String
+    baseDt = Format(ws.Range("A2").value, "yyyymmdd")
     'setter를 이용해서 UrlBuilder의 property를 적절하게 세팅해준다.
     priceUrlBuilder.baseURL = "http://localhost:8080/val/marketdata/"
     priceUrlBuilder.Version = "v1/"
     priceUrlBuilder.DataParameter = "prices?"
-    priceUrlBuilder.baseDt = "baseDt=20231228&"
+    priceUrlBuilder.baseDt = "baseDt=" & baseDt & "&"
     priceUrlBuilder.DataIds = "dataIds=KOSPI200,SPX,N225,EUROSTOXX,HSCEI,HSI,KR7035420009"
     
     '메서드 이용, return값이 full url.
@@ -17,7 +22,7 @@ Sub InputPrice()
     Debug.Print priceUrl
     
     Dim JsonString As String
-    JsonString = GetHttpResponseText(priceUrl)
+    JsonString = GetHttpResponseText2(priceUrl)
     
     Dim JsonResponse As Object
     Set JsonResponse = JsonConverter.ParseJson(JsonString)

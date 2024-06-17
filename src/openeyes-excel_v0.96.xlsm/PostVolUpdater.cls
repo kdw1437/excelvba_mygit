@@ -129,12 +129,14 @@ Public Function GenerateObjectJSON2() As String
             termVol.Add "tenor", termVolCell.value
             termVol.Add "vol", pWorksheet.Cells(termVolCell.row, volFactorCell.Column).value
             termVols.Add termVol
+            DoEvents
         Next termVolCell
         
         Set volCurve = New Dictionary
         volCurve.Add "volFactor", volFactorCell.value
         volCurve.Add "termVols", termVols
         volCurves.Add volCurve
+        DoEvents
     Next volFactorCell
     
     ' Create the main dictionary to hold dataId and volCurves

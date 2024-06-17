@@ -144,7 +144,13 @@ Public Function UpdateCorrelations() As Boolean
                     End If
                 End If
             Next correlation
+            
+            DoEvents
+            
         Next rowIndex
+        
+        DoEvents
+        
     Next ColumnIndex
     
     UpdateCorrelations = True

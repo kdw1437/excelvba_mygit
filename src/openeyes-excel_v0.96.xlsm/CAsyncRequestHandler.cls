@@ -24,7 +24,7 @@ End Sub
 ' Event handler for state change
 Private Sub xmlhttp_OnResponseFinished()
     If xmlhttp.Status = 200 Then
-        MsgBox xmlhttp.responseText ' Show the server response
+        'MsgBox xmlhttp.responseText ' Show the server response
     Else
         MsgBox "Error: " & xmlhttp.Status & " - " & xmlhttp.statusText
     End If
@@ -34,7 +34,7 @@ End Sub
 Private Sub xmlhttp_OnReadyStateChange()
     If xmlhttp.readyState = 4 Then ' Check if the request is complete
         If xmlhttp.Status = 200 Then
-            MsgBox xmlhttp.responseText ' Show the server response
+            'MsgBox xmlhttp.responseText ' Show the server response
         Else
             MsgBox "Error: " & xmlhttp.Status & " - " & xmlhttp.statusText
         End If

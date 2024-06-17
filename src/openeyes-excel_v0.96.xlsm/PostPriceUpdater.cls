@@ -82,6 +82,7 @@ Public Function GenerateJson2() As String
         
         ' dictionary를 collection에 추가한다.
         dataList.Add dataDict
+        DoEvents
     Next i
     
     ' collection을 JsonString으로 바꾸기 위해, ConvertToJson 메소드를 이용한다.

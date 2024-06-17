@@ -98,8 +98,11 @@ Public Sub PopulateYieldCurveData()
                 pWorksheet.Cells(dataRow, tenorColumn).value = yieldData("tenor")
                 pWorksheet.Cells(dataRow, rateColumn).value = yieldData("rate")
                 dataRow = dataRow + 1
+                DoEvents
             Next yieldData
         End If
+        DoEvents
+
     Next yieldCurve
 End Sub
 

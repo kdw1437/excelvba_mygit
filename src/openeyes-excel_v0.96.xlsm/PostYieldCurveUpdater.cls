@@ -121,6 +121,7 @@ Public Function GenerateDataString2() As String
                 yieldObject.Add "rate", pYieldCurveRow.Offset(3 + j, (i - 1) * 2 + 1).value
                 yieldsArray.Add yieldObject
                 j = j + 1
+                DoEvents
             Loop
 
             Dim currencyData As New Dictionary
@@ -130,6 +131,7 @@ Public Function GenerateDataString2() As String
             currencyData.Add "currency", Left(InterestName, 3)
             currencyData.Add "yields", yieldsArray
             dataArray.Add currencyData
+            DoEvents
         Next i
          
     End If

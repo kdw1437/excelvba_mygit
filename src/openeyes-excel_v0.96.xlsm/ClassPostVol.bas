@@ -45,28 +45,36 @@ Sub RunFunc()
             
             firstObject = False
         End If
+        DoEvents
     Next cell
     
     JsonString = JsonString & "]"
     
     
-    filePath = "C:\Users\JURO_NEW\Desktop\json_data\volData240607.json"
-
-    fileNumber = FreeFile()
-    Open filePath For Output As #fileNumber
-
-    Print #fileNumber, JsonString
-
-    Close #fileNumber
+'    filePath = "C:\Users\JURO_NEW\Desktop\json_data\volData240607.json"
+'
+'    fileNumber = FreeFile()
+'    Open filePath For Output As #fileNumber
+'
+'    Print #fileNumber, JsonString
+'
+'    Close #fileNumber
     Debug.Print JsonString
     
     ' 필요하다면 jsonString을 URLEncode하고, POST request를 한다.
     JsonString = URLEncode(JsonString)
     
-
+    Dim ws2 As Worksheet
+    Set ws2 = ThisWorkbook.Sheets("Market Data")
+    
+    Dim dataSetId As String
+    dataSetId = ws2.Range("O2").value
+    
+    Dim baseDt As String
+    baseDt = Format(ws2.Range("A2").value, "yyyymmdd")
     ' request에 대한 URL
     Dim url As String
-    url = "http://localhost:8080/val/marketdata/v1/saveVols?baseDt=20231228&dataSetId=TEST16"
+    url = "http://localhost:8080/val/marketdata/v1/saveVols?baseDt=" & baseDt & "&dataSetId=" & dataSetId
     
     ' Send the POST request - Assuming SendPostRequest is a subroutine you have defined elsewhere
 '     SendPostRequest JsonString, url
