@@ -19,14 +19,14 @@ Sub ClassPostYieldCurve()
     
     ' "Equity" table 다음에 "FX"를 포함하는 cell을 찾는다.
     Dim fxRow As Range 'Range객체는 하나 혹은 다수의 cell을 참조한다.
-    Set fxRow = ws.Range(Table1Point.Offset(1, 0), ws.Cells(lastRow, Table1Point.Column)).Find(What:="FX", LookIn:=xlValues, LookAt:=xlWhole)
+    Set fxRow = ws.Range(Table1Point.Offset(1, 0), ws.Cells(lastRow, Table1Point.Column)).Find(What:="FX", LookIn:=xlValues, Lookat:=xlWhole)
     'range안에 Table1Point 칼럼 영역 내에서 FX string을 찾는다. xlValues(formula가 아닌 cell값을 확인한다.) xlWhole (전체 셀의 내용이 찾는 단어와 완벽하게 일치함을 의미한다.)
     
     Dim Table2Point As Range
     Set Table2Point = fxRow.Offset(3, 0)
     
     Dim YieldCurveRow As Range
-    Set YieldCurveRow = ws.Range(Table1Point.Offset(1, 0), ws.Cells(lastRow, Table1Point.Column)).Find(What:="Yield Curve", LookIn:=xlValues, LookAt:=xlWhole)
+    Set YieldCurveRow = ws.Range(Table1Point.Offset(1, 0), ws.Cells(lastRow, Table1Point.Column)).Find(What:="Yield Curve", LookIn:=xlValues, Lookat:=xlWhole)
     'Debug.Print Table2Point.value
 
     Dim DATA_ID_Cell1 As Range
@@ -34,7 +34,7 @@ Sub ClassPostYieldCurve()
     ' Set StartCell
     
     
-    Set ycUpdater.startCell = DATA_ID_Cell1
+    Set ycUpdater.StartCell = DATA_ID_Cell1
 
 
     ' Set YieldCurveRow

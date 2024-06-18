@@ -66,7 +66,7 @@ End Property
 ' @method startCell
 ' @param {Range} value
 ' @usage - start cell의 setter이다.
-Public Property Set startCell(value As Range)
+Public Property Set StartCell(value As Range)
     Set pStartCell = value
 End Property
 
@@ -74,8 +74,8 @@ End Property
 ' @method startCell
 ' @return {Range}
 ' @usage - start cell의 getter이다.
-Public Property Get startCell() As Range
-    Set startCell = pStartCell
+Public Property Get StartCell() As Range
+    Set StartCell = pStartCell
 End Property
 
 Private Sub Class_Initialize()

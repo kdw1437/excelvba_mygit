@@ -14,11 +14,11 @@ Sub InputDisDivRefactor()
     Dim discreteDivUrl As String
     discreteDivUrl = discreteDivUrlBuilder.MakeUrl
     
-    Dim JsonString As String
-    JsonString = GetHttpResponseText(discreteDivUrl)
+    Dim jsonString As String
+    jsonString = GetHttpResponseText(discreteDivUrl)
     
     Dim JsonResponse As Object
-    Set JsonResponse = JsonConverter.ParseJson(JsonString)
+    Set JsonResponse = JsonConverter.ParseJson(jsonString)
     
     Dim discreteDiv As Collection
     Set discreteDiv = JsonResponse("response")("discreteDividendCurves")
@@ -27,7 +27,7 @@ Sub InputDisDivRefactor()
     Set ws = ThisWorkbook.Sheets("DiscreteDividend")
     
     Dim DDcell As Range
-    Set DDcell = ws.Columns(1).Find(What:="Discrete Dividend", LookIn:=xlValues, LookAt:=xlPart)
+    Set DDcell = ws.Columns(1).Find(What:="Discrete Dividend", LookIn:=xlValues, Lookat:=xlPart)
     
 '    If DDcell Is Nothing Then
 '        Debug.Print "Discrete Dividend not found."
@@ -36,14 +36,14 @@ Sub InputDisDivRefactor()
     
     ' searchRange 설정
     If Not DDcell Is Nothing Then
-        Dim startCell As Range
-        Set startCell = DDcell.Offset(2, 0) ' 같은 column에서 DDcell로부터 2 row 밑에서 시작한다.
+        Dim StartCell As Range
+        Set StartCell = DDcell.Offset(2, 0) ' 같은 column에서 DDcell로부터 2 row 밑에서 시작한다.
         
         Dim endCell As Range
-        Set endCell = startCell ' startCell로 endCell을 초기화한다.
+        Set endCell = StartCell ' startCell로 endCell을 초기화한다.
         
         Dim cellToCheck As Range
-        Set cellToCheck = startCell ' cellToCheck를 startCell로 초기화한다.
+        Set cellToCheck = StartCell ' cellToCheck를 startCell로 초기화한다.
         
         ' 한 셀 씩 건너뛰면서 체크해서 마지막 셀을 찾아낸다.
         Do While Not IsEmpty(cellToCheck.value)
@@ -53,7 +53,7 @@ Sub InputDisDivRefactor()
         
         ' 시작 cell로 부터 끝나는 cell까지 searchRange를 정의한다.
         Dim searchRange As Range
-        Set searchRange = ws.Range(startCell, ws.Cells(startCell.row, endCell.Column))
+        Set searchRange = ws.Range(StartCell, ws.Cells(StartCell.row, endCell.Column))
     Else
         Debug.Print "Discrete Dividend not found."
     End If

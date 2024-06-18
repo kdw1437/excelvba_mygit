@@ -21,11 +21,11 @@ Sub Inputvol()
     
     Debug.Print VoUrl
     
-    Dim JsonString As String
-    JsonString = GetHttpResponseText2(VoUrl)
+    Dim jsonString As String
+    jsonString = GetHttpResponseText2(VoUrl)
     
     Dim JsonResponse As Object
-    Set JsonResponse = JsonConverter.ParseJson(JsonString)
+    Set JsonResponse = JsonConverter.ParseJson(jsonString)
     
     If JsonResponse.Exists("code") Then
         If JsonResponse("code") = "ERROR" Then

@@ -65,14 +65,14 @@ End Property
 ' @method StartRow
 ' @return {Integer}
 ' @usage - pStartRow 값을 가져온다.
-Public Property Get StartRow() As Integer
-    StartRow = pStartRow
+Public Property Get startRow() As Integer
+    startRow = pStartRow
 End Property
 
 ' @method StartRow
 ' @param {Integer} value
 ' @usage - pStartRow 값을 설정한다.
-Public Property Let StartRow(value As Integer)
+Public Property Let startRow(value As Integer)
     pStartRow = value
 End Property
 

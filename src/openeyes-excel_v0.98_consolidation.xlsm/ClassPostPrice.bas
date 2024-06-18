@@ -12,7 +12,7 @@ Sub ClassPostPrice()
     
     ' Equity table 다음에 위치하는 FX를 포함하는 cell을 찾는다.
     Dim fxRow As Range
-    Set fxRow = ws.Range(Table1Point.Offset(1, 0), ws.Cells(ws.Rows.Count, Table1Point.Column)).Find(What:="FX", LookIn:=xlValues, LookAt:=xlWhole)
+    Set fxRow = ws.Range(Table1Point.Offset(1, 0), ws.Cells(ws.Rows.Count, Table1Point.Column)).Find(What:="FX", LookIn:=xlValues, Lookat:=xlWhole)
 
     Dim PostPriceUpdater As New PostPriceUpdater
     With PostPriceUpdater

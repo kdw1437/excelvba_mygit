@@ -34,7 +34,7 @@ End Property
 
 Public Function makeJsonString2() As String
 
-    Dim JsonString As String
+    Dim jsonString As String
     Dim row As Range
     Dim adjustedRange As Range
     Set adjustedRange = pRange.Offset(1, 0).Resize(pRange.Rows.Count - 1, pRange.Columns.Count)
@@ -81,8 +81,8 @@ Public Function makeJsonString2() As String
         
     Next row
     
-    JsonString = JsonConverter.ConvertToJson(JsonCollection)
-    makeJsonString2 = JsonString
+    jsonString = JsonConverter.ConvertToJson(JsonCollection)
+    makeJsonString2 = jsonString
     
     
 End Function

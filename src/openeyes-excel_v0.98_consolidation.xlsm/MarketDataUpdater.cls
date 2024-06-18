@@ -47,13 +47,13 @@ End Property
 ' @usage - 'Equity' 행을 찾아 해당 데이터로 가격을 업데이트한다.
 Public Sub UpdatePrices()
     Dim equityRow As Range
-    Set equityRow = pWs.Columns(1).Find(What:="Equity", LookIn:=xlValues, LookAt:=xlPart)
+    Set equityRow = pWs.Columns(1).Find(What:="Equity", LookIn:=xlValues, Lookat:=xlPart)
     
     If Not equityRow Is Nothing Then
-        Dim StartRow As Integer
-        StartRow = equityRow.row + 4
+        Dim startRow As Integer
+        startRow = equityRow.row + 4
         
-        UpdatePriceForCodes StartRow
+        UpdatePriceForCodes startRow
     End If
 End Sub
 
@@ -61,11 +61,11 @@ End Sub
 ' @method UpdatePriceForCodes
 ' @param {Integer} StartRow - 시작 행 번호
 ' @usage - 코드별로 가격을 업데이트한다.
-Private Sub UpdatePriceForCodes(StartRow As Integer)
+Private Sub UpdatePriceForCodes(startRow As Integer)
     Dim codeCell As Range
     Dim codeValue As String
     
-    For Each codeCell In pWs.Range(pWs.Cells(StartRow, 1), pWs.Cells(pWs.Rows.Count, 1))
+    For Each codeCell In pWs.Range(pWs.Cells(startRow, 1), pWs.Cells(pWs.Rows.Count, 1))
         
         If IsEmpty(codeCell.value) Then Exit For
 
@@ -102,18 +102,18 @@ End Sub
 ' @usage - 'Equity' 행을 찾아 해당 데이터로 가격을 업데이트한다.
 Public Sub UpdatePrices2()
     Dim equityRow As Range
-    Set equityRow = pWs.Columns(1).Find(What:="Equity", LookIn:=xlValues, LookAt:=xlPart)
+    Set equityRow = pWs.Columns(1).Find(What:="Equity", LookIn:=xlValues, Lookat:=xlPart)
     
     If Not equityRow Is Nothing Then
-        Dim StartRow As Integer
-        StartRow = equityRow.row + 4
+        Dim startRow As Integer
+        startRow = equityRow.row + 4
         
         Dim codeCell As Range
         Dim codeValue As String
         Dim priceInfo As Variant
         Dim i As Integer
         
-        For Each codeCell In pWs.Range(pWs.Cells(StartRow, 1), pWs.Cells(pWs.Rows.Count, 1))
+        For Each codeCell In pWs.Range(pWs.Cells(startRow, 1), pWs.Cells(pWs.Rows.Count, 1))
             If IsEmpty(codeCell.value) Then Exit For
 
             codeValue = codeCell.value
@@ -136,14 +136,14 @@ End Sub
 ' @usage - Dictionary 객체를 사용하여 빠르게 가격을 업데이트한다.
 Public Sub UpdatePricesOptimized()
     Dim equityRow As Range
-    Set equityRow = pWs.Columns(1).Find(What:="Equity", LookIn:=xlValues, LookAt:=xlPart)
+    Set equityRow = pWs.Columns(1).Find(What:="Equity", LookIn:=xlValues, Lookat:=xlPart)
     
     If Not equityRow Is Nothing Then
-        Dim StartRow As Integer
-        StartRow = equityRow.row + 4
+        Dim startRow As Integer
+        startRow = equityRow.row + 4
         
         Dim lastRow As Long
-        lastRow = pWs.Cells(StartRow, 1).End(xlDown).row
+        lastRow = pWs.Cells(startRow, 1).End(xlDown).row
         
         Dim codeCell As Range
         Dim codeValue As String
@@ -164,7 +164,7 @@ Public Sub UpdatePricesOptimized()
         ' range로 부터 읽어낸 데이터를 저장하기 위해 변수 선언
         Dim dataArray As Variant
         ' codeRange를 특정 range로 선언
-        Set codeRange = pWs.Range(pWs.Cells(StartRow, 1), pWs.Cells(lastRow, 1))
+        Set codeRange = pWs.Range(pWs.Cells(startRow, 1), pWs.Cells(lastRow, 1))
         ' 특정 range로부터 값을 읽어와서 dataArray에 저장
         dataArray = codeRange.value
         
@@ -174,7 +174,7 @@ Public Sub UpdatePricesOptimized()
             If IsEmpty(codeValue) Then Exit For
             
             If priceDict.Exists(codeValue) Then
-                pWs.Cells(StartRow + i - 1, 2).value = priceDict(codeValue)
+                pWs.Cells(startRow + i - 1, 2).value = priceDict(codeValue)
             End If
             
             DoEvents

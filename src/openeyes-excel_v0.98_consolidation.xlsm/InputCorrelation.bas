@@ -24,11 +24,11 @@ Sub InputCorrelation()
     
     Debug.Print corrUrl
     
-    Dim JsonString As String
-    JsonString = GetHttpResponseText2(corrUrl)
-    Debug.Print JsonString
+    Dim jsonString As String
+    jsonString = GetHttpResponseText2(corrUrl)
+    Debug.Print jsonString
     Dim JsonResponse As Object
-    Set JsonResponse = JsonConverter.ParseJson(JsonString)
+    Set JsonResponse = JsonConverter.ParseJson(jsonString)
     
     ' Check for error in the response
     If JsonResponse.Exists("code") Then
@@ -53,9 +53,9 @@ Sub InputCorrelation()
 '            Set ws = ThisWorkbook.Sheets("Market Data")
             
             Dim equityRow As Integer
-            equityRow = ws.Columns(1).Find(What:="Equity", LookIn:=xlValues, LookAt:=xlPart).row
+            equityRow = ws.Columns(1).Find(What:="Equity", LookIn:=xlValues, Lookat:=xlPart).row
             Dim fxRow As Integer
-            fxRow = ws.Columns(1).Find(What:="FX", LookIn:=xlValues, LookAt:=xlWhole).row
+            fxRow = ws.Columns(1).Find(What:="FX", LookIn:=xlValues, Lookat:=xlWhole).row
             
             'Call UpdateCellsWithCorrelation(ws, SelCorrelation, equityRow + 3, equityRow + 4, "CORR", 3)
             'Call UpdateCellsWithCorrelation(ws, SelCorrelation, FXRow + 3, FXRow + 4, "CORR", 4)
@@ -66,13 +66,13 @@ Sub InputCorrelation()
                 Set .Worksheet = ws
                 Set .SelCorrelation = corrs
                 .ColumnNameRow = equityRow + 3
-                .StartRow = equityRow + 4
+                .startRow = equityRow + 4
                 .MatrixId = "CORR"
                 .StartColumn = 3
                 .UpdateCorrelations
                 
                 .ColumnNameRow = fxRow + 3
-                .StartRow = fxRow + 4
+                .startRow = fxRow + 4
                 .StartColumn = 4
                 .UpdateCorrelations
                 

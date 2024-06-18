@@ -42,9 +42,9 @@ Public Sub CheckResponse()
 End Sub
 
 ' JSON response를 parsing 하고 Excel sheet에 값을 넣는 Method
-Public Sub ParseAndWriteToSheet(JsonString As String)
+Public Sub ParseAndWriteToSheet(jsonString As String)
     Dim json As Object
-    Set json = JsonConverter.ParseJson(JsonString)
+    Set json = JsonConverter.ParseJson(jsonString)
 
     Dim ws As Worksheet
     Set ws = ThisWorkbook.Sheets("Quote")

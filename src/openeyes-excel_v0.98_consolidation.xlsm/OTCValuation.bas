@@ -2,7 +2,7 @@ Attribute VB_Name = "OTCValuation"
 Option Explicit
 
 Sub OTCValuation()
-    Dim JsonString As String
+    Dim jsonString As String
     Dim xmlhttp As Object
     
     ' code에서 JSON string을 바로 정의한다.
@@ -176,7 +176,7 @@ Sub OTCValuation()
     
     For Each Item In selectjob1
         Dim foundCell As Range
-        Set foundCell = ws.Columns("A").Find(What:=Item("itemCd"), LookIn:=xlValues, LookAt:=xlWhole)
+        Set foundCell = ws.Columns("A").Find(What:=Item("itemCd"), LookIn:=xlValues, Lookat:=xlWhole)
         
         If Not foundCell Is Nothing Then
             foundCell.Offset(0, 1).value = Item("price")

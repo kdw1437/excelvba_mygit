@@ -51,7 +51,7 @@ Sub PrintJsonString2()
     Dim searchRange As Range
     Set searchRange = ws.Columns(FXCellColumn)
     
-    Set FXCell = searchRange.Find(What:="FX", LookIn:=xlValues, LookAt:=xlWhole, SearchOrder:=xlByRows, SearchDirection:=xlNext, MatchCase:=False)
+    Set FXCell = searchRange.Find(What:="FX", LookIn:=xlValues, Lookat:=xlWhole, SearchOrder:=xlByRows, SearchDirection:=xlNext, MatchCase:=False)
     
     Dim postCorrUpdater As New postCorrUpdater
     With postCorrUpdater

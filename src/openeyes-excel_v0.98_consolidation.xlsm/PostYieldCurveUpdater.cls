@@ -49,7 +49,7 @@ End Property
 ' @method startCell
 ' @param {Range} value
 ' @usage - pStartCell 값을 설정한다.
-Public Property Set startCell(value As Range)
+Public Property Set StartCell(value As Range)
     Set pStartCell = value
 End Property
 
@@ -57,8 +57,8 @@ End Property
 ' @method startCell
 ' @return {Range}
 ' @usage - pStartCell 값을 가져온다.
-Public Property Get startCell() As Range
-    Set startCell = pStartCell
+Public Property Get StartCell() As Range
+    Set StartCell = pStartCell
 End Property
 
 ' 클래스 초기화 시 실행되는 메서드

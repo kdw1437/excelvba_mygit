@@ -39,9 +39,9 @@ End Function
 ' @param {String} jsonString
 ' @return {Object}
 ' @usage - JSON string을 VBA 객체로 파싱하는 함수
-Public Function ConverterParseJson(JsonString As String) As Object
+Public Function ConverterParseJson(jsonString As String) As Object
     ' JsonConverter 모듈이 존재하고 있어야 한다.
-    Set ConverterParseJson = JsonConverter.ParseJson(JsonString)
+    Set ConverterParseJson = JsonConverter.ParseJson(jsonString)
 End Function
 
 ' @method GetJsonResponse
@@ -49,9 +49,9 @@ End Function
 ' @return {Object}
 ' @usage - GetHttpResponseText함수와 ParseJson함수 이용. url을 input으로 넣으면, 해당 json string을 파싱해주고, 결과 vba 객체를 return한다.
 Public Function GetJsonResponse(url As String) As Object
-    Dim JsonString As String
-    JsonString = GetHttpResponseText(url)
-    Set GetJsonResponse = ConverterParseJson(JsonString)
+    Dim jsonString As String
+    jsonString = GetHttpResponseText(url)
+    Set GetJsonResponse = ConverterParseJson(jsonString)
 End Function
 
 ' @method URLEncode

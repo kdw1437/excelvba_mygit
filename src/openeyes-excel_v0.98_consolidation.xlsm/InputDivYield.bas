@@ -22,11 +22,11 @@ Sub InputDivYield()
     
     Debug.Print divUrl
     
-    Dim JsonString As String
-    JsonString = GetHttpResponseText2(divUrl)
+    Dim jsonString As String
+    jsonString = GetHttpResponseText2(divUrl)
     
     Dim JsonResponse As Object
-    Set JsonResponse = JsonConverter.ParseJson(JsonString)
+    Set JsonResponse = JsonConverter.ParseJson(jsonString)
     
     If JsonResponse.Exists("code") Then
         If JsonResponse("code") = "ERROR" Then

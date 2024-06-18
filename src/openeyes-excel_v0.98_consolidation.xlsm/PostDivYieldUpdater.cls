@@ -47,15 +47,15 @@ End Property
 ' @method DataIdRange
 ' @return {Range}
 ' @usage - DataIdRange¿« getter
-Public Property Get DataIdRange() As Range
-    Set DataIdRange = pdataIdRange
+Public Property Get dataIdRange() As Range
+    Set dataIdRange = pdataIdRange
 End Property
 
 ' Setter for DataIdRange
 ' @method DataIdRange
 ' @param {Range} value
 ' @usage - DataIdRange¿« setter
-Public Property Set DataIdRange(value As Range)
+Public Property Set dataIdRange(value As Range)
     Set pdataIdRange = value
 End Property
 

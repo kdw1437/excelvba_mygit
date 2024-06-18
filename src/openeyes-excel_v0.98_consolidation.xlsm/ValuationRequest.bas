@@ -1,6 +1,6 @@
 Attribute VB_Name = "ValuationRequest"
 Sub ValuationRequest()
-    Dim JsonString As String
+    Dim jsonString As String
     Dim xmlhttp As Object
     Dim baseurl As String
     

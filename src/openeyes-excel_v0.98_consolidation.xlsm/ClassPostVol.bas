@@ -4,13 +4,13 @@ Dim requestHandler As CAsyncRequestHandler
 Sub RunFunc()
     Dim ws As Worksheet
     Dim cell As Range
-    Dim JsonString As String
+    Dim jsonString As String
     Dim dataId As String
     Dim firstObject As Boolean
     Dim postVolUpdater As postVolUpdater ' 클래스의 인스턴스를 위한 reference variable
     
     Set ws = ThisWorkbook.Sheets("Vol")
-    JsonString = "["
+    jsonString = "["
     
     firstObject = True
     For Each cell In ws.Range("AD1:AD" & ws.Cells(ws.Rows.Count, "AD").End(xlUp).row)
@@ -29,7 +29,7 @@ Sub RunFunc()
         
         If dataId <> "" Then
             If Not firstObject Then
-                JsonString = JsonString & ","
+                jsonString = jsonString & ","
             End If
             
             ' 각 cell에 대해서 postVolUpdater class의 인스턴스를 생성
@@ -41,14 +41,14 @@ Sub RunFunc()
             End With
             
             ' 메소드를 사용해서 jsonString을 만들어 준다.
-            JsonString = JsonString & postVolUpdater.GenerateObjectJSON2()
+            jsonString = jsonString & postVolUpdater.GenerateObjectJSON2()
             
             firstObject = False
         End If
         DoEvents
     Next cell
     
-    JsonString = JsonString & "]"
+    jsonString = jsonString & "]"
     
     
 '    filePath = "C:\Users\JURO_NEW\Desktop\json_data\volData240607.json"
@@ -59,10 +59,10 @@ Sub RunFunc()
 '    Print #fileNumber, JsonString
 '
 '    Close #fileNumber
-    Debug.Print JsonString
+    Debug.Print jsonString
     
     ' 필요하다면 jsonString을 URLEncode하고, POST request를 한다.
-    JsonString = URLEncode(JsonString)
+    jsonString = URLEncode(jsonString)
     
     Dim ws2 As Worksheet
     Set ws2 = ThisWorkbook.Sheets("Market Data")
@@ -79,7 +79,7 @@ Sub RunFunc()
     ' Send the POST request - Assuming SendPostRequest is a subroutine you have defined elsewhere
 '     SendPostRequest JsonString, url
     Set requestHandler = New CAsyncRequestHandler
-    requestHandler.SendPostRequestAsync JsonString, url
+    requestHandler.SendPostRequestAsync jsonString, url
     
 End Sub
 

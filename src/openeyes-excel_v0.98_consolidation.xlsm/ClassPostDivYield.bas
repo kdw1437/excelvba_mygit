@@ -9,17 +9,17 @@ Sub ClassPostDivYield()
     Set divYieldUpdater.Worksheet = ThisWorkbook.Sheets("Dividend")
     Set divYieldUpdater.DivCell = divYieldUpdater.Worksheet.Range("F3")
     
-    Set divYieldUpdater.DataIdRange = divYieldUpdater.Worksheet.Range(divYieldUpdater.DivCell.Offset(2, 0), divYieldUpdater.DivCell.Offset(2, 0).End(xlDown))
+    Set divYieldUpdater.dataIdRange = divYieldUpdater.Worksheet.Range(divYieldUpdater.DivCell.Offset(2, 0), divYieldUpdater.DivCell.Offset(2, 0).End(xlDown))
     
     'divYieldUpdater.DataIdRange = "F5:F7"
     'Set divYieldUpdater.DataIdRange = divYieldUpdater.Worksheet.Range("F5:F7")
     
-    Dim JsonString As String
-    JsonString = divYieldUpdater.GenerateJson2()
+    Dim jsonString As String
+    jsonString = divYieldUpdater.GenerateJson2()
     
-    Debug.Print JsonString
+    Debug.Print jsonString
     
-    JsonString = URLEncode(JsonString)
+    jsonString = URLEncode(jsonString)
     
     Dim ws As Worksheet
     Set ws = ThisWorkbook.Sheets("Dividend")
@@ -37,5 +37,5 @@ Sub ClassPostDivYield()
     
     Set requestHandler = New CAsyncRequestHandler
     ' POST request를 보낸다.
-    requestHandler.SendPostRequestAsync JsonString, url
+    requestHandler.SendPostRequestAsync jsonString, url
 End Sub

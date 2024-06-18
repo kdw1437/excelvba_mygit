@@ -8,7 +8,7 @@ Sub ConvertRangeToJson()
     Dim PostQuoteUpdaterNew As New PostQuoteUpdaterNew ' 실제 클래스 이름 넣기
     Dim ws As Worksheet
     Dim rng As Range
-    Dim JsonString As String
+    Dim jsonString As String
 
     ' worksheet 세팅
     
@@ -31,19 +31,25 @@ Sub ConvertRangeToJson()
     Set PostQuoteUpdaterNew.Range = rng
     
     ' range를 JSON으로 바꾼다.
-    JsonString = PostQuoteUpdaterNew.makeJsonString2()
+    jsonString = PostQuoteUpdaterNew.makeJsonString2()
 
     ' JSONString 콘솔에 출력
-    Debug.Print JsonString
+    Debug.Print jsonString
     
-    JsonString = URLEncode(JsonString)
+    Dim dataSetId As String
+    dataSetId = "official"
+    
+    Dim baseDt As String
+    baseDt = Format(ws.Range("A2").value, "yyyymmdd")
+    
+    jsonString = URLEncode(jsonString)
     Dim url As String
-    url = "http://localhost:8080/val/marketdata/v1/saveQuoteIssueInfo?baseDt=20231228&dataSetId=TEST2"
+    url = "http://localhost:8080/val/marketdata/v1/saveQuoteIssueInfo?baseDt=" & baseDt & "&dataSetId=" & dataSetId
     
     
     
     ' POST request를 보내기 위해 method를 호출한다.
-    httpHandler.SendPostRequest JsonString, url
+    httpHandler.SendPostRequest jsonString, url
     
  
     
