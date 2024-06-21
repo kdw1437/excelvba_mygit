@@ -31,15 +31,15 @@ End Property
 ' @method DivCell
 ' @return {Range}
 ' @usage - DivCell range¿« getter
-Public Property Get DivCell() As Range
-    Set DivCell = pDivCell
+Public Property Get divCell() As Range
+    Set divCell = pDivCell
 End Property
 
 ' Setter for DivCell Range
 ' @method DivCell
 ' @param {Range} value
 ' @usage - DivCell range¿« setter
-Public Property Set DivCell(value As Range)
+Public Property Set divCell(value As Range)
     Set pDivCell = value
 End Property
 

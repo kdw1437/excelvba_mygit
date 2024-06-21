@@ -14,7 +14,7 @@ Sub Inputvol()
     VoUrlBuilder.Version = "v1/"
     VoUrlBuilder.DataParameter = "vols?"
     VoUrlBuilder.baseDt = "baseDt=" & baseDt & "&"
-    VoUrlBuilder.DataIds = "dataIds=HSCEI_LOC,HSI_LOC,N225_LOC,KOSPI200_LOC"
+    VoUrlBuilder.dataIds = "dataIds=HSCEI_LOC,HSI_LOC,N225_LOC,KOSPI200_LOC"
     
     Dim VoUrl As String
     VoUrl = VoUrlBuilder.MakeUrl

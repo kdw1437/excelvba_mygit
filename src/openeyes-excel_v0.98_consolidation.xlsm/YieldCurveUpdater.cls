@@ -78,7 +78,7 @@ Public Sub PopulateYieldCurveData()
         
         ' FX값이 적힌 셀을 프로퍼티 CurrencyCell영역에서 찾는다.
         Dim foundCurrencyCell As Range
-        Set foundCurrencyCell = searchRange.Find(What:=FX, LookIn:=xlValues, Lookat:=xlWhole)
+        Set foundCurrencyCell = searchRange.Find(What:=FX, LookIn:=xlValues, LookAt:=xlWhole)
         
         If Not foundCurrencyCell Is Nothing Then
             ' Tenor와 Rate column을 currency cell에서 결정

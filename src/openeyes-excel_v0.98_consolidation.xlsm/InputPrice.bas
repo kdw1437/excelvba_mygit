@@ -13,7 +13,30 @@ Sub InputPrice()
     priceUrlBuilder.Version = "v1/"
     priceUrlBuilder.DataParameter = "prices?"
     priceUrlBuilder.baseDt = "baseDt=" & baseDt & "&"
-    priceUrlBuilder.DataIds = "dataIds=KOSPI200,SPX,N225,EUROSTOXX,HSCEI,HSI,KR7035420009"
+    'priceUrlBuilder.DataIds = "dataIds=KOSPI200,SPX,N225,EUROSTOXX,HSCEI,HSI,KR7035420009"
+    
+    'EquityCell 찾는다.
+    Dim equityCell As Range
+    Set equityCell = ws.Columns("A").Find(What:="Equity", LookIn:=xlValues, LookAt:=xlWhole)
+    
+    'StartCell 지정
+    Dim startCell As Range
+    Set startCell = equityCell.Offset(4, 0)
+    
+    Dim dataIdsRange As Range
+    Dim dataIdsCell As Range
+    Dim dataIds As String
+    
+    Set dataIdsRange = ws.Range(startCell, startCell.End(xlDown))
+    
+    For Each dataIdsCell In dataIdsRange
+        If dataIds <> "" Then
+            dataIds = dataIds & ","
+        End If
+        dataIds = dataIds & dataIdsCell.value
+    Next dataIdsCell
+    
+    priceUrlBuilder.dataIds = "dataIds=" & dataIds
     
     '메서드 이용, return값이 full url.
     Dim priceUrl As String

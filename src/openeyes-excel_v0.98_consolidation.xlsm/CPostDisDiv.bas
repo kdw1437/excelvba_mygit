@@ -7,10 +7,10 @@ Sub UseDividendDataProcessor()
     Set dp = New postDisDivMissingData
     
     Set dp.Worksheet = ThisWorkbook.Worksheets("Missing Data - D_Dividend(보정)")
-    Set dp.StartCell = dp.Worksheet.Range("A:A").Find(What:="Discrete Dividend", Lookat:=xlWhole)
+    Set dp.startCell = dp.Worksheet.Range("A:A").Find(What:="Discrete Dividend", LookAt:=xlWhole)
     dp.k = 4 ' (K가 알려진 값이고 dynamic하게 결정되어질 때는 거기에 맞춰서 코드 작성)
     
-    If Not dp.StartCell Is Nothing Then
+    If Not dp.startCell Is Nothing Then
         Dim jsonString As String
         
         jsonString = dp.ReturnJSON

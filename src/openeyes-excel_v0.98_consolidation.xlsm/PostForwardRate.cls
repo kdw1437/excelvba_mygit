@@ -31,13 +31,13 @@ End Property
 '
 ' @property Get StartCell
 ' @return {Range} 시작 Cell range
-Public Property Get StartCell() As Range
-    Set StartCell = pStartCell
+Public Property Get startCell() As Range
+    Set startCell = pStartCell
 End Property
 
 ' @property Set StartCell
 ' @param {Range} value - 시작 cell range를 set한다.
-Public Property Set StartCell(value As Range)
+Public Property Set startCell(value As Range)
     Set pStartCell = value
 End Property
 
@@ -69,7 +69,7 @@ Public Function ReturnJSON() As String
         Dim currencyCode As String
         currencyCode = pStartCell.Offset(4, 1 + 3 * (i - 1)).value
         
-        Set relCurrencyCell = pWorksheet.Rows(7).Find(What:=currencyCode, Lookat:=xlWhole)
+        Set relCurrencyCell = pWorksheet.Rows(7).Find(What:=currencyCode, LookAt:=xlWhole)
         
         Dim currencyData As Object
         Set currencyData = CreateObject("Scripting.Dictionary")

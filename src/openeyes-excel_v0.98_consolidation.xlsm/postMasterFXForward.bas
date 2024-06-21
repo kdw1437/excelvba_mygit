@@ -7,7 +7,7 @@ Sub postMasterFXForward()
     Set ws = ThisWorkbook.Sheets("Missing Data - Fx Forward")
     
     Dim titleRange As Range
-    Set titleRange = ws.Range("A:A").Find(What:="FX Forward Curve", Lookat:=xlWhole)
+    Set titleRange = ws.Range("A:A").Find(What:="FX Forward Curve", LookAt:=xlWhole)
     
     Dim k As Long
     k = 4

@@ -7,7 +7,7 @@ Sub postMasterDDiv()
     Set ws = ThisWorkbook.Sheets("Missing Data - D_Dividend(º¸Á¤)")
     
     Dim titleRange As Range
-    Set titleRange = ws.Range("A:A").Find(What:="Discrete Dividend", Lookat:=xlWhole)
+    Set titleRange = ws.Range("A:A").Find(What:="Discrete Dividend", LookAt:=xlWhole)
 
     Dim k As Long
     k = 4

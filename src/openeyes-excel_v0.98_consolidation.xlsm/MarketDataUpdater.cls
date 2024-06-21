@@ -47,7 +47,7 @@ End Property
 ' @usage - 'Equity' 행을 찾아 해당 데이터로 가격을 업데이트한다.
 Public Sub UpdatePrices()
     Dim equityRow As Range
-    Set equityRow = pWs.Columns(1).Find(What:="Equity", LookIn:=xlValues, Lookat:=xlPart)
+    Set equityRow = pWs.Columns(1).Find(What:="Equity", LookIn:=xlValues, LookAt:=xlPart)
     
     If Not equityRow Is Nothing Then
         Dim startRow As Integer
@@ -102,7 +102,7 @@ End Sub
 ' @usage - 'Equity' 행을 찾아 해당 데이터로 가격을 업데이트한다.
 Public Sub UpdatePrices2()
     Dim equityRow As Range
-    Set equityRow = pWs.Columns(1).Find(What:="Equity", LookIn:=xlValues, Lookat:=xlPart)
+    Set equityRow = pWs.Columns(1).Find(What:="Equity", LookIn:=xlValues, LookAt:=xlPart)
     
     If Not equityRow Is Nothing Then
         Dim startRow As Integer
@@ -136,7 +136,7 @@ End Sub
 ' @usage - Dictionary 객체를 사용하여 빠르게 가격을 업데이트한다.
 Public Sub UpdatePricesOptimized()
     Dim equityRow As Range
-    Set equityRow = pWs.Columns(1).Find(What:="Equity", LookIn:=xlValues, Lookat:=xlPart)
+    Set equityRow = pWs.Columns(1).Find(What:="Equity", LookIn:=xlValues, LookAt:=xlPart)
     
     If Not equityRow Is Nothing Then
         Dim startRow As Integer

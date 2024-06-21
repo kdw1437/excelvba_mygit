@@ -75,7 +75,7 @@ Public Sub ImportData()
         dataId = volCurve("dataId")
         code = MapDataIdToCode(dataId)
         
-        Set codeRow = pWs.Columns(pCodeColumn).Find(What:=code, LookIn:=xlValues, Lookat:=xlWhole)
+        Set codeRow = pWs.Columns(pCodeColumn).Find(What:=code, LookIn:=xlValues, LookAt:=xlWhole)
         
         If Not codeRow Is Nothing Then
             Dim codeRowNumber As Long
@@ -89,13 +89,13 @@ Public Sub ImportData()
                 Dim volFactor As Double
                 volFactor = termVol("volFactor")
                 
-                c = pWs.Rows(codeRowNumber).Find(What:=volFactor, LookIn:=xlValues, Lookat:=xlWhole).Column
+                c = pWs.Rows(codeRowNumber).Find(What:=volFactor, LookIn:=xlValues, LookAt:=xlWhole).Column
                 For Each volEntry In termVol("termVols")
                     Dim tenor As Double
                     tenor = volEntry("tenor")
                     
                     Dim tenorCell As Range
-                    Set tenorCell = searchRange2.Find(What:=tenor, LookIn:=xlValues, Lookat:=xlWhole)
+                    Set tenorCell = searchRange2.Find(What:=tenor, LookIn:=xlValues, LookAt:=xlWhole)
                     
                     If Not tenorCell Is Nothing Then
                         r = tenorCell.row
@@ -127,7 +127,7 @@ Public Sub FillEmptyCells()
         dataId = volCurve("dataId")
         code = MapDataIdToCode(dataId)
         
-        Set codeRow = pWs.Columns(pCodeColumn).Find(What:=code, LookIn:=xlValues, Lookat:=xlWhole)
+        Set codeRow = pWs.Columns(pCodeColumn).Find(What:=code, LookIn:=xlValues, LookAt:=xlWhole)
         
         If Not codeRow Is Nothing Then
             Dim codeRowNumber As Long

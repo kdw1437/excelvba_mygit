@@ -7,9 +7,9 @@ Sub ClassPostDivYield()
     Set divYieldUpdater = New PostDivYieldUpdater
     
     Set divYieldUpdater.Worksheet = ThisWorkbook.Sheets("Dividend")
-    Set divYieldUpdater.DivCell = divYieldUpdater.Worksheet.Range("F3")
+    Set divYieldUpdater.divCell = divYieldUpdater.Worksheet.Range("F3")
     
-    Set divYieldUpdater.dataIdRange = divYieldUpdater.Worksheet.Range(divYieldUpdater.DivCell.Offset(2, 0), divYieldUpdater.DivCell.Offset(2, 0).End(xlDown))
+    Set divYieldUpdater.dataIdRange = divYieldUpdater.Worksheet.Range(divYieldUpdater.divCell.Offset(2, 0), divYieldUpdater.divCell.Offset(2, 0).End(xlDown))
     
     'divYieldUpdater.DataIdRange = "F5:F7"
     'Set divYieldUpdater.DataIdRange = divYieldUpdater.Worksheet.Range("F5:F7")

@@ -14,9 +14,37 @@ Sub InputDivYield()
     divYieldUrlBuilder.Version = "v1/"
     divYieldUrlBuilder.DataParameter = "selectDividends?"
     divYieldUrlBuilder.baseDt = "baseDt=" & baseDt & "&"
-    divYieldUrlBuilder.DataIds = "dataIds=EUROSTOXX_C,KOSPI200_C,SPX_C"
+    'divYieldUrlBuilder.dataIds = "dataIds=EUROSTOXX_C,KOSPI200_C,SPX_C"
     'divYieldUrlBuilder.DataIds = "dataIds=esd_c"
+    
+    ' column A에서 Dividend cell을 찾는다.
+    Dim divCell As Range
+    Set divCell = ws.Columns(1).Find(What:="Dividend", LookIn:=xlValues, LookAt:=xlWhole)
+    
+    Dim dataIds As String
+    If Not divCell Is Nothing Then
+        ' "Dividend" cell 에서 밑으로 2 row에서 시작
+        Dim startCell As Range
+        Set startCell = divCell.Offset(2, 0)
+        
+        ' 마지막 데이터가 있는 cell까지 startCell에서 range를 만든다.
+        Dim dataIdsRange As Range
+        Dim dataIdsCell As Range
+        Set dataIdsRange = ws.Range(startCell, startCell.End(xlDown))
+        
+        ' dataIds string을 만든다.
+        For Each dataIdsCell In dataIdsRange
+            If dataIds <> "" Then
+                dataIds = dataIds & ","
+            End If
+            dataIds = dataIds & dataIdsCell.value & "_C"
+        Next dataIdsCell
+    End If
+    
+    divYieldUrlBuilder.dataIds = "dataIds=" & dataIds
+    
     '메서드 이용, return값이 full url.
+       
     Dim divUrl As String
     divUrl = divYieldUrlBuilder.MakeUrl
     

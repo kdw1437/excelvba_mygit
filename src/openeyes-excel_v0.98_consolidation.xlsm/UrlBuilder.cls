@@ -34,11 +34,11 @@ Public Property Let DataParameter(value As String)
     pDataParameter = value
 End Property
 
-Public Property Get DataIds() As String
-    DataIds = pDataIds
+Public Property Get dataIds() As String
+    dataIds = pDataIds
 End Property
 
-Public Property Let DataIds(value As String)
+Public Property Let dataIds(value As String)
     pDataIds = value
 End Property
 

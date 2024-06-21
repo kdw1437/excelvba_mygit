@@ -14,7 +14,32 @@ Sub InputYieldCurve()
     YCUrlBuilder.DataParameter = "yieldcurves?"
     'YCUrlBuilder.baseDt = "baseDt=20231228&"
     YCUrlBuilder.baseDt = "baseDt=" & baseDt & "&"
-    YCUrlBuilder.DataIds = "dataIds=KRWIRSZ,JPYIRSZ,EURIRSZ,HKDIRSZ,USDIRSZ"
+    'YCUrlBuilder.dataIds = "dataIds=KRWIRSZ,JPYIRSZ,EURIRSZ,HKDIRSZ,USDIRSZ"
+    
+    ' column A에서 yieldCurveCell을 찾는다.
+    Dim yieldCurveCell As Range
+    Set yieldCurveCell = ws.Columns("A").Find(What:="Yield Curve", LookIn:=xlValues, LookAt:=xlWhole)
+    
+    Dim dataIds As String
+    If Not yieldCurveCell Is Nothing Then
+        ' "Yield Curve" cell로 부터 2 row 밑에서 시작한다.
+        Dim startCell As Range
+        Set startCell = yieldCurveCell.Offset(2, 0)
+        
+        ' 빈 cell을 찾을 때 까지 2 column씩 이동한다.
+        Dim currentCell As Range
+        Set currentCell = startCell
+        
+        Do While Not IsEmpty(currentCell.value)
+            If dataIds <> "" Then
+                dataIds = dataIds & ","
+            End If
+            dataIds = dataIds & currentCell.value
+            Set currentCell = currentCell.Offset(0, 2)
+        Loop
+    End If
+    
+    YCUrlBuilder.dataIds = "dataIds=" & dataIds
     
     Dim YCUrl As String
     YCUrl = YCUrlBuilder.MakeUrl

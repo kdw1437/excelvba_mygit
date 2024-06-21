@@ -16,7 +16,46 @@ Sub InputCorrelation()
     
     corrUrlBuilder.baseDt = "baseDt=" & baseDt & "&"
     'corrUrlBuilder.baseDt = "baseDt=20231228&"
-    corrUrlBuilder.DataIds = "dataIds=FXKRWHKD,HSI,HSCEI,KOSPI200,FXKRWJPY,EUROSTOXX,N225,FXKRWEUR"
+    'corrUrlBuilder.dataIds = "dataIds=FXKRWHKD,HSI,HSCEI,KOSPI200,FXKRWJPY,EUROSTOXX,N225,FXKRWEUR"
+    
+    ' dataIds를 Equity cell로 부터 생성한다.
+    Dim equityCell As Range
+    Set equityCell = ws.Columns("A").Find(What:="Equity", LookIn:=xlValues, LookAt:=xlWhole)
+    
+    Dim dataIds As String
+    If Not equityCell Is Nothing Then
+        Dim equityDataIdsRange As Range
+        Dim equityDataIdsCell As Range
+        
+        Set equityDataIdsRange = ws.Range(equityCell.Offset(4, 0), equityCell.Offset(4, 0).End(xlDown))
+        
+        For Each equityDataIdsCell In equityDataIdsRange
+            If dataIds <> "" Then
+                dataIds = dataIds & ","
+            End If
+            dataIds = dataIds & equityDataIdsCell.value
+        Next equityDataIdsCell
+    End If
+    
+    ' FX cell로부터 dataIds를 생성한다.
+    Dim fxCell As Range
+    Set fxCell = ws.Columns("A").Find(What:="FX", LookIn:=xlValues, LookAt:=xlWhole)
+    
+    If Not fxCell Is Nothing Then
+        Dim fxDataIdsRange As Range
+        Dim fxDataIdsCell As Range
+        
+        Set fxDataIdsRange = ws.Range(fxCell.Offset(4, 0), fxCell.Offset(4, 0).End(xlDown))
+        
+        For Each fxDataIdsCell In fxDataIdsRange
+            If dataIds <> "" Then
+                dataIds = dataIds & ","
+            End If
+            dataIds = dataIds & fxDataIdsCell.value
+        Next fxDataIdsCell
+    End If
+    
+    corrUrlBuilder.dataIds = "dataIds=" & dataIds
     
     '메서드 이용, return값이 full url.
     Dim corrUrl As String
@@ -53,9 +92,9 @@ Sub InputCorrelation()
 '            Set ws = ThisWorkbook.Sheets("Market Data")
             
             Dim equityRow As Integer
-            equityRow = ws.Columns(1).Find(What:="Equity", LookIn:=xlValues, Lookat:=xlPart).row
+            equityRow = ws.Columns(1).Find(What:="Equity", LookIn:=xlValues, LookAt:=xlPart).row
             Dim fxRow As Integer
-            fxRow = ws.Columns(1).Find(What:="FX", LookIn:=xlValues, Lookat:=xlWhole).row
+            fxRow = ws.Columns(1).Find(What:="FX", LookIn:=xlValues, LookAt:=xlWhole).row
             
             'Call UpdateCellsWithCorrelation(ws, SelCorrelation, equityRow + 3, equityRow + 4, "CORR", 3)
             'Call UpdateCellsWithCorrelation(ws, SelCorrelation, FXRow + 3, FXRow + 4, "CORR", 4)

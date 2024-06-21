@@ -81,3 +81,23 @@ End Sub
 Sub TestImport()
     ImportGreekData "81"
 End Sub
+
+Sub PostMissingDataHistVolCorr()
+
+    Call CPostHistoricalVol.UseHistoricalVolProcessor
+    
+    Call CPostCorr.UseCorrelationDataProcessor
+    
+End Sub
+
+Sub PostMissingDataFxForward()
+
+    Call CPostFXForwardRate.UseFXForwardData
+    
+End Sub
+
+Sub PostMissingDataDividend()
+
+    Call CPostDisDiv.UseDividendDataProcessor
+    
+End Sub

@@ -6,7 +6,7 @@ Sub UseFXForwardData()
     Dim fxData As New PostForwardRate
     
     Set fxData.Worksheet = ThisWorkbook.Sheets("Missing Data - Fx Forward")
-    Set fxData.StartCell = fxData.Worksheet.Range("A:A").Find(What:="FX Forward Curve", Lookat:=xlWhole)
+    Set fxData.startCell = fxData.Worksheet.Range("A:A").Find(What:="FX Forward Curve", LookAt:=xlWhole)
     fxData.k = 4  ' Setting how many currencies to process
     
     'fxData.GenerateJSON

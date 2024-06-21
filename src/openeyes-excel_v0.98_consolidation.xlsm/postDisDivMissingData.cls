@@ -30,13 +30,13 @@ End Property
 ' Property for StartCell
 ' @property Get StartCell
 ' @return {Range} starting cell range
-Public Property Get StartCell() As Range
-    Set StartCell = pStartCell
+Public Property Get startCell() As Range
+    Set startCell = pStartCell
 End Property
 
 ' @property Set StartCell
 ' @param {Range} value
-Public Property Set StartCell(value As Range)
+Public Property Set startCell(value As Range)
     Set pStartCell = value
 End Property
 

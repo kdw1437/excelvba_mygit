@@ -47,17 +47,17 @@ Sub PrintJsonString2()
     Dim FXCellColumn As Long
     FXCellColumn = ws.Range(ws.Range("P2").value).Column
     
-    Dim FXCell As Range
+    Dim fxCell As Range
     Dim searchRange As Range
     Set searchRange = ws.Columns(FXCellColumn)
     
-    Set FXCell = searchRange.Find(What:="FX", LookIn:=xlValues, Lookat:=xlWhole, SearchOrder:=xlByRows, SearchDirection:=xlNext, MatchCase:=False)
+    Set fxCell = searchRange.Find(What:="FX", LookIn:=xlValues, LookAt:=xlWhole, SearchOrder:=xlByRows, SearchDirection:=xlNext, MatchCase:=False)
     
     Dim postCorrUpdater As New postCorrUpdater
     With postCorrUpdater
     
-        Set .VerticalRange = ws.Range(FXCell.Offset(4, 0), FXCell.Offset(4, 0).End(xlDown))
-        Set .HorizontalRange = ws.Range(FXCell.Offset(3, 3), FXCell.Offset(3, 3).End(xlToRight))
+        Set .VerticalRange = ws.Range(fxCell.Offset(4, 0), fxCell.Offset(4, 0).End(xlDown))
+        Set .HorizontalRange = ws.Range(fxCell.Offset(3, 3), fxCell.Offset(3, 3).End(xlToRight))
         
     End With
     Dim DataString As String

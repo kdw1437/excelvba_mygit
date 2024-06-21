@@ -176,7 +176,7 @@ Sub OTCValuation()
     
     For Each Item In selectjob1
         Dim foundCell As Range
-        Set foundCell = ws.Columns("A").Find(What:=Item("itemCd"), LookIn:=xlValues, Lookat:=xlWhole)
+        Set foundCell = ws.Columns("A").Find(What:=Item("itemCd"), LookIn:=xlValues, LookAt:=xlWhole)
         
         If Not foundCell Is Nothing Then
             foundCell.Offset(0, 1).value = Item("price")
