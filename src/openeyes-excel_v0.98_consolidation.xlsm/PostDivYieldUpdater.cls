@@ -72,7 +72,7 @@ Public Function GenerateJson2() As String
     
     For Each cell In pdataIdRange
         Set Item = New Dictionary
-        dataId = cell.value
+        dataId = cell.value & "_C_D"
         yield = cell.Offset(0, 1).value
         
         With Item

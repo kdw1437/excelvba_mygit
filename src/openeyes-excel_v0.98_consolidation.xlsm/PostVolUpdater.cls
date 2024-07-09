@@ -111,7 +111,8 @@ Public Function GenerateObjectJSON2() As String
     Dim volCurves As Collection
     Dim termVols As Collection
     Dim volCurve As Dictionary, termVol As Dictionary
-
+    Dim volFactorOrder As Integer
+    
     ' Initialize the main collection for volCurves
     Set volCurves = New Collection
     
@@ -120,6 +121,7 @@ Public Function GenerateObjectJSON2() As String
     Set tenorRange = pWorksheet.Range(pRefCell.Offset(1, 1), pRefCell.Offset(1, 1).End(xlDown))
     Set dataRange = pWorksheet.Range(volFactorRange.Offset(1, 0), tenorRange.Offset(0, volFactorRange.Columns.Count - 1))
     
+    volFactorOrder = 1
     ' Iterate over each volFactor
     For Each volFactorCell In volFactorRange
         Set termVols = New Collection
@@ -134,9 +136,12 @@ Public Function GenerateObjectJSON2() As String
         
         Set volCurve = New Dictionary
         volCurve.Add "volFactor", volFactorCell.value
+        volCurve.Add "volFactorOrder", volFactorOrder
         volCurve.Add "termVols", termVols
         volCurves.Add volCurve
         DoEvents
+        
+        volFactorOrder = volFactorOrder + 1
     Next volFactorCell
     
     ' Create the main dictionary to hold dataId and volCurves
