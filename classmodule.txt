@@ -1,0 +1,2357 @@
+---CAsyncRequestHandler--
+' Class Module: CAsyncRequestHandler
+Public WithEvents xmlHttp As WinHttp.WinHttpRequest
+Public IsRequestComplete As Boolean
+Public ResponseText As String
+Public ErrorMessage As String
+
+' asynchronous POST request를 보내는 메소드
+Public Sub SendPostRequestAsync(DataString As String, url As String)
+    Set xmlHttp = New WinHttp.WinHttpRequest
+    With xmlHttp
+        .Open "POST", url, True ' Asynchronous 모드
+        .SetRequestHeader "Content-Type", "application/x-www-form-urlencoded"
+        On Error Resume Next
+        .send "a=" & DataString
+        If Err.Number <> 0 Then
+            ErrorMessage = "에러가 보낸 요청: " & Err.Description
+            IsRequestComplete = True
+        End If
+        On Error GoTo 0
+    End With
+End Sub
+
+' 상태 변화에 대한 Event handler
+Private Sub xmlHttp_OnResponseFinished()
+    IsRequestComplete = True
+    If xmlHttp.Status = 200 Then
+        ResponseText = xmlHttp.ResponseText
+        ' Check if the response contains an error message
+        If InStr(1, ResponseText, "error", vbTextCompare) > 0 Then
+            ErrorMessage = "서버가 리턴한 에러: " & ResponseText
+        End If
+    Else
+        ErrorMessage = "에러: " & xmlHttp.Status & " - " & xmlHttp.StatusText
+    End If
+End Sub
+
+
+
+--clsXMLHTTPHandler--
+Option Explicit
+
+Public xmlHttp As MSXML2.XMLHTTP60
+
+Public Sub SendPostRequest(DataString As String, url As String)
+    Set xmlHttp = New MSXML2.XMLHTTP60
+    xmlHttp.Open "POST", url, True  ' asynchronous를 위한 True
+    xmlHttp.SetRequestHeader "Content-Type", "application/x-www-form-urlencoded"
+    xmlHttp.send "a=" & DataString
+
+    ' response check loop를 시작한다.
+    CheckResponse
+End Sub
+
+' ready state를 확인하는 Method
+Public Sub CheckResponse()
+    On Error Resume Next
+    Do While xmlHttp.readyState <> 4
+        DoEvents  ' Excel의 응답성을 유지
+    Loop
+    On Error GoTo 0
+    
+    If xmlHttp.Status = 200 Then
+        Debug.Print xmlHttp.ResponseText
+        
+        'MsgBox xmlhttp.responseText
+        
+        ' JSON response를 parsing 하고 Excel sheet에 값을 넣는 method 호출
+        ParseAndWriteToSheet xmlHttp.ResponseText
+    Else
+        MsgBox "Error: " & xmlHttp.Status & " - " & xmlHttp.StatusText
+    End If
+End Sub
+
+' JSON response를 parsing 하고 Excel sheet에 값을 넣는 Method
+Public Sub ParseAndWriteToSheet(jsonString As String)
+    Dim json As Object
+    Set json = JsonConverter.ParseJson(jsonString)
+
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Quote")
+    
+    Dim i As Integer
+    i = 10 ' B10부터 아래로 데이터를 입력
+    
+    Application.Calculation = xlCalculationManual
+    
+    Dim item As Object
+    For Each item In json
+        ws.Range("B" & i).value = item("cntrCode")
+        i = i + 1
+        DoEvents
+    Next item
+    
+    Application.Calculation = xlCalculationAutomatic
+    
+     MsgBox "cntrCode가 생성되었습니다.", vbInformation, "완료"
+End Sub
+
+--CorrUpdater--
+Option Explicit
+
+Private pWorksheet As Worksheet
+Private pSelCorrelation As Collection
+Private pMatrixId As String
+Private pEquityCell As Range
+Private pFXCell As Range
+
+' Worksheet property
+Public Property Get Worksheet() As Worksheet
+    Set Worksheet = pWorksheet
+End Property
+
+Public Property Set Worksheet(value As Worksheet)
+    Set pWorksheet = value
+End Property
+
+' SelCorrelation property
+Public Property Get SelCorrelation() As Collection
+    Set SelCorrelation = pSelCorrelation
+End Property
+
+Public Property Set SelCorrelation(value As Collection)
+    Set pSelCorrelation = value
+End Property
+
+' MatrixId property
+Public Property Get MatrixId() As String
+    MatrixId = pMatrixId
+End Property
+
+Public Property Let MatrixId(value As String)
+    pMatrixId = value
+End Property
+
+' EquityCell property
+Public Property Get equityCell() As Range
+    Set equityCell = pEquityCell
+End Property
+
+Public Property Set equityCell(value As Range)
+    Set pEquityCell = value
+End Property
+
+' FXCell property
+Public Property Get fxCell() As Range
+    Set fxCell = pFXCell
+End Property
+
+Public Property Set fxCell(value As Range)
+    Set pFXCell = value
+End Property
+
+Public Function UpdateCorrelations() As Boolean
+    Dim equityVHeaderRange As Range, equityHHeaderRange As Range
+    Dim fxVHeaderRange As Range, fxHHeaderRange As Range
+    Dim equityDataRange As Range, fxDataRange As Range
+    Dim vCell As Range, hCell As Range, correlation As Object
+    
+    Application.Calculation = xlCalculationManual
+    
+    ' header range 정의
+    Set equityVHeaderRange = pWorksheet.Range(pEquityCell.Offset(4, 0), pEquityCell.Offset(10, 0))
+    Set equityHHeaderRange = pWorksheet.Range(pEquityCell.Offset(3, 2), pEquityCell.Offset(3, 8))
+    Set fxVHeaderRange = pWorksheet.Range(pFXCell.Offset(4, 0), pFXCell.Offset(7, 0))
+    Set fxHHeaderRange = pWorksheet.Range(pFXCell.Offset(3, 3), pFXCell.Offset(3, 9))
+    
+    ' data range 정의
+    Set equityDataRange = pWorksheet.Range(pEquityCell.Offset(4, 2), pEquityCell.Offset(10, 8))
+    Set fxDataRange = pWorksheet.Range(pFXCell.Offset(4, 3), pFXCell.Offset(7, 9))
+    
+    ' Equity correlation 업데이트
+    For Each vCell In equityVHeaderRange
+        For Each hCell In equityHHeaderRange
+            If vCell.value = hCell.value Then
+                pWorksheet.Cells(vCell.row, hCell.Column).value = 1
+            Else
+                For Each correlation In pSelCorrelation
+                    If (vCell.value = correlation("dataId1") And hCell.value = correlation("dataId2")) Or _
+                       (vCell.value = correlation("dataId2") And hCell.value = correlation("dataId1")) Then
+                        If correlation("matrixId") = pMatrixId Then
+                            pWorksheet.Cells(vCell.row, hCell.Column).value = correlation("corr")
+                        End If
+                    End If
+                    DoEvents
+                Next correlation
+            End If
+            DoEvents
+        Next hCell
+        DoEvents
+    Next vCell
+    
+    ' FX correlation 업데이트
+    For Each vCell In fxVHeaderRange
+        For Each hCell In fxHHeaderRange
+            If vCell.value = hCell.value Then
+                pWorksheet.Cells(vCell.row, hCell.Column).value = 1
+            Else
+                For Each correlation In pSelCorrelation
+                    If (vCell.value = correlation("dataId1") And hCell.value = correlation("dataId2")) Or _
+                       (vCell.value = correlation("dataId2") And hCell.value = correlation("dataId1")) Then
+                        If correlation("matrixId") = pMatrixId Then
+                            pWorksheet.Cells(vCell.row, hCell.Column).value = correlation("corr")
+                            
+                        End If
+                    End If
+                    DoEvents
+                Next correlation
+            End If
+            DoEvents
+        Next hCell
+        DoEvents
+    Next vCell
+    
+    Application.Calculation = xlCalculationAutomatic
+    UpdateCorrelations = True
+End Function
+
+--DivStreamUpdater--
+Private pWs As Worksheet
+Private pSearchRange As Range
+Private pDivStream As Collection
+
+' Setter for the Worksheet
+Public Sub SetWorksheet(sheetName As String)
+    Set pWs = ThisWorkbook.Sheets(sheetName)
+End Sub
+
+' Getter for the Worksheet
+Public Function GetWorksheet() As Worksheet
+    Set GetWorksheet = pWs
+End Function
+
+' Setter for DivStream Collection
+Public Sub SetDivStreamData(col As Collection)
+    Set pDivStream = col
+End Sub
+
+' Getter for DivStream Collection
+Public Function GetDivStreamData() As Collection
+    Set GetDivStreamData = pDivStream
+End Function
+
+'Setter for SearchRange
+Public Sub SetSearchRange(searchRange As Range)
+    Set pSearchRange = searchRange
+End Sub
+
+'Getter for SearchRange
+Public Function GetSearchRange() As Range
+    Set GetSearchRange = pSearchRange
+End Function
+
+Public Sub UpdateWorksheet()
+
+    Application.Calculation = xlCalculationManual
+    
+    If pWs Is Nothing Then
+        Debug.Print "Worksheet not set."
+        Exit Sub
+    End If
+    
+    If pSearchRange Is Nothing Then
+        Debug.Print "Search range not set."
+        Exit Sub
+    End If
+    
+    If pDivStream Is Nothing Then
+        Debug.Print "Dividend Stream data not set."
+        Exit Sub
+    End If
+    
+    Dim i As Integer, j As Integer
+    Dim dataSet As Object, divValue As Object
+    Dim findCell As Range
+    
+    For i = 1 To pDivStream.Count
+        Set dataSet = pDivStream(i)
+        Set findCell = Nothing
+        
+        For Each findCell In pSearchRange.Cells
+            If findCell.value = dataSet("dataId") Then Exit For
+            DoEvents
+        Next findCell
+        
+        If Not findCell Is Nothing Then
+            For j = 1 To dataSet("dividends").Count
+                Set divValue = dataSet("dividends")(j)
+                findCell.Offset(j + 1, 0).value = divValue("date")
+                findCell.Offset(j + 1, 1).value = divValue("value")
+                DoEvents
+            Next j
+        Else
+            Debug.Print "DataId " & dataSet("dataId") & " not found in the searchRange."
+        End If
+        DoEvents
+    Next i
+    Application.Calculation = xlCalculationAutomatic
+    
+End Sub
+
+Public Sub UpdateWorksheetAdjust()
+    Application.Calculation = xlCalculationManual
+    
+    If pWs Is Nothing Then
+        Debug.Print "Worksheet not set."
+        Exit Sub
+    End If
+    
+    If pSearchRange Is Nothing Then
+        Debug.Print "Search range not set."
+        Exit Sub
+    End If
+    
+    If pDivStream Is Nothing Then
+        Debug.Print "Dividend Stream data not set."
+        Exit Sub
+    End If
+    
+    Dim i As Integer, j As Integer
+    Dim dataSet As Object, divValue As Object
+    Dim findCell As Range, startCell As Range
+    
+    For i = 1 To pDivStream.Count
+        Set dataSet = pDivStream(i)
+        Set findCell = Nothing
+        
+        For Each findCell In pSearchRange.Cells
+            If findCell.value = dataSet("dataId") Then Exit For
+            DoEvents
+        Next findCell
+        
+        If Not findCell Is Nothing Then
+            ' Find the starting cell for data input (3 rows below the dataId cell)
+            Set startCell = findCell.Offset(3, -1)
+            
+            For j = 1 To dataSet("dividends").Count
+                Set divValue = dataSet("dividends")(j)
+                startCell.Offset(j, 0).value = divValue("date")
+                startCell.Offset(j, 1).value = divValue("value")
+            Next j
+        Else
+            Debug.Print "DataId " & dataSet("dataId") & " not found in the searchRange."
+        End If
+        DoEvents
+    Next i
+    
+    Application.Calculation = xlCalculationAutomatic
+End Sub
+
+
+--DivYieldUpdater--
+Private pWs As Worksheet
+Private pDivRange As Range
+Private pDivData As Collection
+
+' Setter for the Worksheet
+' @method SetWorksheet
+' @param {String} sheetName - 워크시트 이름
+' @usage - 주어진 이름으로 워크시트를 설정한다.
+Public Sub SetWorksheet(sheetName As String)
+    Set pWs = ThisWorkbook.Sheets(sheetName)
+End Sub
+
+' Getter for the Worksheet
+' @method GetWorksheet
+' @return {Worksheet}
+' @usage - 설정된 워크시트를 가져온다.
+Public Function GetWorksheet() As Worksheet
+    Set GetWorksheet = pWs
+End Function
+
+' Setter for DivData Collection
+' @method SetDivData
+' @param {Collection} col - DivData 컬렉션
+' @usage - DivData 컬렉션을 설정한다.
+Public Sub SetDivData(col As Collection)
+    Set pDivData = col
+End Sub
+
+' Getter for DivData Collection
+' @method GetDivData
+' @return {Collection}
+' @usage - 설정된 DivData 컬렉션을 가져온다.
+Public Function GetDivData() As Collection
+    Set GetDivData = pDivData
+End Function
+
+'Setter for DivRange
+' @method SetDivRange
+' @param {String} rng - 범위 주소
+' @usage - DivRange 범위를 설정한다.
+Public Sub SetDivRange(rng As String)
+    Set pDivRange = pWs.Range(rng)
+End Sub
+
+'Getter for DivRange
+' @method GetDivRange
+' @return {Range}
+' @usage - 설정된 DivRange 범위를 가져온다.
+Public Function GetDivRange() As Range
+    Set GetDivRange = pDivRange
+End Function
+
+' DivData를 사용하여 Worksheet를 업데이트하는 메서드
+' @method UpdateWorksheet
+' @usage - DivData 컬렉션의 데이터를 사용하여 Worksheet를 업데이트한다.
+Public Sub UpdateWorksheet()
+
+    Dim element As Variant
+    Dim cell As Range
+    For Each element In pDivData
+        For Each cell In pDivRange
+            If element("dataId") = cell.value + "_C" Then
+                cell.Offset(0, 1).value = element("yield")
+            End If
+            DoEvents
+        Next cell
+        DoEvents
+    Next element
+
+End Sub
+
+' 효율적으로 Worksheet를 업데이트하는 메서드
+' @method UpdateWorksheetEfficient
+' @usage - Dictionary 객체를 사용하여 Worksheet를 효율적으로 업데이트한다.
+Public Sub UpdateWorksheetEfficient()
+
+    ' dataIds의 yields에 대한 mapping을 가지는 Dictionary 객체를 만든다.
+    Dim divDataDict As Object
+    Set divDataDict = CreateObject("Scripting.Dictionary")
+    
+    Dim element As Variant
+    Application.Calculation = xlCalculationManual
+    
+    ' dataIds값을 key로 yields값을 item으로 Dictionary 객체를 채운다.
+    For Each element In pDivData
+        Dim dataId As String
+        dataId = element("dataId")
+        Dim yield As Variant
+        yield = element("yield")
+        divDataDict(dataId) = yield
+        DoEvents
+    Next element
+    
+    Dim cell As Range
+    
+    ' 특정 Range의 cell을 iterate한다.
+    For Each cell In pDivRange
+        Dim cellDataId As String
+        'cellDataId = cell.value + "_C"
+        cellDataId = cell.value
+        ' 현재 cell의 dataId가 Dictionary에 있는지 확인한다.
+        If divDataDict.Exists(cellDataId) Then
+            ' 옆 칼럼에 있는 cell을 yield값으로 update한다.
+            cell.Offset(0, 1).value = divDataDict(cellDataId)
+        End If
+        DoEvents
+    Next cell
+    Application.Calculation = xlCalculationAutomatic
+        
+End Sub
+
+--MarketDataUpdater--
+Option Explicit
+
+Private pWs As Worksheet
+Private pPrices As Collection
+
+' Worksheet property
+' @method Worksheet
+' @return {Worksheet}
+' @usage - 설정된 Worksheet를 가져온다.
+Public Property Get Worksheet() As Worksheet
+    Set Worksheet = pWs
+End Property
+
+' @method Worksheet
+' @param {Worksheet} wsTarget - 설정할 Worksheet
+' @usage - Worksheet를 설정한다.
+Public Property Set Worksheet(wsTarget As Worksheet)
+    Set pWs = wsTarget
+End Property
+
+' PricesCollection property
+' @method PricesCollection
+' @return {Collection}
+' @usage - 설정된 Prices 컬렉션을 가져온다.
+Public Property Get PricesCollection() As Collection
+    Set PricesCollection = pPrices
+End Property
+
+' @method PricesCollection
+' @param {Collection} pricesCol - 설정할 Prices 컬렉션
+' @usage - Prices 컬렉션을 설정한다.
+Public Property Set PricesCollection(pricesCol As Collection)
+    Set pPrices = pricesCol
+End Property
+
+' update를 수행하는 메소드
+' @method UpdatePrices
+' @usage - 'Equity' 행을 찾아 해당 데이터로 가격을 업데이트한다.
+Public Sub UpdatePrices()
+    Dim equityRow As Range
+    Set equityRow = pWs.Columns(1).Find(What:="Equity", LookIn:=xlValues, LookAt:=xlPart)
+    
+    If Not equityRow Is Nothing Then
+        Dim startRow As Integer
+        startRow = equityRow.row + 4
+        
+        UpdatePriceForCodes startRow
+    End If
+End Sub
+
+' 메소드를 캡슐화한다.
+' @method UpdatePriceForCodes
+' @param {Integer} StartRow - 시작 행 번호
+' @usage - 코드별로 가격을 업데이트한다.
+Private Sub UpdatePriceForCodes(startRow As Integer)
+    Dim codeCell As Range
+    Dim codeValue As String
+    
+    For Each codeCell In pWs.Range(pWs.Cells(startRow, 1), pWs.Cells(pWs.Rows.Count, 1))
+        
+        If IsEmpty(codeCell.value) Then Exit For
+
+        codeValue = codeCell.value
+
+        ' 맞는 데이터가 있을 시, 가격을 업데이트 시켜준다.
+        UpdatePriceIfMatchFound codeCell, codeValue
+    Next codeCell
+End Sub
+
+' 지표가 codeValue와 일치할 시, 가격을 지표 옆에 넣어주는 코드
+' @method UpdatePriceIfMatchFound
+' @param {Range} codeCell - 코드 셀
+' @param {String} codeValue - 코드 값
+' @usage - 일치하는 데이터가 있을 때 가격을 업데이트한다.
+Private Sub UpdatePriceIfMatchFound(codeCell As Range, codeValue As String)
+    Dim priceInfo As Variant
+    Dim i As Integer
+    
+    For i = 1 To pPrices.Count
+        Set priceInfo = pPrices(i)
+
+        
+        If priceInfo("dataId") = codeValue Then
+            
+            codeCell.Offset(0, 1).value = priceInfo("price")
+            Exit For
+        End If
+    Next i
+End Sub
+
+' 모든 단계를 결합하여 업데이트를 수행하는 메소드
+' @method UpdatePrices2
+' @usage - 'Equity' 행을 찾아 해당 데이터로 가격을 업데이트한다.
+Public Sub UpdatePrices2()
+    Dim equityRow As Range
+    Set equityRow = pWs.Columns(1).Find(What:="Equity", LookIn:=xlValues, LookAt:=xlPart)
+    
+    If Not equityRow Is Nothing Then
+        Dim startRow As Integer
+        startRow = equityRow.row + 4
+        
+        Dim codeCell As Range
+        Dim codeValue As String
+        Dim priceInfo As Variant
+        Dim i As Integer
+        
+        For Each codeCell In pWs.Range(pWs.Cells(startRow, 1), pWs.Cells(pWs.Rows.Count, 1))
+            If IsEmpty(codeCell.value) Then Exit For
+
+            codeValue = codeCell.value
+
+            ' 맞는 dataId를 check하고 가격을 update한다.
+            For i = 1 To pPrices.Count
+                Set priceInfo = pPrices(i)
+
+                If priceInfo("dataId") = codeValue Then
+                    codeCell.Offset(0, 1).value = priceInfo("price")
+                    Exit For
+                End If
+            Next i
+        Next codeCell
+    End If
+End Sub
+
+' 최적화된 방법으로 가격을 업데이트하는 메소드
+' @method UpdatePricesOptimized
+' @usage - Dictionary 객체를 사용하여 빠르게 가격을 업데이트한다.
+Public Sub UpdatePricesOptimized()
+    Dim equityRow As Range, fxRow As Range
+    Set equityRow = pWs.Columns(2).Find(What:="Equity", LookIn:=xlValues, LookAt:=xlPart)
+    Set fxRow = pWs.Columns(2).Find(What:="FX", LookIn:=xlValues, LookAt:=xlPart)
+    
+    Application.Calculation = xlCalculationManual
+    
+    If Not equityRow Is Nothing And Not fxRow Is Nothing Then
+        Dim priceDict As Object
+        Set priceDict = CreateObject("Scripting.Dictionary")
+        
+        ' price dictionary를 만든다.
+        Dim priceInfo As Variant
+        Dim i As Integer
+        For i = 1 To pPrices.Count
+            Set priceInfo = pPrices(i)
+            priceDict(priceInfo("dataId")) = priceInfo("price")
+        Next i
+        
+        ' Equity prices 업데이트
+        UpdatePricesForSection equityRow, priceDict
+        
+        ' FX prices 업데이트
+        UpdatePricesForSection fxRow, priceDict
+    End If
+    
+    Application.Calculation = xlCalculationAutomatic
+End Sub
+
+Private Sub UpdatePricesForSection(sectionRow As Range, priceDict As Object)
+    Dim startRow As Long
+    startRow = sectionRow.row + 4
+    
+    Dim lastRow As Long
+    lastRow = pWs.Cells(startRow, 2).End(xlDown).row
+    
+    Dim codeRange As Range
+    Set codeRange = pWs.Range(pWs.Cells(startRow, 2), pWs.Cells(lastRow, 2))
+    
+    Dim dataArray As Variant
+    dataArray = codeRange.value
+    
+    Dim i As Long
+    For i = 1 To UBound(dataArray, 1)
+        Dim codeValue As String
+        codeValue = dataArray(i, 1)
+        If IsEmpty(codeValue) Then Exit For
+        
+        If priceDict.Exists(codeValue) Then
+            pWs.Cells(startRow + i - 1, 3).value = priceDict(codeValue)
+        End If
+        
+        DoEvents
+    Next i
+End Sub
+
+
+--postCorrMissingData--
+Option Explicit
+
+' Class postCorr
+Private pWorksheet As Worksheet
+Private pStartRow As Long
+Private pColumn As String
+
+' workSheet property
+' @property Get Worksheet
+' @return {Worksheet} worksheet 객체
+Public Property Get Worksheet() As Worksheet
+    Set Worksheet = pWorksheet
+End Property
+
+' @property Set Worksheet
+' @param {Worksheet} value
+Public Property Set Worksheet(value As Worksheet)
+    Set pWorksheet = value
+End Property
+
+' starting row Property
+' @property Get StartRow
+' @return {Long} 시작 Row 값
+Public Property Get startRow() As Long
+    startRow = pStartRow
+End Property
+
+' @property Let StartRow
+' @param {Long} value - 시작 Row 값 Set
+Public Property Let startRow(value As Long)
+    pStartRow = value
+End Property
+
+' column 식별자 property
+' @property Get Column
+' @return {String} column 식별자
+Public Property Get Column() As String
+    Column = pColumn
+End Property
+
+' @property Let Column
+' @param {String} value - column 식별자 Set
+Public Property Let Column(value As String)
+    pColumn = value
+End Property
+
+' worksheet data로부터 JSON string을 만든다.
+'
+' @method GenerateJSON
+' @return {String} worksheet로 부터 만든 JSON string 데이터
+Public Function GenerateJSON() As String
+    Dim dataCollection As New Collection
+    Dim i As Long
+    i = pStartRow
+    
+    '칼럼 정해주기
+    Dim colE As String
+    Dim colF As String
+    Dim colG As String
+
+    colE = pColumn
+    colF = VBA.Chr(Asc(pColumn) + 1)
+    colG = VBA.Chr(Asc(pColumn) + 2)
+    
+    Do While pWorksheet.Cells(i, colE).value <> ""
+        Dim dataDict As Object
+        Set dataDict = CreateObject("Scripting.Dictionary")
+        
+        dataDict.Add "dataId", pWorksheet.Cells(i, colE).value & ":" & pWorksheet.Cells(i, colF).value
+        dataDict.Add "dataId1", pWorksheet.Cells(i, colE).value
+        dataDict.Add "dataId2", pWorksheet.Cells(i, colF).value
+        dataDict.Add "corr", pWorksheet.Cells(i, colG).value
+        
+        dataCollection.Add dataDict
+        i = i + 1
+        DoEvents
+    Loop
+    
+    ' JsonConverter를 사용해서 collection을 JSON으로 바꿔준다.
+    GenerateJSON = JsonConverter.ConvertToJson(dataCollection, Whitespace:=2)
+End Function
+
+--postCorrUpdater--
+' Class Module: PostCorrUpdater
+' 상관 데이터를 저장하는 class module. 두 개의 range를 받아 각각의 데이터 쌍에 대한 상관 값을 JSON 형태로 반환한다.
+
+'Private 변수 선언
+Private pVerticalRange As Range
+Private pHorizontalRange As Range
+
+' vertical range setter
+'@method VerticalRange
+'@param {Range} rng
+'@usage - Vertical range를 설정하는 property 메서드
+Public Property Set VerticalRange(rng As Range)
+    Set pVerticalRange = rng
+End Property
+
+' horizontal range setter
+'@method HorizontalRange
+'@param {Range} rng
+'@usage - Horizontal range를 설정하는 property 메서드
+Public Property Set HorizontalRange(rng As Range)
+    Set pHorizontalRange = rng
+End Property
+
+'@method CorrJsonh2
+'@return {String}
+'@usage - Horizontal 데이터를 기준으로 상관 데이터를 JSON 형식으로 반환하는 함수
+Public Function CorrJsonh2() As String
+    Dim correlationData As New Collection
+    Dim vCell As Range, hCell As Range
+    Dim pairData As Dictionary
+    Dim uniquePairs As New Scripting.Dictionary
+
+    For Each vCell In pVerticalRange
+        For Each hCell In pHorizontalRange
+            Dim dataId1 As String
+            Dim dataId2 As String
+            Dim corrValue As Variant
+
+            dataId1 = hCell.value
+            dataId2 = vCell.value
+            corrValue = vCell.Worksheet.Cells(vCell.row, hCell.Column).value
+            
+            If dataId1 <> dataId2 Then
+
+                If Not IsEmpty(corrValue) And corrValue <> 0 And corrValue <> "" Then
+                    If Not IsDuplicate(dataId1, dataId2, uniquePairs) Then
+                        Set pairData = New Dictionary
+                        With pairData
+                            .Add "dataId1", dataId1
+                            .Add "dataId2", dataId2
+                            .Add "dataId", dataId1 & ":" & dataId2
+                            .Add "corr", corrValue
+                        End With
+                        correlationData.Add pairData
+                        uniquePairs.Add dataId1 & ":" & dataId2, Nothing
+                    End If
+                End If
+            End If
+            DoEvents
+        Next hCell
+        DoEvents
+    Next vCell
+
+    CorrJsonh2 = JsonConverter.ConvertToJson(correlationData)
+End Function
+
+'@method CorrJsonv2
+'@return {String}
+'@usage - Vertical 데이터를 기준으로 상관 데이터를 JSON 형식으로 반환하는 함수
+Public Function CorrJsonv2() As String
+    Dim correlationData As New Collection
+    Dim vCell As Range, hCell As Range
+    Dim pairData As Dictionary
+    Dim uniquePairs As New Scripting.Dictionary
+
+    For Each vCell In pVerticalRange
+        For Each hCell In pHorizontalRange
+            Dim dataId1 As String
+            Dim dataId2 As String
+            Dim corrValue As Variant
+
+            dataId1 = vCell.value
+            dataId2 = hCell.value
+            corrValue = vCell.Worksheet.Cells(vCell.row, hCell.Column).value
+            
+            If dataId1 <> dataId2 Then
+
+                If Not IsEmpty(corrValue) And corrValue <> 0 And corrValue <> "" Then
+                    If Not IsDuplicate(dataId1, dataId2, uniquePairs) Then
+                        Set pairData = New Dictionary
+                        With pairData
+                            .Add "dataId1", dataId1
+                            .Add "dataId2", dataId2
+                            .Add "dataId", dataId1 & ":" & dataId2
+                            .Add "corr", corrValue
+                        End With
+                        correlationData.Add pairData
+                        uniquePairs.Add dataId1 & ":" & dataId2, Nothing
+                    End If
+                End If
+            End If
+            DoEvents
+        Next hCell
+        DoEvents
+    Next vCell
+
+    CorrJsonv2 = JsonConverter.ConvertToJson(correlationData)
+End Function
+
+'@method CorrJson2
+'@return {String}
+'@usage - CorrJsonh2와 CorrJsonv2의 결과를 합쳐서 JSON 형식으로 반환하는 함수
+Public Function CorrJson2() As String
+    Dim combinedData As New Collection
+    Dim hData As Collection
+    Dim vData As Collection
+    Dim item As Object
+    Dim uniquePairs As New Scripting.Dictionary
+    
+    ' CorrJsonh2와 CorrJsonv2로 부터 data를 얻는다.
+    Set hData = JsonConverter.ParseJson(CorrJsonh2())
+    Set vData = JsonConverter.ParseJson(CorrJsonv2())
+    
+    ' CorrJsonh2로 부터 data를 결합한다.
+    For Each item In hData
+        AddSymmetricCorrelation combinedData, item, uniquePairs
+    Next item
+    
+    ' CorrJsonv2로 부터 data를 결합한다.
+    For Each item In vData
+        AddSymmetricCorrelation combinedData, item, uniquePairs
+    Next item
+    
+    ' 합쳐진 데이터를 JSON으로 변환한다.
+    CorrJson2 = JsonConverter.ConvertToJson(combinedData)
+End Function
+
+Private Sub AddSymmetricCorrelation(ByRef combinedData As Collection, ByVal item As Object, ByRef uniquePairs As Scripting.Dictionary)
+    Dim dataId1 As String, dataId2 As String, corrValue As Variant
+    dataId1 = item("dataId1")
+    dataId2 = item("dataId2")
+    corrValue = item("corr")
+    
+    ' dataId1:dataId2 correlation 추가
+    If Not uniquePairs.Exists(dataId1 & ":" & dataId2) Then
+        combinedData.Add item
+        uniquePairs.Add dataId1 & ":" & dataId2, Nothing
+    End If
+    
+    ' dataId2:dataId1 correlation 추가
+    If Not uniquePairs.Exists(dataId2 & ":" & dataId1) Then
+        Dim reversedItem As New Dictionary
+        With reversedItem
+            .Add "dataId1", dataId2
+            .Add "dataId2", dataId1
+            .Add "dataId", dataId2 & ":" & dataId1
+            .Add "corr", corrValue
+        End With
+        combinedData.Add reversedItem
+        uniquePairs.Add dataId2 & ":" & dataId1, Nothing
+    End If
+End Sub
+
+
+--postDisDivMissingData--
+Option Explicit
+
+' Class Module: postDisDiv
+Private pWorksheet As Worksheet
+Private pStartCell As Range
+Private pK As Long
+
+' Property for Worksheet
+' @property Get Worksheet
+' @return {Worksheet} worksheet 객체
+Public Property Get Worksheet() As Worksheet
+    Set Worksheet = pWorksheet
+End Property
+
+' @property Set Worksheet
+' @param {Worksheet} value
+Public Property Set Worksheet(value As Worksheet)
+    Set pWorksheet = value
+End Property
+
+' Property for StartCell
+' @property Get StartCell
+' @return {Range} starting cell range
+Public Property Get startCell() As Range
+    Set startCell = pStartCell
+End Property
+
+' @property Set StartCell
+' @param {Range} value
+Public Property Set startCell(value As Range)
+    Set pStartCell = value
+End Property
+
+' Property for K
+' @property Get k
+' @return {Long} K값
+Public Property Get k() As Long
+    k = pK
+End Property
+
+' @property Let k
+' @param {Long} value - set K값
+Public Property Let k(value As Long)
+    pK = value
+End Property
+
+' Method to Generate JSON
+'
+' @method ReturnJSON
+' @return {String} worksheet의 data로 부터 만들어진 JSON string
+Public Function ReturnJSON() As String
+    Dim dividendStreamCollection As New Collection '가장 바깥의 jsonArray
+    Dim i As Long, j As Long
+
+    For i = 1 To pK
+        Dim dataIdCell As Range
+        Set dataIdCell = pStartCell.Offset(3, 1 + 3 * (i - 1))
+        
+        Dim dataId As String
+        dataId = dataIdCell.value
+        
+        Dim disDivData As Object
+        Set disDivData = CreateObject("Scripting.Dictionary")
+        disDivData("dataId") = dataId '가장 바깥의 jsonArray의 jsonObject의 key dataId와 value값 할당
+        
+        Dim dividendsCollection As New Collection 'jsonObject의 key의 value값이 될 jsonarray 생성
+        Set dividendsCollection = New Collection '재초기화 (jsonArray 재초기화)
+        j = 4 ' Start row offset for yields
+        
+        Do While pWorksheet.Cells(dataIdCell.row + j, dataIdCell.Column).value <> ""
+            Dim divData As Object
+            Set divData = CreateObject("Scripting.Dictionary") 'jsonarray의 요소가 될 jsonObject 생성
+            divData("date") = CStr(pWorksheet.Cells(dataIdCell.row + j, dataIdCell.Column - 1).value)
+            divData("value") = pWorksheet.Cells(dataIdCell.row + j, dataIdCell.Column).value
+            dividendsCollection.Add divData 'divData jsonObject(Dictionary)를 jsonArray에 넣어준다.
+            j = j + 1
+            DoEvents
+        Loop
+        
+        Dim divsArray() As Variant
+        ReDim divsArray(1 To dividendsCollection.Count) '만들어진 dictionary를 요소로가지는 collection을 Array형태로 바꿔서
+        'structured된 json객체를 구현한다.
+        
+        Dim idx As Long
+        For idx = 1 To dividendsCollection.Count
+            Set divsArray(idx) = dividendsCollection(idx) 'array의 첫번째에 collection의 첫번째 dictionary를 넣어준다.
+            DoEvents
+        Next idx
+        
+        disDivData("dividends") = divsArray 'dictionary의 key dividends에 divsArray(json array) value를 할당한다.
+        dividendStreamCollection.Add disDivData '모든 값이 할당된 dictionary를 collection에 순서대로 추가한다.
+        DoEvents
+    Next i
+    
+    Dim jsonString As String
+    jsonString = JsonConverter.ConvertToJson(dividendStreamCollection) 'collection을 ConvertToJson메소드를 이용해서 jsonString으로 변환한다.
+    
+    Debug.Print jsonString
+    ReturnJSON = jsonString
+    
+End Function
+
+
+--PostDivStreamUpdater--
+Option Explicit
+
+Private pArrayOfIndex As Variant
+Private pTitleCell As Range
+Private pStartCell As Range
+Private pWs As Worksheet
+
+' Setter for pWs
+' @method ws
+' @param {Worksheet} value
+' @usage - worksheet setter이다.
+Public Property Set ws(ByVal value As Worksheet)
+    Set pWs = value
+End Property
+
+' Getter for pWs
+' @method ws
+' @return {Worksheet}
+' @usage - worksheet getter이다.
+Public Property Get ws() As Worksheet
+    Set ws = pWs
+End Property
+
+' Getter for pArrayOfIndex
+' @method ArrayOfIndex
+' @return {Variant}
+' @usage - array of index getter이다.
+Public Property Get ArrayOfIndex() As Variant
+    ArrayOfIndex = pArrayOfIndex
+End Property
+
+' Setter for pArrayOfIndex
+' @method ArrayOfIndex
+' @param {Variant} value
+' @usage - array of index setter이다.
+Public Property Let ArrayOfIndex(ByVal value As Variant)
+    pArrayOfIndex = value
+End Property
+
+' Getter for pTitleCell
+' @method TitleCell
+' @return {Range}
+' @usage - title cell의 getter이다.
+Public Property Get TitleCell() As Range
+    Set TitleCell = pTitleCell
+End Property
+
+' Setter for pTitleCell
+' @method TitleCell
+' @param {Range} value
+' @usage - title cell의 setter이다.
+Public Property Set TitleCell(ByVal value As Range)
+    Set pTitleCell = value
+End Property
+
+' Setter for pStartCell
+' @method startCell
+' @param {Range} value
+' @usage - start cell의 setter이다.
+Public Property Set startCell(value As Range)
+    Set pStartCell = value
+End Property
+
+' Getter for pStartCell
+' @method startCell
+' @return {Range}
+' @usage - start cell의 getter이다.
+Public Property Get startCell() As Range
+    Set startCell = pStartCell
+End Property
+
+Private Sub Class_Initialize()
+    ' pArrayOfIndex를 empty array로 초기화한다.
+    ' 어떤 element가 array에 추가되기 전에도, array가 사용될 준비가 되있다.
+    ReDim pArrayOfIndex(0 To 0)
+End Sub
+' @method PopulateArrayOfIndex
+' @usage - pStartCell에 근거해서 pArrayOfIndex를 채운다.
+Public Sub PopulateArrayOfIndex()
+    Dim currentCell As Range
+    Set currentCell = pStartCell ' class property pStartCell
+    Dim cellCount As Integer
+    cellCount = 0
+    
+    Do
+        ' currency cell이 비었는지 확인한다.
+        If IsEmpty(currentCell.value) Then
+            Exit Do ' 빈 셀이 발견되면 loop를 빠져 나간다.
+        End If
+        
+        ' array를 Resize하고, current cell의 값을 부여한다.
+        cellCount = cellCount + 1
+        ReDim Preserve pArrayOfIndex(1 To cellCount)
+        pArrayOfIndex(cellCount) = currentCell.value
+        
+        ' 오른쪽으로 2 칼럼 이동한다.
+        Set currentCell = currentCell.Offset(0, 2)
+    Loop
+End Sub
+
+' @method GenerateDataString2
+' @return {String}
+' @usage - array of index 데이터로부터 JSON string을 생성한다.
+Public Function GenerateDataString2() As String
+    Dim arrayOfIndexData As Collection
+    Set arrayOfIndexData = New Collection
+    
+    Dim arraySize As Integer
+    arraySize = UBound(pArrayOfIndex)
+    
+    If arraySize > 0 Then
+        Dim i As Integer, j As Integer
+        Dim indexData As Dictionary
+        
+        For i = 1 To arraySize
+            Set indexData = New Dictionary
+            indexData.Add "dataId", pArrayOfIndex(i)
+            
+            Dim dividends As Collection
+            Set dividends = New Collection
+            
+            j = 1 ' inner loop counter를 초기화한다.
+            Do While Not IsEmpty(pTitleCell.Offset(3 + j, (i - 1) * 2).value)
+                Dim dividend As Dictionary
+                Set dividend = New Dictionary
+                dividend.Add "date", CStr(pTitleCell.Offset(3 + j, (i - 1) * 2).value)
+                dividend.Add "value", pTitleCell.Offset(3 + j, (i - 1) * 2 + 1).value
+                
+                dividends.Add dividend
+                j = j + 1
+                DoEvents
+            Loop
+            
+            indexData.Add "dividends", dividends
+            arrayOfIndexData.Add indexData
+            DoEvents
+        Next i
+    End If
+    
+    ' jsonConverter를 사용해서 전체 collection을 JSON string으로 변경한다.
+    GenerateDataString2 = JsonConverter.ConvertToJson(arrayOfIndexData)
+End Function
+
+
+
+--PostDivYieldUpdater--
+Private pWs As Worksheet
+Private pDivCell As Range
+Private pdataIdRange As Range
+
+' Getter for Worksheet
+' @method Worksheet
+' @return {Worksheet}
+' @usage - worksheet의 getter
+Public Property Get Worksheet() As Worksheet
+    Set Worksheet = pWs
+End Property
+
+' Setter for Worksheet
+' @method Worksheet
+' @param {Worksheet} value
+' @usage - worksheet의 setter
+Public Property Set Worksheet(value As Worksheet)
+    Set pWs = value
+End Property
+
+' Getter for DivCell Range
+' @method DivCell
+' @return {Range}
+' @usage - DivCell range의 getter
+Public Property Get DivCell() As Range
+    Set DivCell = pDivCell
+End Property
+
+' Setter for DivCell Range
+' @method DivCell
+' @param {Range} value
+' @usage - DivCell range의 setter
+Public Property Set DivCell(value As Range)
+    Set pDivCell = value
+End Property
+
+' Getter for DataIdRange
+' @method DataIdRange
+' @return {Range}
+' @usage - DataIdRange의 getter
+Public Property Get dataIdRange() As Range
+    Set dataIdRange = pdataIdRange
+End Property
+
+' Setter for DataIdRange
+' @method DataIdRange
+' @param {Range} value
+' @usage - DataIdRange의 setter
+Public Property Set dataIdRange(value As Range)
+    Set pdataIdRange = value
+End Property
+
+' jsonConverter library에 대한 reference를 필요로 한다.
+' jsonConverter.bas file을 project에 import해야 한다.
+Public Function GenerateJson2() As String
+    Dim dataList As Collection
+    Set dataList = New Collection
+    
+    Dim cell As Range
+    Dim item As Dictionary
+    Dim dataId As String
+    Dim yield As Double
+    
+    For Each cell In pdataIdRange
+        Set item = New Dictionary
+        dataId = cell.value & "_C_D"
+        yield = cell.Offset(0, 1).value
+        
+        With item
+            .Add "dataId", dataId
+            .Add "yield", yield
+        End With
+        
+        dataList.Add item
+        DoEvents
+    Next cell
+    
+    ' jsonConverter를 사용해서 JSON string으로 collection을 변경한다.
+    GenerateJson2 = JsonConverter.ConvertToJson(dataList)
+End Function
+
+
+--PostForwardRate--
+Option Explicit
+
+Private pWorksheet As Worksheet
+Private pStartCell As Range
+Private pK As Long
+
+' Property for the worksheet
+'
+' @property Get Worksheet
+' @return {Worksheet} worksheet 객체
+Public Property Get Worksheet() As Worksheet
+    Set Worksheet = pWorksheet
+End Property
+
+' @property Set Worksheet
+' @param {Worksheet} value - worksheet object를 set한다.
+Public Property Set Worksheet(value As Worksheet)
+    Set pWorksheet = value
+End Property
+
+' Property for the start cell
+'
+' @property Get StartCell
+' @return {Range} 시작 Cell range
+Public Property Get startCell() As Range
+    Set startCell = pStartCell
+End Property
+
+' @property Set StartCell
+' @param {Range} value - 시작 cell range를 set한다.
+Public Property Set startCell(value As Range)
+    Set pStartCell = value
+End Property
+
+' Property for the number of currencies
+'
+' @property Get k
+' @return {Long} k값
+Public Property Get k() As Long
+    k = pK
+End Property
+
+' @property Let k
+' @param {Long} value - k값을 set한다.
+Public Property Let k(value As Long)
+    pK = value
+End Property
+
+' JSON String을 생성해서 return하는 메소드
+'
+' @method ReturnJSON
+' @return {String} worksheet의 data로 부터 만들어진 JSON string
+' @usage - 문제가 있어서 deprecated됨.
+Public Function ReturnJSON() As String
+    Dim currenciesCollection As New Collection
+    Dim i As Long, j As Long
+    
+    For i = 1 To pK ' Use the K property here
+        Dim relCurrencyCell As Range
+        Dim currencyCode As String
+        currencyCode = pStartCell.Offset(4, 1 + 3 * (i - 1)).value
+        
+        Set relCurrencyCell = pWorksheet.Rows(7).Find(What:=currencyCode, LookAt:=xlWhole)
+        
+        Dim currencyData As Object
+        Set currencyData = CreateObject("Scripting.Dictionary")
+        
+        Dim dataId As String
+        dataId = "F_FX" & currencyCode & pStartCell.Offset(3, 1 + 3 * (i - 1)).value
+        currencyData("dataId") = dataId
+        
+        Dim yieldsCollection As New Collection
+        Set yieldsCollection = New Collection '재초기화
+        
+        j = 2 ' Start row offset for yields
+        Do While pWorksheet.Cells(relCurrencyCell.row + j, relCurrencyCell.Column).value <> ""
+            Dim yieldData As Object
+            Set yieldData = CreateObject("Scripting.Dictionary")
+            yieldData("tenor") = pWorksheet.Cells(relCurrencyCell.row + j, relCurrencyCell.Column - 1).value
+            yieldData("value") = pWorksheet.Cells(relCurrencyCell.row + j, relCurrencyCell.Column).value
+            yieldsCollection.Add yieldData
+            j = j + 1
+        Loop
+        
+        Dim yieldsArray() As Variant
+        Dim idx As Long
+        
+        ReDim yieldsArray(1 To yieldsCollection.Count)
+        For idx = 1 To yieldsCollection.Count
+            Set yieldsArray(idx) = yieldsCollection(idx)
+        Next idx
+        
+        currencyData("yields") = yieldsArray
+        currenciesCollection.Add currencyData
+    Next i
+    
+    Dim jsonString As String
+    jsonString = JsonConverter.ConvertToJson(currenciesCollection)
+    
+    Debug.Print jsonString
+    
+    ReturnJSON = jsonString
+End Function
+' JSON String을 생성해서 return하는 메소드
+'
+' @method ReturnJSON
+' @return {String} worksheet의 data로 부터 만들어진 JSON string
+' @usage - 이 방식이 제대로 JsonString을 생성한다.
+Public Function ReturnJSON2() As String
+    Dim currenciesCollection As New Collection
+    Dim i As Long, j As Long
+    Dim dataIdRange As Range
+    
+    ' The Data IDs are in B5, E5, H5, K5
+    Set dataIdRange = pStartCell.Offset(2, 1)
+    
+    For i = 0 To pK - 1 ' Adjust to start from 0 and go to pK - 1
+        Dim dataIdCell As Range
+        Dim dataId As String
+        Dim tenorColumn As Range
+        Dim valueColumn As Range
+        
+        Set dataIdCell = dataIdRange.Offset(0, 3 * i)
+        dataId = dataIdCell.value
+        'Debug.Print "Data ID: " & dataId
+        
+        Dim currencyData As Object
+        Set currencyData = CreateObject("Scripting.Dictionary")
+        currencyData("dataId") = dataId
+        
+        Set tenorColumn = dataIdCell.Offset(4, -1) ' Tenor column starts 4 rows down, 1 column left
+        Set valueColumn = dataIdCell.Offset(4, 0) ' Value column starts 4 rows down, same column
+        
+        'Dim yieldsCollection As New Collection
+        Dim yieldsCollection As Collection
+        Set yieldsCollection = New Collection
+        
+        j = 0 ' Initialize row offset for yields
+        Do While tenorColumn.Offset(j, 0).value <> "" And valueColumn.Offset(j, 0).value <> ""
+            Dim yieldData As Object
+            Set yieldData = CreateObject("Scripting.Dictionary")
+            yieldData("tenor") = tenorColumn.Offset(j, 0).value
+            yieldData("value") = valueColumn.Offset(j, 0).value
+            yieldsCollection.Add yieldData
+            
+            ' Debug print each yield data
+            'Debug.Print "Yield Data - Tenor: " & yieldData("tenor") & ", Value: " & yieldData("value")
+            
+            j = j + 1
+            DoEvents
+        Loop
+        
+        Dim yieldsArray() As Variant
+        Dim idx As Long
+        
+        ReDim yieldsArray(1 To yieldsCollection.Count)
+        For idx = 1 To yieldsCollection.Count
+            Set yieldsArray(idx) = yieldsCollection(idx)
+            DoEvents
+        Next idx
+        
+        currencyData("yields") = yieldsArray
+        currenciesCollection.Add currencyData
+        DoEvents
+    Next i
+    
+    Dim jsonString As String
+    jsonString = JsonConverter.ConvertToJson(currenciesCollection)
+    
+    Debug.Print jsonString
+    
+    ReturnJSON2 = jsonString
+End Function
+
+
+--PostHistoricalVol--
+Private pWorksheet As Worksheet
+Private pStartRow As Long
+
+' Property for the worksheet
+Public Property Get Worksheet() As Worksheet
+    Set Worksheet = pWorksheet
+End Property
+
+Public Property Set Worksheet(value As Worksheet)
+    Set pWorksheet = value
+End Property
+
+' Property for the starting row
+Public Property Get startRow() As Long
+    startRow = pStartRow
+End Property
+
+Public Property Let startRow(value As Long)
+    pStartRow = value
+End Property
+
+Public Sub ProcessData()
+    ' Jsonarray로 바뀔 Collection타입 dataCollection
+    Dim dataCollection As New Collection
+    
+    Dim i As Long
+    i = pStartRow
+    
+    ' 각 currency block을 Loop돌면서 data를 모은다.
+    Do While pWorksheet.Cells(i, "A").value <> ""
+        Dim dataDict As Object
+        Set dataDict = CreateObject("Scripting.Dictionary")
+        
+        ' Dictionary에 key value 쌍을 집어 넣는다.
+        dataDict.Add "dataId", pWorksheet.Cells(i, "A").value & "_VOL_250"
+        dataDict.Add "historicalVol", pWorksheet.Cells(i, "C").value / 100
+        
+        ' Collection(json array)에 Dictionary(json object)를 집어 넣는다.
+        dataCollection.Add dataDict
+        
+        i = i + 1
+    Loop
+    
+    ' Collection type data를 json array로 바꿔준다. (JsonConverter의 ConvertToJson이용)
+    Dim jsonString As String
+    jsonString = JsonConverter.ConvertToJson(dataCollection, Whitespace:=2)
+    
+    ' JSON string 출력
+    Debug.Print jsonString
+End Sub
+
+Public Function ReturnData() As String
+    ' Jsonarray로 바뀔 Collection타입 dataCollection
+    Dim dataCollection As New Collection
+    
+    Dim i As Long
+    i = pStartRow
+    
+    ' 각 currency block을 Loop돌면서 data를 모은다.
+    Do While pWorksheet.Cells(i, "A").value <> ""
+        Dim dataDict As Object
+        Set dataDict = CreateObject("Scripting.Dictionary")
+        
+        ' Dictionary에 key value 쌍을 집어 넣는다.
+        dataDict.Add "dataId", pWorksheet.Cells(i, "A").value & "_VOL_250"
+        dataDict.Add "historicalVol", pWorksheet.Cells(i, "C").value / 100
+        
+        ' Collection(json array)에 Dictionary(json object)를 집어 넣는다.
+        dataCollection.Add dataDict
+        
+        i = i + 1
+    Loop
+    
+    ' Collection type data를 json array로 바꿔준다. (JsonConverter의 ConvertToJson이용)
+    Dim jsonString As String
+    jsonString = JsonConverter.ConvertToJson(dataCollection, Whitespace:=2)
+    
+    ' JSON string 출력
+    Debug.Print jsonString
+    
+    ReturnData = jsonString
+End Function
+
+
+--PostPriceUpdater--
+Option Explicit
+
+Private pTable1Point As Range
+Private pFxRow As Range
+Private pWs As Worksheet
+
+' Setter for Table1Point
+' @method Table1Point
+' @param {Range} value
+' @usage - Table1 range의 시작점을 set
+Public Property Set Table1Point(value As Range)
+    Set pTable1Point = value
+End Property
+
+' Getter for Table1Point
+' @method Table1Point
+' @return {Range}
+' @usage - Table1 range의 시작점을 get
+Public Property Get Table1Point() As Range
+    Set Table1Point = pTable1Point
+End Property
+
+' Setter for fxRow
+' @method fxRow
+' @param {Range} value
+' @usage - fxRow range를 set
+Public Property Set fxRow(value As Range)
+    Set pFxRow = value
+End Property
+
+' Getter for fxRow
+' @method fxRow
+' @return {Range}
+' @usage - fxRow range를 get
+Public Property Get fxRow() As Range
+    Set fxRow = pFxRow
+End Property
+
+' Setter for Worksheet
+' @method Worksheet
+' @param {Worksheet} value
+' @usage - worksheet의 setter
+Public Property Set Worksheet(value As Worksheet)
+    Set pWs = value
+End Property
+
+' Getter for Worksheet
+' @method Worksheet
+' @return {Worksheet}
+' @usage - worksheet의 getter
+Public Property Get Worksheet() As Worksheet
+    Set Worksheet = pWs
+End Property
+
+' data의 JSON string을 만든다.
+' @method GenerateJson2
+' @return {String}
+' @usage - Table1Point와 fxRow 사이에 있는 data로 JSON string을 만든다.
+Public Function GenerateJson2() As String
+    Dim dataList As Collection
+    Set dataList = New Collection
+    
+    ' Equity data 처리
+    ProcessDataSection pTable1Point.row + 4, pFxRow.row - 1, dataList
+    
+    ' FX data 처리
+    Dim fxStartRow As Long
+    fxStartRow = pFxRow.row + 4
+    Dim lastRow As Long
+    lastRow = pWs.Cells(fxStartRow, pTable1Point.Column).End(xlDown).row
+    ProcessDataSection fxStartRow, lastRow, dataList
+    
+    GenerateJson2 = JsonConverter.ConvertToJson(dataList, Whitespace:=2)
+End Function
+
+' 섹션에 맞춰서 데이터를 처리하는 Helper method (Equity 혹은 FX)
+Private Sub ProcessDataSection(startRow As Long, endRow As Long, ByRef dataList As Collection)
+    Dim i As Long
+    For i = startRow To endRow
+        If IsEmpty(pWs.Cells(i, pTable1Point.Column).value) Then
+            Exit For  ' 빈 셀에 도달하면 멈춘다.
+        End If
+        
+        Dim dataDict As Object
+        Set dataDict = CreateObject("Scripting.Dictionary")
+        
+        dataDict("dataId") = pWs.Cells(i, pTable1Point.Column).value
+        dataDict("price") = pWs.Cells(i, pTable1Point.Column + 1).value
+        
+        dataList.Add dataDict
+        DoEvents
+    Next i
+End Sub
+
+
+--PostQuoteUpdaterNew--
+
+Option Explicit
+
+Private pWs As Worksheet
+Private pRange As Range
+
+'Getter for pWs
+Public Property Get Worksheet() As Worksheet
+    Set Worksheet = pWs
+End Property
+
+'Setter for pWs
+Public Property Set Worksheet(value As Worksheet)
+    Set pWs = value
+End Property
+
+'Getter for pRange
+Public Property Get Range() As Range
+    Set Range = pRange
+End Property
+
+'Setter for pRange
+Public Property Set Range(value As Range)
+    Set pRange = value
+End Property
+
+Public Function makeJsonString2() As String
+
+    Dim jsonString As String
+    Dim row As Range
+    Dim adjustedRange As Range
+    Set adjustedRange = pRange.Offset(1, 0).Resize(pRange.Rows.Count - 1, pRange.Columns.Count)
+    Dim JsonCollection As Collection
+    Set JsonCollection = New Collection
+    
+    For Each row In adjustedRange.Rows
+        Dim JsonDictionary As Dictionary
+        Set JsonDictionary = New Dictionary
+        
+        JsonDictionary.Add "productId", row.Cells(1, 1).value
+        JsonDictionary.Add "effectiveDate", IfEmpty(CStr(row.Cells(1, 3).value))
+        JsonDictionary.Add "productType", row.Cells(1, 4).value
+        JsonDictionary.Add "earlyRedempCycle", row.Cells(1, 5).value
+        JsonDictionary.Add "settleDateOffset", row.Cells(1, 6).value
+        JsonDictionary.Add "maturityEvaluationDays", row.Cells(1, 7).value
+        JsonDictionary.Add "underlyingAsset1", IfEmpty(row.Cells(1, 8).value)
+        JsonDictionary.Add "underlyingAsset2", IfEmpty(row.Cells(1, 9).value)
+        JsonDictionary.Add "underlyingAsset3", IfEmpty(row.Cells(1, 10).value)
+        JsonDictionary.Add "exercisePrices", IfEmpty(CStr(row.Cells(1, 11).value))
+        JsonDictionary.Add "monthlyPaymentBarrier", IfEmpty(row.Cells(1, 12).value)
+        JsonDictionary.Add "coupon", IfEmpty(row.Cells(1, 13).value)
+        JsonDictionary.Add "lizardCoupon", IfEmpty(row.Cells(1, 14).value)
+        JsonDictionary.Add "lossParticipationRate", IfEmpty(row.Cells(1, 15).value)
+        JsonDictionary.Add "kiBarrier", IfEmpty(row.Cells(1, 16).value)
+        JsonDictionary.Add "principalProtectedRate", IfEmpty(row.Cells(1, 17).value)
+        JsonDictionary.Add "callBarrier", IfEmpty(row.Cells(1, 18).value)
+        JsonDictionary.Add "callParticipationRate", IfEmpty(row.Cells(1, 19).value)
+        JsonDictionary.Add "koBarrierUpSide", IfEmpty(row.Cells(1, 20).value)
+        JsonDictionary.Add "dummyCouponUpSide", IfEmpty(row.Cells(1, 21).value)
+        JsonDictionary.Add "putBarrier", IfEmpty(row.Cells(1, 22).value)
+        JsonDictionary.Add "putParticipationRate", IfEmpty(row.Cells(1, 23).value)
+        JsonDictionary.Add "koBarrierDownSide", IfEmpty(row.Cells(1, 24).value)
+        JsonDictionary.Add "dummyCouponDownSide", IfEmpty(row.Cells(1, 25).value) '여기까지 dummy 쿠폰
+        JsonDictionary.Add "swapCouponType", IfEmpty(row.Cells(1, 26).value)
+        JsonDictionary.Add "swapUnderlyingAsset", IfEmpty(row.Cells(1, 27).value)
+        JsonDictionary.Add "swapInterestPaymentCycle", IfEmpty(row.Cells(1, 28).value)
+        JsonDictionary.Add "swapSpread", IfEmpty(row.Cells(1, 29).value)
+        JsonDictionary.Add "dayCountConvention", IfEmpty(row.Cells(1, 30).value)
+        JsonDictionary.Add "calculationCurrency", IfEmpty(row.Cells(1, 31).value)
+        JsonDictionary.Add "valuation", IfEmpty(row.Cells(1, 32).value)
+        
+        JsonCollection.Add JsonDictionary
+        
+    Next row
+    
+    jsonString = JsonConverter.ConvertToJson(JsonCollection)
+    makeJsonString2 = jsonString
+    
+    
+End Function
+
+' Helper function to convert empty cells to Null 빈 cell을 Null로 바꾸는 Helper 함수
+Function IfEmpty(value As Variant) As Variant
+    If IsEmpty(value) Or value = "" Then
+        IfEmpty = Null  ' cell이 비었으면, Null값을 할당한다.
+    Else
+        IfEmpty = value
+    End If
+End Function
+
+
+
+--PostVolUpdater--
+Option Explicit
+
+' Private 변수
+Private pWorksheet As Worksheet
+Private pRefCell As Range
+Private pDataId As String
+
+' worksheet property
+' @method Worksheet
+' @return {Worksheet}
+' @usage - worksheet의 getter
+Public Property Get Worksheet() As Worksheet
+    Set Worksheet = pWorksheet
+End Property
+
+' @method Worksheet
+' @param {Worksheet} value
+' @usage - worksheet의 setter
+Public Property Set Worksheet(value As Worksheet)
+    Set pWorksheet = value
+End Property
+
+' reference cell property
+' @method RefCell
+' @return {Range}
+' @usage - reference cell의 getter
+Public Property Get RefCell() As Range
+    Set RefCell = pRefCell
+End Property
+
+' @method RefCell
+' @param {Range} value
+' @usage - reference cell의 setter
+Public Property Set RefCell(value As Range)
+    Set pRefCell = value
+End Property
+
+' dataId property
+' @method dataId
+' @return {String}
+' @usage - dataId의 getter
+Public Property Get dataId() As String
+    dataId = pDataId
+End Property
+
+' @method dataId
+' @param {String} value
+' @usage - dataId의 setter
+Public Property Let dataId(value As String)
+    pDataId = value
+End Property
+
+' GenerateObjectJSON method
+' @method GenerateObjectJSON
+' @return {String}
+' @usage - worksheet의 tenor, vol, volFactor data를 바탕으로 JSON string을 생성
+Public Function GenerateObjectJSON() As String
+    Dim volFactorRange As Range, tenorRange As Range, dataRange As Range
+    Dim volFactorCell As Range, termVolCell As Range
+    Dim firstTermVol As Boolean, firstVolCurve As Boolean
+    Dim objectJSON As String
+    
+    ' refCell의 데이터와 volFactor, tenor에 근거해서 range를 잡는다.
+    Set volFactorRange = pWorksheet.Range(pRefCell.Offset(0, 2), pRefCell.Offset(0, 2).End(xlToRight))
+    Set tenorRange = pWorksheet.Range(pRefCell.Offset(1, 1), pRefCell.Offset(1, 1).End(xlDown))
+    Set dataRange = pWorksheet.Range(volFactorRange.Offset(1, 0), tenorRange.Offset(0, volFactorRange.Columns.Count - 1))
+    
+    objectJSON = "{" & """dataId"": """ & pDataId & """," & """volCurves"": ["
+    
+    firstVolCurve = True
+    For Each volFactorCell In volFactorRange
+        If Not firstVolCurve Then
+            objectJSON = objectJSON & ","
+        End If
+        objectJSON = objectJSON & "{" & """termVols"": ["
+        
+        firstTermVol = True
+        For Each termVolCell In tenorRange
+            If Not firstTermVol Then
+                objectJSON = objectJSON & ","
+            End If
+            objectJSON = objectJSON & "{" & """tenor"": " & termVolCell.value & "," & """vol"": " & pWorksheet.Cells(termVolCell.row, volFactorCell.Column).value & "}"
+            firstTermVol = False
+        Next termVolCell
+        
+        objectJSON = objectJSON & "]," & """volFactor"": " & volFactorCell.value & "}"
+        firstVolCurve = False
+    Next volFactorCell
+    
+    objectJSON = objectJSON & "]}"
+    
+    GenerateObjectJSON = objectJSON
+End Function
+
+' GenerateObjectJSON2 method
+' @method GenerateObjectJSON
+' @return {String}
+' @usage - worksheet의 tenor, vol, volFactor data를 바탕으로 JSON string을 생성
+Public Function GenerateObjectJSON2() As String
+    Dim volFactorRange As Range, tenorRange As Range, dataRange As Range
+    Dim volFactorCell As Range, termVolCell As Range
+    Dim volCurves As Collection
+    Dim termVols As Collection
+    Dim volCurve As Dictionary, termVol As Dictionary
+    Dim volFactorOrder As Integer
+
+    ' volCurve를 위한 주요 collection을 초기화한다.
+    Set volCurves = New Collection
+    
+    ' refCell 기준으로 range를 정의한다.
+    Set volFactorRange = pWorksheet.Range(pRefCell.Offset(0, 2), pRefCell.Offset(0, 2).End(xlToRight))
+    Set tenorRange = pWorksheet.Range(pRefCell.Offset(1, 1), pRefCell.Offset(1, 1).End(xlDown))
+    Set dataRange = pWorksheet.Range(volFactorRange.Offset(1, 0), tenorRange.Offset(0, volFactorRange.Columns.Count - 1))
+    
+    volFactorOrder = 1
+    ' volFactor를 순회한다.
+    For Each volFactorCell In volFactorRange
+        ' volFactorCell이 비었으면, skip한다.
+        If VBA.Trim(volFactorCell.value) <> "" Then
+            Set termVols = New Collection
+            ' 각 tenor에 대한 termVols을 만든다.
+            For Each termVolCell In tenorRange
+                ' termVolCell이 비었으면, skip한다.
+                If VBA.Trim(termVolCell.value) <> "" Then
+                    Set termVol = New Dictionary
+                    termVol.Add "tenor", termVolCell.value
+                    termVol.Add "vol", pWorksheet.Cells(termVolCell.row, volFactorCell.Column).value
+                    termVols.Add termVol
+                End If
+                DoEvents
+            Next termVolCell
+            
+            ' termVols이 있다면, volCurve를 추가한다.
+            If termVols.Count > 0 Then
+                Set volCurve = New Dictionary
+                volCurve.Add "volFactor", volFactorCell.value
+                volCurve.Add "volFactorOrder", volFactorOrder
+                volCurve.Add "termVols", termVols
+                volCurves.Add volCurve
+                volFactorOrder = volFactorOrder + 1
+            End If
+        End If
+        DoEvents
+    Next volFactorCell
+    
+    ' dataId와 volCurves를 가지는 주요dictionary를 만든다.
+    Dim output As Dictionary
+    Set output = New Dictionary
+    output.Add "dataId", pDataId
+    output.Add "volCurves", volCurves
+    
+    ' output을 JSON형태로 변환한다.
+    GenerateObjectJSON2 = JsonConverter.ConvertToJson(output)
+End Function
+
+--PostYieldCurveUpdater--
+Option Explicit
+
+Private pArrayOfCurrency As Variant
+Private pYieldCurveRow As Range
+Private pStartCell As Range
+
+' Getter for pArrayOfCurrency
+' @method ArrayOfCurrency
+' @return {Variant}
+' @usage - pArrayOfCurrency 값을 가져온다.
+Public Property Get ArrayOfCurrency() As Variant
+    ArrayOfCurrency = pArrayOfCurrency
+End Property
+
+' Setter for pArrayOfCurrency
+' @method ArrayOfCurrency
+' @param {Variant} value
+' @usage - pArrayOfCurrency 값을 설정한다.
+Public Property Let ArrayOfCurrency(ByVal value As Variant)
+    pArrayOfCurrency = value
+End Property
+
+' Getter for pYieldCurveRow
+' @method YieldCurveRow
+' @return {Range}
+' @usage - pYieldCurveRow 값을 가져온다.
+Public Property Get YieldCurveRow() As Range
+    Set YieldCurveRow = pYieldCurveRow
+End Property
+
+' Setter for pYieldCurveRow
+' @method YieldCurveRow
+' @param {Range} value
+' @usage - pYieldCurveRow 값을 설정한다.
+Public Property Set YieldCurveRow(ByVal value As Range)
+    Set pYieldCurveRow = value
+End Property
+
+' Setter for pStartCell
+' @method startCell
+' @param {Range} value
+' @usage - pStartCell 값을 설정한다.
+Public Property Set startCell(value As Range)
+    Set pStartCell = value
+End Property
+
+' Getter for pStartCell
+' @method startCell
+' @return {Range}
+' @usage - pStartCell 값을 가져온다.
+Public Property Get startCell() As Range
+    Set startCell = pStartCell
+End Property
+
+' 클래스 초기화 시 실행되는 메서드
+' @method Class_Initialize
+' @usage - pArrayOfCurrency를 빈 배열로 초기화한다.
+Private Sub Class_Initialize()
+    ' Initialize the pArrayOfCurrency as an empty array
+    ' This ensures that the array is ready to be used, even before any elements are added to it
+    ReDim pArrayOfCurrency(0 To 0)
+End Sub
+
+' pStartCell에 근거해서 pArrayOfCurrency를 채운다.
+' @method PopulateArrayOfCurrency
+' @usage - pStartCell을 시작으로 pArrayOfCurrency를 채운다.
+Public Sub PopulateArrayOfCurrency()
+    Dim currentCell As Range
+    Set currentCell = pStartCell ' class property pStartCell
+    Dim cellCount As Integer
+    cellCount = 0
+    
+    Do
+        ' currency cell이 비었는지 확인한다.
+        If IsEmpty(currentCell.value) Then
+            Exit Do ' 빈 셀이 발견되면 loop를 빠져 나간다.
+        End If
+        
+        ' array를 Resize하고, current cell의 값을 부여한다.
+        cellCount = cellCount + 1
+        ReDim Preserve pArrayOfCurrency(1 To cellCount)
+        pArrayOfCurrency(cellCount) = currentCell.value
+        
+        ' 오른쪽으로 2 칼럼 이동한다.
+        Set currentCell = currentCell.Offset(0, 2)
+    Loop
+End Sub
+
+' 데이터를 JSON 형식의 문자열로 생성한다.
+' @method GenerateDataString2
+' @return {String}
+' @usage - pArrayOfCurrency와 pYieldCurveRow 데이터를 JSON 문자열로 변환한다.
+Public Function GenerateDataString2() As String
+    Dim dataArray As New Collection
+    Dim arraySize As Integer
+    arraySize = UBound(pArrayOfCurrency)
+    
+    If arraySize > 0 Then
+        Dim i As Integer, j As Integer
+        Dim InterestName As String
+        Dim yieldsArray As Collection
+        Dim yieldObject As Dictionary
+        
+        For i = 1 To arraySize
+            InterestName = pArrayOfCurrency(i)
+            Set yieldsArray = New Collection
+
+            j = 1
+            Do While Not IsEmpty(pYieldCurveRow.Offset(3 + j, (i - 1) * 2).value) And _
+                        VBA.Trim(pYieldCurveRow.Offset(3 + j, (i - 1) * 2).value) <> ""
+                Set yieldObject = New Dictionary
+                yieldObject.Add "tenor", pYieldCurveRow.Offset(3 + j, (i - 1) * 2).value
+                yieldObject.Add "rate", pYieldCurveRow.Offset(3 + j, (i - 1) * 2 + 1).value
+                yieldsArray.Add yieldObject
+                j = j + 1
+                DoEvents
+            Loop
+
+            Dim currencyData As New Dictionary
+            Set currencyData = New Dictionary
+            
+            currencyData.Add "dataId", InterestName
+            currencyData.Add "currency", VBA.Left(InterestName, 3)
+            currencyData.Add "yields", yieldsArray
+            dataArray.Add currencyData
+            DoEvents
+        Next i
+         
+    End If
+    
+    ' Dictionary의 collection을 JSON으로 변경한다.
+    GenerateDataString2 = JsonConverter.ConvertToJson(dataArray)
+End Function
+
+
+--UrlBuilder--
+Option Explicit
+
+Private pBaseURL As String
+Private pDataParameter As String
+Private pDataIds As String
+Private pdataSetId As String
+Private pVersion As String
+Private pMatrixId As String
+Private pBaseDt As String
+
+'Getter, Setter 설정. URL을 구성하는 요소들 (property(field)이다.)
+Public Property Get baseUrl() As String
+    baseUrl = pBaseURL
+End Property
+
+Public Property Let baseUrl(value As String)
+    pBaseURL = value
+End Property
+
+Public Property Get DataParameter() As String
+    DataParameter = pDateParameter
+End Property
+
+Public Property Let DataParameter(value As String)
+    pDataParameter = value
+End Property
+
+Public Property Get dataIds() As String
+    dataIds = pDataIds
+End Property
+
+Public Property Let dataIds(value As String)
+    pDataIds = value
+End Property
+
+Public Property Get dataSetId() As String
+    dataSetId = pdataSetId
+End Property
+
+Public Property Let dataSetId(value As String)
+    pdataSetId = value
+End Property
+
+Public Property Get Version() As String
+    Version = pVersion
+End Property
+
+Public Property Let Version(value As String)
+    pVersion = value
+End Property
+
+Public Property Get MatrixId() As String
+    MatrixId = pMatrixId
+End Property
+
+Public Property Let MatrixId(value As String)
+    pMatrixId = value
+End Property
+
+Public Property Get baseDt() As String
+    baseDt = pBaseDt
+End Property
+
+Public Property Let baseDt(value As String)
+    pBaseDt = value
+
+End Property
+
+' URL을 만드는 method
+' @method MakeUrl
+' @return {String}
+' @usage - property(field)값을 바탕으로 URL을 생성하여 반환한다.
+Public Function MakeUrl() As String
+    Dim url As String
+    url = pBaseURL & pVersion & pDataParameter & pBaseDt & pDataIds & pdataSetId & pMatrixId
+    MakeUrl = url
+End Function
+
+
+--VolUpdaterNew--
+Option Explicit
+
+Private pWs As Worksheet
+Private pVolatilities As Collection
+Private pCodeColumn As String
+
+' Worksheet property
+' @method Worksheet
+' @param {Worksheet} ws
+' @usage - pWs 값을 설정한다.
+Public Property Set Worksheet(ws As Worksheet)
+    Set pWs = ws
+End Property
+
+' @method Worksheet
+' @return {Worksheet}
+' @usage - pWs 값을 가져온다.
+Public Property Get Worksheet() As Worksheet
+    Set Worksheet = pWs
+End Property
+
+' Volatilities property
+' @method Volatilities
+' @param {Collection} vols
+' @usage - pVolatilities 값을 설정한다.
+Public Property Set Volatilities(vols As Collection)
+    Set pVolatilities = vols
+End Property
+
+' @method Volatilities
+' @return {Collection}
+' @usage - pVolatilities 값을 가져온다.
+Public Property Get Volatilities() As Collection
+    Set Volatilities = pVolatilities
+End Property
+
+' CodeColumn property
+' @method CodeColumn
+' @param {String} col
+' @usage - pCodeColumn 값을 설정한다.
+Public Property Let CodeColumn(col As String)
+    pCodeColumn = col
+End Property
+
+' @method CodeColumn
+' @return {String}
+' @usage - pCodeColumn 값을 가져온다.
+Public Property Get CodeColumn() As String
+    CodeColumn = pCodeColumn
+End Property
+
+' 데이터를 가져오는 메서드
+' @method ImportData
+' @usage - pVolatilities 컬렉션의 데이터를 Excel 워크시트에 가져온다.
+Public Sub ImportData()
+    Dim volCurve As Variant
+    Dim termVol As Variant
+    Dim dataId As String
+    Dim code As String
+    Dim r As Long, c As Long
+    Dim codeRow As Range
+    Dim volEntry As Variant
+    
+    Application.Calculation = xlCalculationManual
+    For Each volCurve In pVolatilities
+        dataId = volCurve("dataId")
+        code = MapDataIdToCode(dataId)
+        
+        Set codeRow = pWs.Columns(pCodeColumn).Find(What:=code, LookIn:=xlValues, LookAt:=xlWhole)
+        
+        If Not codeRow Is Nothing Then
+            Dim codeRowNumber As Long
+            codeRowNumber = codeRow.row
+            Dim searchRange1 As Range
+            Dim searchRange2 As Range
+            Set searchRange1 = pWs.Range(pWs.Cells(codeRowNumber, 3), pWs.Cells(codeRowNumber, 3).End(xlToRight))
+            Set searchRange2 = pWs.Range(pWs.Cells(codeRowNumber + 1, 2), pWs.Cells(codeRowNumber + 1, 2).End(xlDown))
+            
+            For Each termVol In volCurve("volCurves")
+                Dim volFactor As Double
+                volFactor = termVol("volFactor")
+                
+                c = pWs.Rows(codeRowNumber).Find(What:=volFactor, LookIn:=xlValues, LookAt:=xlWhole).Column
+                For Each volEntry In termVol("termVols")
+                    Dim tenor As Double
+                    tenor = volEntry("tenor")
+                    
+                    Dim tenorCell As Range
+                    Set tenorCell = searchRange2.Find(What:=tenor, LookIn:=xlValues, LookAt:=xlWhole)
+                    
+                    If Not tenorCell Is Nothing Then
+                        r = tenorCell.row
+                        pWs.Cells(r, c).value = volEntry("vol")
+                    End If
+                    DoEvents
+                Next volEntry
+                DoEvents
+            Next termVol
+        End If
+        DoEvents
+    Next volCurve
+    Application.Calculation = xlCalculationAutomatic
+    
+End Sub
+
+' 빈 셀을 채우는 메서드
+' @method FillEmptyCells
+' @usage - pVolatilities 컬렉션의 데이터를 기반으로 Excel 워크시트에서 빈 셀을 0으로 채운다.
+Public Sub FillEmptyCells()
+    Dim headerCell As Range
+    Dim rowHeaderCell As Range
+    Dim dataCell As Range
+    Dim searchRange1 As Range, searchRange2 As Range
+    Dim code As String
+    Dim codeRow As Range
+    Dim volCurve As Variant
+    Dim dataId As String
+            
+    Application.Calculation = xlCalculationManual
+    For Each volCurve In pVolatilities
+        dataId = volCurve("dataId")
+        code = MapDataIdToCode(dataId)
+        
+        Set codeRow = pWs.Columns(pCodeColumn).Find(What:=code, LookIn:=xlValues, LookAt:=xlWhole)
+        
+        If Not codeRow Is Nothing Then
+            Dim codeRowNumber As Long
+            codeRowNumber = codeRow.row
+           
+            Set searchRange1 = pWs.Range(pWs.Cells(codeRowNumber, 3), pWs.Cells(codeRowNumber, 3).End(xlToRight))
+            Set searchRange2 = pWs.Range(pWs.Cells(codeRowNumber + 1, 2), pWs.Cells(codeRowNumber + 1, 2).End(xlDown))
+            For Each headerCell In searchRange1
+                For Each rowHeaderCell In searchRange2
+                    Set dataCell = pWs.Cells(rowHeaderCell.row, headerCell.Column)
+                    If IsEmpty(dataCell.value) Then
+                        dataCell.value = 0
+                    End If
+                    DoEvents
+                Next rowHeaderCell
+                DoEvents
+            Next headerCell
+            
+            
+        End If
+        DoEvents
+    Next volCurve
+    Application.Calculation = xlCalculationAutomatic
+End Sub
+
+' index 사용 없이 data를 import하는 메소드
+Public Sub ImportDataWithoutIndex()
+    Dim volCurve As Variant
+    Dim termVol As Variant
+    Dim dataId As String
+    Dim code As String
+    Dim r As Long, c As Long
+    Dim codeRow As Range
+    Dim volEntry As Variant
+    
+    Application.Calculation = xlCalculationManual
+    For Each volCurve In pVolatilities
+        dataId = volCurve("dataId")
+        code = MapDataIdToCode(dataId)
+        
+        Set codeRow = pWs.Columns(pCodeColumn).Find(What:=code, LookIn:=xlValues, LookAt:=xlWhole)
+        
+        If Not codeRow Is Nothing Then
+            Dim codeRowNumber As Long
+            codeRowNumber = codeRow.row
+            
+            ' codeRow의 오른쪽에서 두 칼럼 옆으로 위치에서 volFactor를 넣기 시작한다.
+            c = codeRow.Column + 2
+            
+            ' volFactors 입력
+            Dim volCurveIndex As Long
+            For volCurveIndex = 1 To volCurve("volCurves").Count
+                pWs.Cells(codeRowNumber, c + volCurveIndex - 1).value = volCurve("volCurves")(volCurveIndex)("volFactor")
+                DoEvents
+            Next volCurveIndex
+            
+            ' tenors 입력
+            r = codeRowNumber + 1
+            Dim tenorIndex As Long
+            For tenorIndex = 1 To volCurve("volCurves")(1)("termVols").Count
+                pWs.Cells(r + tenorIndex - 1, codeRow.Column + 1).value = volCurve("volCurves")(1)("termVols")(tenorIndex)("tenor")
+                DoEvents
+            Next tenorIndex
+            
+            ' vol값 입력
+            For volCurveIndex = 1 To volCurve("volCurves").Count
+                For tenorIndex = 1 To volCurve("volCurves")(volCurveIndex)("termVols").Count
+                    pWs.Cells(r + tenorIndex - 1, c + volCurveIndex - 1).value = volCurve("volCurves")(volCurveIndex)("termVols")(tenorIndex)("vol")
+                    DoEvents
+                Next tenorIndex
+                DoEvents
+            Next volCurveIndex
+            
+        End If
+        DoEvents
+    Next volCurve
+    Application.Calculation = xlCalculationAutomatic
+End Sub
+
+
+--YieldCurveUpdater--
+Option Explicit
+
+' Class Module: YieldCurveUpdater
+
+Private pYieldCurves As Collection
+Private pWorksheet As Worksheet
+Private pCurrencyCell As Range
+
+' YieldCurves 프로퍼티 (Collection)
+' @method yieldCurves
+' @param {Collection} value
+' @usage - pYieldCurves 값을 설정한다.
+Public Property Get yieldCurves() As Collection
+    Set yieldCurves = pYieldCurves
+End Property
+
+' @method yieldCurves
+' @return {Collection}
+' @usage - pYieldCurves 값을 가져온다.
+Public Property Set yieldCurves(value As Collection)
+    Set pYieldCurves = value
+End Property
+
+' Worksheet 프로퍼티
+' @method Worksheet
+' @param {Worksheet} value
+' @usage - pWorksheet 값을 설정한다.
+Public Property Get Worksheet() As Worksheet
+    Set Worksheet = pWorksheet
+End Property
+
+' @method Worksheet
+' @return {Worksheet}
+' @usage - pWorksheet 값을 가져온다.
+Public Property Set Worksheet(value As Worksheet)
+    Set pWorksheet = value
+End Property
+
+' CurrencyCell 프로퍼티 (Range)
+' @method CurrencyCell
+' @param {Range} value
+' @usage - pCurrencyCell 값을 설정한다.
+Public Property Get CurrencyCell() As Range
+    Set CurrencyCell = pCurrencyCell
+End Property
+
+' @method CurrencyCell
+' @return {Range}
+' @usage - pCurrencyCell 값을 가져온다.
+Public Property Set CurrencyCell(value As Range)
+    Set pCurrencyCell = value
+End Property
+
+' yield curve data로 worksheet를 채우는 메소드
+' @method PopulateYieldCurveData
+' @usage - yield curve 데이터를 이용해 worksheet를 채운다.
+Public Sub PopulateYieldCurveData()
+    Dim yieldCurve As Variant
+    Dim yieldData As Variant
+    Dim FX As String
+    Dim dataRow As Integer
+    Dim searchRange As Range
+    Application.Calculation = xlCalculationManual
+    ' CurrencyCell property 이용
+    Set searchRange = pCurrencyCell
+
+    For Each yieldCurve In pYieldCurves
+        FX = yieldCurve("dataId") ' dataId 프로퍼티의 value를 FX값으로 할당
+        
+        ' FX값이 적힌 셀을 프로퍼티 CurrencyCell영역에서 찾는다.
+        Dim foundCurrencyCell As Range
+        Set foundCurrencyCell = searchRange.Find(What:=FX, LookIn:=xlValues, LookAt:=xlWhole)
+        
+        If Not foundCurrencyCell Is Nothing Then
+            ' Tenor와 Rate column을 currency cell에서 결정
+            Dim tenorColumn As Integer
+            tenorColumn = foundCurrencyCell.Column
+            
+            Dim rateColumn As Integer
+            rateColumn = tenorColumn + 1 ' tenor옆에 rate가 있다.
+            
+            dataRow = foundCurrencyCell.row + 2
+            
+            ' 테이블을 정리하는 코드
+            'pWorksheet.Range(pWorksheet.Cells(dataRow, tenorColumn), pWorksheet.Cells(pWorksheet.Rows.Count, rateColumn)).ClearContents
+            
+            For Each yieldData In yieldCurve("yields")
+                'Tenor와 rate 데이터를 채워넣는다.
+                pWorksheet.Cells(dataRow, tenorColumn).value = yieldData("tenor")
+                pWorksheet.Cells(dataRow, rateColumn).value = yieldData("rate")
+                dataRow = dataRow + 1
+                DoEvents
+            Next yieldData
+        End If
+        DoEvents
+
+    Next yieldCurve
+    Application.Calculation = xlCalculationAutomatic
+End Sub
+

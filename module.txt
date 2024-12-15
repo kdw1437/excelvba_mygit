@@ -1,0 +1,4315 @@
+--bringModuleandClassModule--
+Sub ImportAllModules()
+    Dim fso As Object
+    Dim folder As Object
+    Dim file As Object
+    Dim importPath As String
+    Dim fileName As String
+    
+    ' export된 모듈이 위치하고 있는 위치 검색
+    importPath = "C:\Users\HI\Desktop\module_classmodule\"
+    
+    ' FileSystemObject를 만든다.
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    
+    ' 폴더가 존재하는지 확인
+    If fso.FolderExists(importPath) Then
+        Set folder = fso.GetFolder(importPath)
+        
+        ' 폴더에 있는 각 파일을 loop
+        For Each file In folder.Files
+            fileName = file.name
+            
+            ' file extension을 확인하고, 거기에 맞춰서 import한다.
+            Select Case VBA.Right(fileName, 4)
+                Case ".bas"  ' module
+                    ThisWorkbook.VBProject.VBComponents.Import importPath & fileName
+                
+                Case ".cls"  ' Class module
+                    ThisWorkbook.VBProject.VBComponents.Import importPath & fileName
+                
+                Case ".frm"  ' Form
+                    ThisWorkbook.VBProject.VBComponents.Import importPath & fileName
+            End Select
+        Next file
+        
+        MsgBox "All modules have been imported from: " & importPath
+    Else
+        MsgBox "The specified folder does not exist: " & importPath
+    End If
+    
+    ' Clean up
+    Set file = Nothing
+    Set folder = Nothing
+    Set fso = Nothing
+End Sub
+
+
+--ClassPostCorr--
+Dim requestHandler As CAsyncRequestHandler
+Sub PrintJsonString()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Market Data")
+    
+    Dim equityCell As Range
+    Set equityCell = ws.Range(ws.Range("Q2").value)
+    ' PostCorrUpdater class의 인스턴스 생성
+    Dim PostCorrUpdater As New PostCorrUpdater
+    With PostCorrUpdater
+        ' vertical ranget와 horizontal range setter 호출
+        Set .VerticalRange = ws.Range(equityCell.Offset(4, 0), equityCell.Offset(4, 0).End(xlDown))
+        Set .HorizontalRange = ws.Range(equityCell.Offset(3, 2), equityCell.Offset(3, 2).End(xlToRight))
+        
+'        Set .VerticalRange = ws.Range("M8", ws.Range("M8").End(xlDown))
+'        Set .HorizontalRange = ws.Range("O7", ws.Range("O7").End(xlToRight))
+        
+        
+        'Debug.Print .CorrJson()
+    End With
+    Dim DataString As String
+    DataString = PostCorrUpdater.CorrJsonv2()
+    Debug.Print DataString
+    DataString = URLEncode(DataString)
+    
+    Dim dataSetId As String
+    dataSetId = ws.Range("P2").value
+    
+    Dim baseDt As String
+    baseDt = VBA.Format(ws.Range("A2").value, "yyyymmdd")
+    
+    Dim baseUrl As String
+    baseUrl = ws.Range("G2").value
+    
+    Dim url As String
+    'url = "http://localhost:8080/val/marketdata/v1/saveCorrs?baseDt=20231228&dataSetId=TEST11&matrixId=CORR"
+    url = baseUrl & "marketdata/v1/saveCorrs?baseDt=" & baseDt & "&dataSetId=" & dataSetId & "&matrixId=CORR"
+    ' JSON data와 POST request를 보내기 위해 subroutine을 호출한다.
+    'SendPostRequest DataString, url
+    Set requestHandler = New CAsyncRequestHandler
+    ' POST request를 보낸다.
+    'SendPostRequest DataString, url
+    requestHandler.SendPostRequestAsync DataString, url
+    
+    ' Wait for the request to complete
+    Do While Not requestHandler.IsRequestComplete
+        DoEvents
+    Loop
+
+    ' Check for errors
+    If requestHandler.ErrorMessage <> "" Then
+        MsgBox "Error: " & requestHandler.ErrorMessage, vbCritical, "Error"
+    ElseIf InStr(1, requestHandler.ResponseText, "error", vbTextCompare) > 0 Then
+        MsgBox "서버 에러: " & requestHandler.ResponseText, vbCritical, "에러"
+    Else
+        MsgBox "데이터 적재가 성공하였습니다", vbInformation, "완료"
+    End If
+End Sub
+
+Sub PrintJsonString2()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Market Data")
+    Dim FXCellColumn As Long
+    FXCellColumn = ws.Range(ws.Range("Q2").value).Column
+    
+    Dim fxCell As Range
+    Dim searchRange As Range
+    Set searchRange = ws.Columns(FXCellColumn)
+    
+    Set fxCell = searchRange.Find(What:="FX", LookIn:=xlValues, LookAt:=xlWhole, SearchOrder:=xlByRows, SearchDirection:=xlNext, MatchCase:=False)
+    
+    Dim PostCorrUpdater As New PostCorrUpdater
+    With PostCorrUpdater
+    
+        Set .VerticalRange = ws.Range(fxCell.Offset(4, 0), fxCell.Offset(4, 0).End(xlDown))
+        Set .HorizontalRange = ws.Range(fxCell.Offset(3, 3), fxCell.Offset(3, 3).End(xlToRight))
+        
+    End With
+    Dim DataString As String
+    DataString = PostCorrUpdater.CorrJsonh2()
+    Debug.Print DataString
+    DataString = URLEncode(DataString)
+    
+    
+    Dim dataSetId As String
+    dataSetId = ws.Range("P2").value
+    
+    Dim baseDt As String
+    baseDt = VBA.Format(ws.Range("A2").value, "yyyymmdd")
+    
+    Dim baseUrl As String
+    baseUrl = ws.Range("G2").value
+    
+    Dim url As String
+    'url = "http://localhost:8080/val/marketdata/v1/saveCorrs?baseDt=20231228&dataSetId=TEST11&matrixId=CORR"
+    url = baseUrl & "marketdata/v1/saveCorrs?baseDt=" & baseDt & "&dataSetId=" & dataSetId & "&matrixId=CORR"
+    ' JSON data와 POST request를 보내기 위해 subroutine을 호출한다.
+    Set requestHandler = New CAsyncRequestHandler
+    ' POST request를 보낸다.
+    'SendPostRequest DataString, url
+    requestHandler.SendPostRequestAsync DataString, url
+        
+    ' Wait for the request to complete
+    Do While Not requestHandler.IsRequestComplete
+        DoEvents
+    Loop
+
+    ' Check for errors
+    If requestHandler.ErrorMessage <> "" Then
+        MsgBox "Error: " & requestHandler.ErrorMessage, vbCritical, "Error"
+    ElseIf InStr(1, requestHandler.ResponseText, "error", vbTextCompare) > 0 Then
+        MsgBox "서버 에러: " & requestHandler.ResponseText, vbCritical, "에러"
+    Else
+        MsgBox "데이터 적재가 성공하였습니다", vbInformation, "완료"
+    End If
+End Sub
+
+Sub PrintJsonString3()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Market Data")
+    
+    ' equity와 FX를 위한 PostCorrUpdater 생성
+    Dim EquityUpdater As New PostCorrUpdater
+    Dim FXUpdater As New PostCorrUpdater
+    
+    ' equity cell
+    Dim equityCell As Range
+    Set equityCell = ws.Range(ws.Range("Q2").value)
+    
+    ' equity에 대한 range
+    With EquityUpdater
+        Set .VerticalRange = ws.Range(equityCell.Offset(4, 0), equityCell.Offset(4, 0).End(xlDown))
+        Set .HorizontalRange = ws.Range(equityCell.Offset(3, 2), equityCell.Offset(3, 2).End(xlToRight))
+    End With
+    
+    ' FX cell
+    Dim FXCellColumn As Long
+    FXCellColumn = ws.Range(ws.Range("Q2").value).Column
+    
+    Dim fxCell As Range
+    Dim searchRange As Range
+    Set searchRange = ws.Columns(FXCellColumn)
+    
+    Set fxCell = searchRange.Find(What:="FX", LookIn:=xlValues, LookAt:=xlWhole, SearchOrder:=xlByRows, SearchDirection:=xlNext, MatchCase:=False)
+    
+    ' FX에 대한 range
+    With FXUpdater
+        Set .VerticalRange = ws.Range(fxCell.Offset(4, 0), fxCell.Offset(4, 0).End(xlDown))
+        Set .HorizontalRange = ws.Range(fxCell.Offset(3, 3), fxCell.Offset(3, 3).End(xlToRight))
+    End With
+    
+    ' equity와 fx에 대한 json String 획득
+    Dim EquityDataString As String
+    Dim FXDataString As String
+    EquityDataString = EquityUpdater.CorrJson2()
+    FXDataString = FXUpdater.CorrJson2()
+    
+    'json String 결합
+    Dim CombinedDataString As String
+    CombinedDataString = CombineJsonStrings(EquityDataString, FXDataString)
+    
+    Debug.Print CombinedDataString
+    CombinedDataString = URLEncode(CombinedDataString)
+    
+    ' URL과 Parameter 준비
+    Dim dataSetId As String
+    dataSetId = ws.Range("P2").value
+    
+    Dim baseDt As String
+    baseDt = VBA.Format(ws.Range("A2").value, "yyyymmdd")
+    
+    Dim baseUrl As String
+    baseUrl = ws.Range("G2").value
+    
+    Dim url As String
+    url = baseUrl & "marketdata/v1/saveCorrs?baseDt=" & baseDt & "&dataSetId=" & dataSetId & "&matrixId=CORR"
+    
+    ' POST request전송
+    Set requestHandler = New CAsyncRequestHandler
+    requestHandler.SendPostRequestAsync CombinedDataString, url
+    
+    ' Wait for the request to complete
+    Do While Not requestHandler.IsRequestComplete
+        DoEvents
+    Loop
+
+    ' Check for errors
+    If requestHandler.ErrorMessage <> "" Then
+        MsgBox "Error: " & requestHandler.ErrorMessage, vbCritical, "Error"
+    ElseIf InStr(1, requestHandler.ResponseText, "error", vbTextCompare) > 0 Then
+        MsgBox "서버 에러: " & requestHandler.ResponseText, vbCritical, "에러"
+    Else
+        MsgBox "상관계수 데이터 적재가 성공하였습니다", vbInformation, "완료"
+    End If
+End Sub
+
+Function CombineJsonStrings(jsonString1 As String, jsonString2 As String) As String
+    ' bracket과 comma제거
+    Dim trimmedString1 As String
+    Dim trimmedString2 As String
+    
+    trimmedString1 = VBA.Left(jsonString1, Len(jsonString1) - 1)  ' 마지막 ']' 제거
+    trimmedString2 = VBA.Right(jsonString2, Len(jsonString2) - 1) ' 첫번째 '[' 제거
+    
+    ' 사이에 comma를 넣어서 string을 결합시킨다.
+    CombineJsonStrings = trimmedString1 & "," & trimmedString2
+End Function
+
+
+--ClassPostDivStream--
+Option Explicit
+
+Dim requestHandler As CAsyncRequestHandler
+
+
+Sub ClassPostDivStream()
+
+    Dim divStreamUpdater As PostDivStreamUpdater
+    Set divStreamUpdater = New PostDivStreamUpdater
+    
+    Dim Wst As Worksheet
+    Set Wst = ThisWorkbook.Sheets("DiscreteDividend")
+    
+    Set divStreamUpdater.ws = Wst
+    Set divStreamUpdater.TitleCell = divStreamUpdater.ws.Cells(3, 12)
+    Set divStreamUpdater.startCell = divStreamUpdater.TitleCell.Offset(2, 0)
+    
+    divStreamUpdater.PopulateArrayOfIndex
+    
+    Dim DataString As String
+    DataString = divStreamUpdater.GenerateDataString2()
+        
+    Debug.Print DataString
+    
+    DataString = URLEncode(DataString)
+
+    Dim dataSetId As String
+    dataSetId = Wst.Range("L2").value
+    
+    Dim baseDt As String
+    baseDt = VBA.Format(Wst.Range("A2").value, "yyyymmdd")
+    
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Market Data")
+    
+    Dim baseUrl As String
+    baseUrl = ws.Range("G2").value
+    
+    Dim url As String
+    url = baseUrl & "marketdata/v1/saveDividendStream?baseDt=" & baseDt & "&dataSetId=" & dataSetId
+    
+
+    ' POST request를 보낸다.
+    'SendPostRequest DataString, url
+    Set requestHandler = New CAsyncRequestHandler
+    ' POST request를 보낸다.
+    
+    requestHandler.SendPostRequestAsync DataString, url
+    
+    ' Wait for the request to complete
+    Do While Not requestHandler.IsRequestComplete
+        DoEvents
+    Loop
+
+    ' Check for errors
+    If requestHandler.ErrorMessage <> "" Then
+        MsgBox "Error: " & requestHandler.ErrorMessage, vbCritical, "Error"
+    ElseIf InStr(1, requestHandler.ResponseText, "error", vbTextCompare) > 0 Then
+        MsgBox "서버 에러: " & requestHandler.ResponseText, vbCritical, "에러"
+    Else
+        MsgBox "데이터 적재가 성공하였습니다", vbInformation, "완료"
+    End If
+End Sub
+
+--ClassPostDivYield--
+Dim requestHandler As CAsyncRequestHandler
+
+Sub ClassPostDivYield()
+    
+    Dim divYieldUpdater As PostDivYieldUpdater
+    Set divYieldUpdater = New PostDivYieldUpdater
+    
+    Set divYieldUpdater.Worksheet = ThisWorkbook.Sheets("Dividend")
+    Set divYieldUpdater.DivCell = divYieldUpdater.Worksheet.Range("F3")
+    
+    Set divYieldUpdater.dataIdRange = divYieldUpdater.Worksheet.Range(divYieldUpdater.DivCell.Offset(2, 0), divYieldUpdater.DivCell.Offset(2, 0).End(xlDown))
+    
+    'divYieldUpdater.DataIdRange = "F5:F7"
+    'Set divYieldUpdater.DataIdRange = divYieldUpdater.Worksheet.Range("F5:F7")
+    
+    Dim jsonString As String
+    jsonString = divYieldUpdater.GenerateJson2()
+    
+    Debug.Print jsonString
+    
+    jsonString = URLEncode(jsonString)
+    
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Dividend")
+    
+    Dim dataSetId As String
+    dataSetId = ws.Range("F2").value
+    
+    Dim baseDt As String
+    baseDt = VBA.Format(ws.Range("A2").value, "yyyymmdd")
+    
+    Dim ws2 As Worksheet
+    Set ws2 = ThisWorkbook.Sheets("Market Data")
+    
+    Dim baseUrl As String
+    baseUrl = ws2.Range("G2").value
+    
+    Dim url As String
+    url = baseUrl & "marketdata/v1/saveDividends?baseDt=" & baseDt & "&dataSetId=" & dataSetId
+
+    'SendPostRequest JsonString, url
+    
+    Set requestHandler = New CAsyncRequestHandler
+    ' POST request를 보낸다.
+    requestHandler.SendPostRequestAsync jsonString, url
+    
+    ' Wait for the request to complete
+    Do While Not requestHandler.IsRequestComplete
+        DoEvents
+    Loop
+
+    ' Check for errors
+    If requestHandler.ErrorMessage <> "" Then
+        MsgBox "Error: " & requestHandler.ErrorMessage, vbCritical, "Error"
+    ElseIf InStr(1, requestHandler.ResponseText, "error", vbTextCompare) > 0 Then
+        MsgBox "서버 에러: " & requestHandler.ResponseText, vbCritical, "에러"
+    Else
+        MsgBox "데이터 적재가 성공하였습니다", vbInformation, "완료"
+    End If
+End Sub
+
+
+--ClassPostPrice--
+Dim requestHandler As CAsyncRequestHandler
+
+Sub ClassPostPrice()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Market Data")
+    
+    Dim startingpoint As Range
+    Set startingpoint = ws.Range("N4")  ' N4로 하드코딩
+    
+    Dim Table1Point As Range
+    Set Table1Point = startingpoint
+    
+    Dim fxRow As Range
+    Set fxRow = ws.Range("N16")  ' N16으로 하드코딩
+
+    Dim PostPriceUpdater As New PostPriceUpdater
+    With PostPriceUpdater
+        Set .Worksheet = ws
+        Set .Table1Point = Table1Point
+        Set .fxRow = fxRow
+    End With
+    
+    Dim DataString As String
+    DataString = PostPriceUpdater.GenerateJson2() ' JSON string 만들기
+    
+    Debug.Print DataString
+    DataString = URLEncode(DataString)
+    
+    Dim dataSetId As String
+    dataSetId = ws.Range("P2").value
+    
+    Dim baseDt As String
+    baseDt = VBA.Format(ws.Range("A2").value, "yyyymmdd")
+    
+    Dim baseUrl As String
+    baseUrl = ws.Range("G2").value
+    
+    Dim url As String
+    url = baseUrl & "marketdata/v1/savePrices?baseDt=" & baseDt & "&dataSetId=" & dataSetId
+    
+    
+    Set requestHandler = New CAsyncRequestHandler
+    requestHandler.SendPostRequestAsync DataString, url
+    
+    ' Wait for the request to complete
+    Do While Not requestHandler.IsRequestComplete
+        DoEvents
+    Loop
+
+    ' Check for errors
+    If requestHandler.ErrorMessage <> "" Then
+        MsgBox "Error: " & requestHandler.ErrorMessage, vbCritical, "Error"
+    ElseIf InStr(1, requestHandler.ResponseText, "error", vbTextCompare) > 0 Then
+        MsgBox "서버 에러: " & requestHandler.ResponseText, vbCritical, "에러"
+    Else
+        MsgBox "가격 데이터 적재가 성공하였습니다", vbInformation, "완료"
+    End If
+End Sub
+
+
+--ClassPostVol--
+Dim requestHandler As CAsyncRequestHandler
+
+Sub RunFunc()
+    Dim ws As Worksheet
+    Dim codeCell As Range, dataCell As Range
+    Dim jsonString As String
+    Dim dataId As String
+    Dim firstObject As Boolean
+    Dim PostVolUpdater As PostVolUpdater
+    Dim lastRow As Long
+    
+    Set ws = ThisWorkbook.Sheets("Vol")
+    jsonString = "["
+    lastRow = ws.Cells(ws.Rows.Count, "AD").End(xlUp).row
+    
+    firstObject = True
+    Set codeCell = ws.Range("AD1:AD" & lastRow).Find("Code", LookIn:=xlValues, LookAt:=xlWhole)
+    
+    Do While Not codeCell Is Nothing
+        ' 'Code'셀 다음 셀을 얻는다.
+        Set dataCell = codeCell.Offset(1, 0)
+        
+        ' 'Code'셀 밑에 있는 셀의 값을 dataId값으로 사용한다.
+        dataId = dataCell.value
+        
+        Select Case dataId
+            Case "KOSPI_LV"
+                dataId = "KOSPI200_LOC"
+            Case "NKY_LV"
+                dataId = "NKY_LOC"
+            Case "HSI_LV"
+                dataId = "HSI_LOC"
+            Case "HSCEI_LV"
+                dataId = "HSCEI_LOC"
+            Case "Tenor"
+                ' 값이 'Tenor'이면, 반복을 skip한다.
+                GoTo NextIteration
+            ' 모든 다른 경우에 대해서, 원래 dataId 값을 유지한다.
+        End Select
+        
+        If Not firstObject Then
+            jsonString = jsonString & ","
+        End If
+        
+        Set PostVolUpdater = New PostVolUpdater
+        With PostVolUpdater
+            Set .Worksheet = ws
+            Set .RefCell = dataCell
+            .dataId = dataId
+        End With
+        
+        jsonString = jsonString & PostVolUpdater.GenerateObjectJSON2()
+        
+        firstObject = False
+        
+NextIteration:
+        ' 다음 'Code' cell을 찾는다.
+        Set codeCell = ws.Range("AD" & (codeCell.row + 1) & ":AD" & lastRow).Find("Code", LookIn:=xlValues, LookAt:=xlWhole)
+        DoEvents
+    Loop
+
+    
+    jsonString = jsonString & "]"
+    
+    
+'    filePath = "C:\Users\JURO_NEW\Desktop\json_data\volData240607.json"
+'
+'    fileNumber = FreeFile()
+'    Open filePath For Output As #fileNumber
+'
+'    Print #fileNumber, JsonString
+'
+'    Close #fileNumber
+    Debug.Print jsonString
+    
+    ' 필요하다면 jsonString을 URLEncode하고, POST request를 한다.
+    jsonString = URLEncode(jsonString)
+    
+    Dim ws2 As Worksheet
+    Set ws2 = ThisWorkbook.Sheets("Market Data")
+    
+    Dim dataSetId As String
+    dataSetId = ws2.Range("P2").value
+    
+    Dim baseDt As String
+    baseDt = VBA.Format(ws2.Range("A2").value, "yyyymmdd")
+    
+    Dim baseUrl As String
+    baseUrl = ws2.Range("G2").value
+    ' request에 대한 URL
+    Dim url As String
+    url = baseUrl & "marketdata/v1/saveVols?baseDt=" & baseDt & "&dataSetId=" & dataSetId
+    Debug.Print url
+    'url = "http://localhost:8080/marketdata/v1/saveVols?baseDt=" & baseDt & "&dataSetId=" & dataSetId
+    
+    ' Send the POST request
+'     SendPostRequest JsonString, url
+    Set requestHandler = New CAsyncRequestHandler
+    requestHandler.SendPostRequestAsync jsonString, url
+
+    ' Wait for the request to complete
+    Do While Not requestHandler.IsRequestComplete
+        DoEvents
+    Loop
+
+    ' Check for errors
+    If requestHandler.ErrorMessage <> "" Then
+        MsgBox "Error: " & requestHandler.ErrorMessage, vbCritical, "Error"
+    ElseIf InStr(1, requestHandler.ResponseText, "error", vbTextCompare) > 0 Then
+        MsgBox "서버 에러: " & requestHandler.ResponseText, vbCritical, "에러"
+    Else
+        MsgBox "데이터 적재가 성공하였습니다", vbInformation, "완료"
+    End If
+    
+End Sub
+
+--ClassPostYieldCurve--
+
+Dim requestHandler As CAsyncRequestHandler
+'YieldCurve를 POST하는 코드(클래스 모듈 이용)
+Sub ClassPostYieldCurve()
+
+    Dim ycUpdater As PostYieldCurveUpdater
+    Set ycUpdater = New PostYieldCurveUpdater
+    Dim startingpoint As String
+    
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Market Data")
+    startingpoint = Sheets("Market Data").Range("Q2").value 'StartingPoint 참조변수에 P2셀의 값 부여
+        
+    Dim Table1Point As Range
+    Set Table1Point = Sheets("Market Data").Range(startingpoint).Offset(3, 0) 'startingPoint(M4)명 (셀명)에서 3 row 밑의 셀을 Table1Point에 할당한다.
+    
+    Dim lastRow As Long
+    
+    lastRow = ws.Cells(ws.Rows.Count, Table1Point.Column).End(xlUp).row 'Table1Point와 같은 column에 있는 마지막으로 사용되어진 row를 찾는다.
+    
+    ' "Equity" table 다음에 "FX"를 포함하는 cell을 찾는다.
+    Dim fxRow As Range 'Range객체는 하나 혹은 다수의 cell을 참조한다.
+    Set fxRow = ws.Range(Table1Point.Offset(1, 0), ws.Cells(lastRow, Table1Point.Column)).Find(What:="FX", LookIn:=xlValues, LookAt:=xlWhole)
+    'range안에 Table1Point 칼럼 영역 내에서 FX string을 찾는다. xlValues(formula가 아닌 cell값을 확인한다.) xlWhole (전체 셀의 내용이 찾는 단어와 완벽하게 일치함을 의미한다.)
+    
+    Dim Table2Point As Range
+    Set Table2Point = fxRow.Offset(3, 0)
+    
+    Dim YieldCurveRow As Range
+    Set YieldCurveRow = ws.Range(Table1Point.Offset(1, 0), ws.Cells(lastRow, Table1Point.Column)).Find(What:="Yield Curve", LookIn:=xlValues, LookAt:=xlWhole)
+    'Debug.Print Table2Point.value
+
+    Dim DATA_ID_Cell1 As Range
+    Set DATA_ID_Cell1 = ws.Cells(YieldCurveRow.row + 2, YieldCurveRow.Column)
+    ' Set StartCell
+    
+    
+    Set ycUpdater.startCell = DATA_ID_Cell1
+
+
+    ' Set YieldCurveRow
+
+    Set ycUpdater.YieldCurveRow = YieldCurveRow
+    
+    ' ArrayOfCurrency를 채운다.
+    ycUpdater.PopulateArrayOfCurrency
+
+
+
+    ' DataString을 만든다.
+    Dim DataString As String
+    DataString = ycUpdater.GenerateDataString2
+
+    
+    Debug.Print DataString
+
+    ' DataString을 encoding한다. (x-www-form-urlencoded)
+    DataString = URLEncode(DataString)
+
+    Dim dataSetId As String
+    dataSetId = ws.Range("P2").value
+    
+    Dim baseDt As String
+    baseDt = VBA.Format(ws.Range("A2").value, "yyyymmdd")
+    
+    Dim baseUrl As String
+    baseUrl = ws.Range("G2").value
+    
+    Dim url As String
+    url = baseUrl & "marketdata/v1/saveYieldcurves?baseDt=" & baseDt & "&dataSetId=" & dataSetId
+    'url = "http://localhost:8080/val/marketdata/v1/saveYieldcurves?baseDt=20231229"
+    
+    Set requestHandler = New CAsyncRequestHandler
+    ' POST request를 보낸다.
+    'SendPostRequest DataString, url
+    requestHandler.SendPostRequestAsync DataString, url
+    
+    ' Wait for the request to complete
+    Do While Not requestHandler.IsRequestComplete
+        DoEvents
+    Loop
+
+    ' Check for errors
+    If requestHandler.ErrorMessage <> "" Then
+        MsgBox "Error: " & requestHandler.ErrorMessage, vbCritical, "Error"
+    ElseIf InStr(1, requestHandler.ResponseText, "error", vbTextCompare) > 0 Then
+        MsgBox "서버 에러: " & requestHandler.ResponseText, vbCritical, "에러"
+    Else
+        MsgBox "금리 데이터 적재가 성공하였습니다", vbInformation, "완료"
+    End If
+End Sub
+
+--ConvertRangeToJson--
+Option Explicit
+
+Dim httpHandler As New clsXMLHTTPHandler
+
+
+Sub ConvertRangeToJson()
+    Dim PostQuoteUpdaterNew As New PostQuoteUpdaterNew ' 실제 클래스 이름 넣기
+    Dim ws As Worksheet
+    Dim rng As Range
+    Dim jsonString As String
+
+    ' worksheet 세팅
+    
+    Set PostQuoteUpdaterNew.Worksheet = ThisWorkbook.Sheets("Quote")
+    Set ws = PostQuoteUpdaterNew.Worksheet
+    
+    ' range를 정의한다.
+    ' A9이 가장 왼쪽 위의 cell이다.
+    ' 실제 데이터에 따라서 range를 조정한다.
+    'Set PostQuoteUpdaterNew.Range = PostQuoteUpdaterNew.Worksheet.Range("A9:Y13") (하드코딩 적으로 range를 정해줄 때)
+    Dim lastCol As Range
+    Dim lastRow As Range
+    Dim endCell As Range
+    
+    Set lastCol = ws.Range("A9").End(xlToRight)
+    Set lastRow = ws.Range("A9").End(xlDown)
+    Set endCell = ws.Cells(lastRow.row, lastCol.Column)
+    
+    Set rng = ws.Range("A9", endCell)
+    Set PostQuoteUpdaterNew.Range = rng
+    
+    ' range를 JSON으로 바꾼다.
+    jsonString = PostQuoteUpdaterNew.makeJsonString2()
+
+    ' JSONString 콘솔에 출력
+    Debug.Print jsonString
+    
+    Dim dataSetId As String
+    dataSetId = ws.Range("D2").value
+    
+    Dim baseDt As String
+    baseDt = VBA.Format(ws.Range("A2").value, "yyyymmdd")
+    
+    Dim ws2 As Worksheet
+    Set ws2 = ThisWorkbook.Sheets("Market Data")
+    
+    Dim baseUrl As String
+    baseUrl = ws2.Range("G2").value
+    
+    jsonString = SimpleURLEncode4(jsonString)
+    Dim url As String
+    url = baseUrl & "marketdata/v1/saveQuoteIssueInfo?baseDt=" & baseDt & "&dataSetId=" & dataSetId
+    'url = baseUrl + "marketdata/v1/saveQuoteIssueInfo?baseDt=" & baseDt & "&dataSetId=" & dataSetId
+    'url = "http://localhost:8080/marketdata/v1/saveQuoteIssueInfo?baseDt=" & baseDt & "&dataSetId=" & dataSetId
+    
+    ' POST request를 보내기 위해 method를 호출한다.
+    httpHandler.SendPostRequest jsonString, url
+    
+ 
+    
+    
+
+End Sub
+
+--CPostCorr--
+
+Option Explicit
+Dim requestHandler As CAsyncRequestHandler
+
+Sub UseCorrelationDataProcessor()
+    Dim corrProcessor As New postCorrMissingData
+    
+    ' properties 세팅
+    Set corrProcessor.Worksheet = ThisWorkbook.Sheets("Missing Data - Hist Vol, Corr")
+    corrProcessor.startRow = 5
+    corrProcessor.Column = "E"
+    
+    ' JSON 만들기
+    Dim jsonString As String
+    jsonString = corrProcessor.GenerateJSON
+    
+    ' JSON 프린트
+    Debug.Print jsonString
+    
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Missing Data - Hist Vol, Corr")
+    
+    Dim dataSetId As String
+    dataSetId = ws.Range("F2").value
+    
+    Dim baseDt As String
+    baseDt = VBA.Format(ws.Range("B1").value, "yyyymmdd")
+    
+    Dim ws2 As Worksheet
+    Set ws2 = ThisWorkbook.Sheets("Market Data")
+    
+    Dim baseUrl As String
+    baseUrl = ws2.Range("G2").value
+    
+    Dim url As String
+    
+    url = baseUrl & "marketdata/v1/saveCorrs?baseDt=" & baseDt & "&dataSetId=" & dataSetId & "&matrixId=CORR"
+    ' JSON data와 POST request를 보내기 위해 subroutine을 호출한다.
+    'SendPostRequest DataString, url
+    Set requestHandler = New CAsyncRequestHandler
+    ' POST request를 보낸다.
+    'SendPostRequest DataString, url
+    requestHandler.SendPostRequestAsync jsonString, url
+    
+    ' Wait for the request to complete
+    Do While Not requestHandler.IsRequestComplete
+        DoEvents
+    Loop
+
+    ' Check for errors
+    If requestHandler.ErrorMessage <> "" Then
+        MsgBox "Error: " & requestHandler.ErrorMessage, vbCritical, "Error"
+    ElseIf InStr(1, requestHandler.ResponseText, "error", vbTextCompare) > 0 Then
+        MsgBox "서버 에러: " & requestHandler.ResponseText, vbCritical, "에러"
+    Else
+        MsgBox "상관계수 데이터 적재가 성공하였습니다", vbInformation, "완료"
+    End If
+    
+End Sub
+
+
+--CPostDisDiv--
+
+Option Explicit
+Dim requestHandler As CAsyncRequestHandler
+
+Sub UseDividendDataProcessor()
+    Dim dp As postDisDivMissingData
+    Set dp = New postDisDivMissingData
+    
+    Set dp.Worksheet = ThisWorkbook.Worksheets("Missing Data - D_Dividend(보정)")
+    Set dp.startCell = dp.Worksheet.Range("N:N").Find(What:="Discrete Dividend", LookAt:=xlWhole)
+    dp.k = 4 ' (K가 알려진 값이고 dynamic하게 결정되어질 때는 거기에 맞춰서 코드 작성)
+    
+    If Not dp.startCell Is Nothing Then
+        Dim jsonString As String
+        
+        jsonString = dp.ReturnJSON
+        
+        Debug.Print jsonString
+    Else
+        MsgBox "Start cell not found."
+    End If
+    
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Missing Data - D_Dividend(보정)")
+    
+    Dim baseDt As String
+    baseDt = VBA.Format(ws.Range("B1").value, "yyyymmdd")
+    
+    Dim dataSetId As String
+    dataSetId = ws.Range("W2").value
+    Dim ws2 As Worksheet
+    Set ws2 = ThisWorkbook.Sheets("Market Data")
+    
+    Dim baseUrl As String
+    baseUrl = ws2.Range("G2").value
+    
+    Dim url As String
+    url = baseUrl & "marketdata/v1/saveDividendStream?baseDt=" & baseDt & "&dataSetId=" & dataSetId
+    'url = "http://210.120.89.57:8080/marketdata/v1/saveDividendStream?baseDt=" & baseDt & "&dataSetId=official"
+    
+    ' JSON data와 POST request를 보내는 subroutine을 호출한다.
+    'SendPostRequest jsonString, url
+    Set requestHandler = New CAsyncRequestHandler
+    requestHandler.SendPostRequestAsync jsonString, url
+    
+    ' Wait for the request to complete
+    Do While Not requestHandler.IsRequestComplete
+        DoEvents
+    Loop
+
+    ' Check for errors
+    If requestHandler.ErrorMessage <> "" Then
+        MsgBox "Error: " & requestHandler.ErrorMessage, vbCritical, "Error"
+    ElseIf InStr(1, requestHandler.ResponseText, "error", vbTextCompare) > 0 Then
+        MsgBox "서버 에러: " & requestHandler.ResponseText, vbCritical, "에러"
+    Else
+        MsgBox "데이터 적재가 성공하였습니다", vbInformation, "완료"
+    End If
+End Sub
+
+
+--CPostFXForwardRate--
+Option Explicit
+Dim requestHandler As CAsyncRequestHandler
+
+Sub UseFXForwardData()
+    Dim fxData As New PostForwardRate
+    
+    Set fxData.Worksheet = ThisWorkbook.Sheets("Missing Data - Fx Forward")
+    Set fxData.startCell = fxData.Worksheet.Range("A:A").Find(What:="FX Forward Curve", LookAt:=xlWhole)
+    fxData.k = 4  ' 얼마나 많은 currency를 처리할 지를 정한다.
+    
+    'fxData.GenerateJSON
+    
+    Dim jsonString As String
+    jsonString = fxData.ReturnJSON2
+    
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Missing Data - Fx Forward")
+    
+    Dim dataSetId As String
+    dataSetId = ws.Range("H2").value
+    
+    Dim baseDt As String
+    baseDt = VBA.Format(ws.Range("B1").value, "yyyymmdd")
+    
+    Dim ws2 As Worksheet
+    Set ws2 = ThisWorkbook.Sheets("Market Data")
+    
+    Dim baseUrl As String
+    baseUrl = ws2.Range("G2").value
+    
+    Dim url As String
+    url = baseUrl & "marketdata/v1/saveForwardFX?baseDt=" & baseDt & "&dataSetId=" & dataSetId
+    'url = "http://210.120.89.57:8080/marketdata/v1/saveForwardFX?baseDt=" & baseDt & "&dataSetId=official"
+    
+    ' JSON data와 POST request를 보내는 subroutine을 호출한다.
+    'SendPostRequest jsonString, url
+    Set requestHandler = New CAsyncRequestHandler
+    requestHandler.SendPostRequestAsync jsonString, url
+    
+    ' Wait for the request to complete
+    Do While Not requestHandler.IsRequestComplete
+        DoEvents
+    Loop
+
+    ' Check for errors
+    If requestHandler.ErrorMessage <> "" Then
+        MsgBox "Error: " & requestHandler.ErrorMessage, vbCritical, "Error"
+    ElseIf InStr(1, requestHandler.ResponseText, "error", vbTextCompare) > 0 Then
+        MsgBox "서버 에러: " & requestHandler.ResponseText, vbCritical, "에러"
+    Else
+        MsgBox "데이터 적재가 성공하였습니다", vbInformation, "완료"
+    End If
+End Sub
+
+
+--CPostHistoricalVol--
+Option Explicit
+Dim requestHandler As CAsyncRequestHandler
+
+Sub UseHistoricalVolProcessor()
+    Dim volProcessor As postHistoricalVol
+    Set volProcessor = New postHistoricalVol
+    
+    ' 프로퍼티를 설정한다.
+    Set volProcessor.Worksheet = ThisWorkbook.Sheets("Missing Data - Hist Vol, Corr")
+    volProcessor.startRow = 5
+    
+    ' 데이터를 처리하기 위해 메소드를 호출한다.
+    Dim jsonString As String
+    jsonString = volProcessor.ReturnData
+    
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Missing Data - Hist Vol, Corr")
+    
+    Dim baseDt As String
+    baseDt = VBA.Format(ws.Range("B1").value, "yyyymmdd")
+    
+    Dim ws2 As Worksheet
+    Set ws2 = ThisWorkbook.Sheets("Market Data")
+    
+    Dim baseUrl As String
+    baseUrl = ws2.Range("G2").value
+    
+    Dim dataSetIdString As String
+    dataSetIdString = ws.Range("F2").value
+    
+    Dim url As String
+    url = baseUrl & "marketdata/v1/saveHistoricalVol?baseDt=" & baseDt & "&dataSetId=" & dataSetIdString
+    'url = "http://210.120.89.57:8080/marketdata/v1/saveHistoricalVol?baseDt=" & baseDt & "&dataSetId=official"
+    
+    ' JSON data와 POST request를 보내는 subroutine을 호출한다.
+    'SendPostRequest jsonString, url
+    Set requestHandler = New CAsyncRequestHandler
+    requestHandler.SendPostRequestAsync jsonString, url
+    
+    ' Wait for the request to complete
+    Do While Not requestHandler.IsRequestComplete
+        DoEvents
+    Loop
+
+    ' Check for errors
+    If requestHandler.ErrorMessage <> "" Then
+        MsgBox "Error: " & requestHandler.ErrorMessage, vbCritical, "Error"
+    ElseIf InStr(1, requestHandler.ResponseText, "error", vbTextCompare) > 0 Then
+        MsgBox "서버 에러: " & requestHandler.ResponseText, vbCritical, "에러"
+    Else
+        MsgBox "역사적 변동성 데이터 적재가 성공하였습니다", vbInformation, "완료"
+    End If
+End Sub
+
+--Functions--
+'VBA에서는 static method를 제공하지 않으므로, class module에 메소드 작성 시에는 클래스의 인스턴스 생성 후에 사용을 해야합니다.
+'고로 이러한 방식을 피하기 위해서 자주 사용하는 함수는 Functions모듈에 모으게 되었습니다.
+'SOC(Separation of Concern), 모듈 구조
+
+'api 모아놓는 함수
+Public Function GetApi(api As String) As String
+    Dim port As String
+    Dim apiUrl As String
+    Dim paramNm As String
+    Dim ws As Worksheet
+    
+    Set ws = ThisWorkbook.Sheets("하이누리")
+    'port = "http://210.120.89.57:8080/"
+    port = ws.Cells(5, 1).value
+    'paramNm = "baseDt="
+    paramNm = ws.Cells(8, 1)
+    
+    
+    apiUrl = port + api + "?" + paramNm + "="
+    GetApi = apiUrl
+
+
+End Function
+
+'@method GetHttpResponseText
+'@param {String} url
+'@return {String}
+'@usage - HTTP GET request를 하고, response text를 돌려 받는 함수
+Public Function GetHttpResponseText(url As String) As String
+    Dim httpRequest As Object
+    Set httpRequest = CreateObject("MSXML2.XMLHTTP")
+    With httpRequest
+        .Open "GET", url, True
+        .send
+        
+        While .readyState <> 4
+            DoEvents
+        Wend
+        
+        GetHttpResponseText = .ResponseText
+    End With
+End Function
+
+' Asynchronous Process
+' @method GetHttpResponseText2
+' @param {String} url
+' @return {String}
+' @usage - HTTP GET request를 하고, response text를 돌려 받을 때까지 엑셀이 responsive하도록 만들어 주는 함수
+Public Function GetHttpResponseText2(url As String) As String
+    Dim httpRequest As Object
+    Set httpRequest = CreateObject("MSXML2.XMLHTTP")
+    With httpRequest
+        .Open "GET", url, True
+        .send
+        
+        While .readyState <> 4
+            DoEvents
+        Wend
+        
+        GetHttpResponseText2 = .ResponseText
+    End With
+End Function
+
+'@method ParseJson
+'@param {String} jsonString
+'@return {Object}
+'@usage - JSON string을 VBA 객체로 파싱하는 함수
+Public Function ConverterParseJson(jsonString As String) As Object
+    ' JsonConverter 모듈이 존재하고 있어야 한다.
+    Set ConverterParseJson = JsonConverter.ParseJson(jsonString)
+End Function
+
+'@method GetJsonResponse
+'@param {String} url
+'@return {Object}
+'@usage - GetHttpResponseText함수와 ParseJson함수 이용. url을 input으로 넣으면, 해당 json string을 파싱해주고, 결과 vba 객체를 return한다.
+Public Function GetJsonResponse(url As String) As Object
+    Dim jsonString As String
+    jsonString = GetHttpResponseText(url)
+    Set GetJsonResponse = ConverterParseJson(jsonString)
+End Function
+
+'@method URLEncode
+'@param {String} StringVal
+'@param {Boolean} [SpaceAsPlus=False]
+'@return {String}
+'@usage - StringVal을 인코딩해주는 함수. EncodeChar함수 이용
+Public Function URLEncode(StringVal As String, Optional SpaceAsPlus As Boolean = False) As String
+    Dim StringLen As Long
+    StringLen = Len(StringVal)
+
+    If StringLen > 0 Then
+        Dim result() As String
+        ReDim result(1 To StringLen) As String
+        Dim i As Long
+
+        For i = 1 To StringLen
+            result(i) = EncodeChar(VBA.Strings.Mid$(StringVal, i, 1), SpaceAsPlus)
+        Next i
+
+        URLEncode = Join(result, "")
+    End If
+End Function
+
+'@method EncodeChar
+'@param {String} Char
+'@param {Boolean} SpaceAsPlus
+'@return {String}
+'@usage - 하나의 character인 string을 input으로 받는다. 하나의 character인 string을 인코딩하는 메소드이다.
+'SpaceAsPlus는 space가 encoding되는 방식을 결정한다. true일 시, +로, false일 시, %20으로 인코딩 된다.
+Private Function EncodeChar(char As String, SpaceAsPlus As Boolean) As String
+    Dim charCode As Integer
+    charCode = Asc(char)
+    Dim Space As String
+
+    If SpaceAsPlus Then Space = "+" Else Space = "%20"
+
+    Select Case charCode
+        Case 97 To 122, 65 To 90, 48 To 57, 45, 46, 95, 126
+            EncodeChar = char
+        Case 32
+            EncodeChar = Space
+        Case 0 To 15
+            EncodeChar = "%0" & VBA.Hex(charCode)
+        Case Else
+            EncodeChar = "%" & VBA.Hex(charCode)
+    End Select
+End Function
+'@method IsDuplicate
+'@param {String} dataId1
+'@param {String} dataId2
+'@param {Dictionary} uniquePairs
+'@return {Boolean} - data ID pair가 중복이면, Returns True. 아니면 False
+'@usage - 함수는 2개의 dataId와 한개의 dictionary를 받는다. 함수는 dataId1과 dataId2의 조합 혹은 dataId2와 dataId1 조합이 dictionary에 존재하는지 확인한다.
+'duplicate을 나타내는, dictionary에서 combination중 하나가 발견되면 True를 return한다.
+Function IsDuplicate(ByVal dataId1 As String, ByVal dataId2 As String, ByRef uniquePairs As Scripting.Dictionary) As Boolean
+    ' Check if the combinedKey or its reverse is in the dictionary
+    IsDuplicate = uniquePairs.Exists(dataId1 & ":" & dataId2) Or uniquePairs.Exists(dataId2 & ":" & dataId1)
+End Function
+
+Function MapDataIdToCode(dataId As String) As String
+    ' mapping함수
+    Select Case dataId
+        Case "KOSPI200_LOC"
+            MapDataIdToCode = "KOSPI_LV"
+        Case "HSI_LOC"
+            MapDataIdToCode = "HSI_LV"
+        Case "NKY_LOC"
+            MapDataIdToCode = "NKY_LV"
+        Case "HSCEI_LOC"
+            MapDataIdToCode = "HSCEI_LV"
+        
+        Case Else
+            MapDataIdToCode = dataId ' mapping에 해당되는 경우가 없을 때는, 그대로 return한다.
+    End Select
+End Function
+
+
+Function FormatDateString(dateStr As String) As Date
+    If Len(dateStr) = 8 Then
+        FormatDateString = DateSerial(VBA.Left(dateStr, 4), VBA.Mid(dateStr, 5, 2), VBA.Right(dateStr, 2))
+    Else
+        FormatDateString = VBA.CDate(dateStr)
+    End If
+End Function
+
+
+Function TrimValue(value As Variant) As Variant
+    If VarType(value) = vbString Then
+        TrimValue = VBA.Trim(value)
+    Else
+        TrimValue = value
+    End If
+End Function
+
+' @method ImportGreekData
+' @param {String} jobId
+' @usage - jobId에 해당하는 greek값을 cell에 뿌려준다.
+Function ImportGreekData(jobId As String)
+    Dim objRequest As Object
+    Dim strUrl As String
+    Dim blnAsync As Boolean
+    Dim strResponse As String
+    Dim json As Object
+
+    ' XMLHTTP 객체 생성
+    Set objRequest = CreateObject("MSXML2.XMLHTTP")
+
+    ' jobId로 url생성
+    strUrl = "http://urosys-web.juroinstruments.com/app/selectGreeks?jobId=" & jobId
+    blnAsync = True
+
+    ' get request
+    With objRequest
+        .Open "GET", strUrl, blnAsync
+        .SetRequestHeader "Content-Type", "application/json"
+        .send
+
+        ' 응답을 기다린다.
+        While .readyState <> 4
+            DoEvents ' 엑셀이 어는 것을 방지한다.
+        Wend
+
+        ' 응답을 얻는다.
+        strResponse = .ResponseText
+    End With
+
+    ' JSON response 파싱
+    Set json = JsonConverter.ParseJson(strResponse)
+    Dim rowNumber As Integer
+    rowNumber = 9
+
+    Dim colNumber As Integer ' 함수에서 사용되지 않는다.
+    colNumber = 6
+
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("OTC")
+
+    ' column 매핑
+    Dim colMapping As Object
+    Set colMapping = CreateObject("Scripting.Dictionary")
+
+    colMapping("rfCd") = 8
+    colMapping("jobId") = 6
+    colMapping("sensTyCd") = 11
+    colMapping("delta") = 9
+    colMapping("itemCd") = 7
+    colMapping("gamma") = 10
+
+    Dim key As Variant
+    Dim item As Object
+
+    ' JSON data를 순회한다.
+    For Each item In json("selectGreekValues")
+        For Each key In item.keys
+            If colMapping.Exists(key) Then
+                ws.Cells(rowNumber, colMapping(key)).value = item(key)
+            End If
+            DoEvents
+        Next key
+        rowNumber = rowNumber + 1
+        DoEvents
+    Next item
+End Function
+
+
+Function SortCollection(col As Collection) As Collection
+    Dim sortedArray() As Variant
+    Dim i As Long, j As Long
+    Dim temp As Variant
+    
+    ' collection을 array로 바꾼다. sorting을 위해서
+    ReDim sortedArray(1 To col.Count)
+    For i = 1 To col.Count
+        Set sortedArray(i) = col(i)
+    Next i
+    
+    ' rfCd값에 따라 bubble sort
+    For i = 1 To UBound(sortedArray) - 1
+        For j = i + 1 To UBound(sortedArray)
+            If sortedArray(i)("rfCd") > sortedArray(j)("rfCd") Then
+                Set temp = sortedArray(i)
+                Set sortedArray(i) = sortedArray(j)
+                Set sortedArray(j) = temp
+            End If
+        Next j
+    Next i
+    
+    ' sorting된 array를 다시 collection으로 바꾼다.
+    Dim sortedCol As New Collection
+    For i = 1 To UBound(sortedArray)
+        sortedCol.Add sortedArray(i)
+    Next i
+    
+    Set SortCollection = sortedCol
+End Function
+
+Function FindItemByComnCdFullNm(col As Collection, rfCd As String, searchTerm As String) As Object
+    Dim item As Object
+    For Each item In col
+        If item("rfCd") = rfCd And (item("comnCdFullNm") = searchTerm Or InStr(item("comnCdFullNm"), searchTerm) > 0) Then
+            Set FindItemByComnCdFullNm = item
+            Exit Function
+        End If
+    Next item
+    Set FindItemByComnCdFullNm = Nothing
+End Function
+
+Function IsInCollection(col As Collection, key As Variant) As Boolean
+    Dim item As Variant
+    For Each item In col
+        If item = key Then
+            IsInCollection = True
+            Exit Function
+        End If
+    Next item
+    IsInCollection = False
+End Function
+
+Function SortCollectionByTimePeriod(col As Collection) As Collection
+    Dim sortedArray() As Object
+    Dim i As Long, j As Long
+    Dim tempItem As Object
+    
+    ' sorting을 위해 collection을 array로 변경한다.
+    ReDim sortedArray(1 To col.Count)
+    For i = 1 To col.Count
+        Set sortedArray(i) = col(i)
+    Next i
+    
+    ' array를 bubble sort한다.
+    For i = 1 To UBound(sortedArray) - 1
+        For j = i + 1 To UBound(sortedArray)
+            If CompareCurrencyItems(sortedArray(i)("rfCd"), sortedArray(j)("rfCd")) > 0 Then
+                ' item을 바꾼다.
+                Set tempItem = sortedArray(i)
+                Set sortedArray(i) = sortedArray(j)
+                Set sortedArray(j) = tempItem
+            End If
+        Next j
+    Next i
+    
+    ' 새롭게 sorting된 collection을 만든다.
+    Dim sortedCol As Collection
+    Set sortedCol = New Collection
+    
+    For i = 1 To UBound(sortedArray)
+        sortedCol.Add sortedArray(i)
+    Next i
+    
+    Set SortCollectionByTimePeriod = sortedCol
+End Function
+
+Function CompareCurrencyItems(rfCd1 As String, rfCd2 As String) As Integer
+    Dim base1 As String, base2 As String
+    Dim period1 As String, period2 As String
+    
+    base1 = GetBaseCode(rfCd1)
+    base2 = GetBaseCode(rfCd2)
+    period1 = GetTimePeriod(rfCd1)
+    period2 = GetTimePeriod(rfCd2)
+    
+    ' 처음에 baseCode를 비교한다.
+    If base1 < base2 Then
+        CompareCurrencyItems = -1
+        Exit Function
+    ElseIf base1 > base2 Then
+        CompareCurrencyItems = 1
+        Exit Function
+    End If
+    
+    ' baseCode가 같다면 time period를 비교한다.
+    ' time period가 없는 baseCode가 가장 먼저 온다.
+    If period1 = "" And period2 <> "" Then
+        CompareCurrencyItems = -1
+        Exit Function
+    ElseIf period1 <> "" And period2 = "" Then
+        CompareCurrencyItems = 1
+        Exit Function
+    ElseIf period1 = "" And period2 = "" Then
+        CompareCurrencyItems = 0
+        Exit Function
+    End If
+    
+    ' 둘다 time period가 있으면, time period를 비교한다.
+    CompareCurrencyItems = CompareTimePeriods(period1, period2)
+End Function
+
+Function GetBaseCode(rfCd As String) As String
+    ' base code를 추출한다. (예, F_FMKRWUSD, IRSKRWKRW, IRSJPYJPY, CKRWKIS)
+    Dim parts As Variant
+    parts = Split(rfCd, "_")
+    If UBound(parts) > 0 And parts(0) = "F" Then
+        GetBaseCode = parts(0) & "_" & parts(1)
+    Else
+        GetBaseCode = parts(0)
+    End If
+End Function
+
+Function GetTimePeriod(rfCd As String) As String
+    ' rfCd로 부터 시간 기간을 추출한다.
+    Dim parts As Variant
+    parts = Split(rfCd, "_")
+    If UBound(parts) > 0 Then
+        If parts(0) = "F" And UBound(parts) > 1 Then
+            GetTimePeriod = parts(2)
+        Else
+            GetTimePeriod = parts(1)
+        End If
+    Else
+        GetTimePeriod = ""
+    End If
+End Function
+
+Function CompareTimePeriods(period1 As String, period2 As String) As Integer
+    Dim order As Variant
+    order = Array("1D", "2D", "1W", "2W", "3W", "1M", "2M", "3M", "4M", "5M", "6M", "7M", "8M", "9M", "10M", "11M", "1Y", "1Y6M", "2Y", "2Y6M", "3Y", "4Y", "5Y", "6Y", "7Y", "8Y", "9Y", "10Y", "12Y", "15Y", "20Y", "25Y", "30Y", "40Y", "50Y")
+    
+    Dim index1 As Integer, index2 As Integer
+    Dim i As Integer
+    
+    ' 순서가 정해진 array에서 각 기간의 인덱스를 찾는다.
+    index1 = -1
+    index2 = -1
+    For i = 0 To UBound(order)
+        If order(i) = period1 Then index1 = i
+        If order(i) = period2 Then index2 = i
+    Next i
+    
+    ' 인덱스를 비교한다.
+    If index1 = -1 And index2 = -1 Then
+        CompareTimePeriods = 0
+    ElseIf index1 = -1 Then
+        CompareTimePeriods = -1
+    ElseIf index2 = -1 Then
+        CompareTimePeriods = 1
+    ElseIf index1 < index2 Then
+        CompareTimePeriods = -1
+    ElseIf index1 > index2 Then
+        CompareTimePeriods = 1
+    Else
+        CompareTimePeriods = 0
+    End If
+End Function
+
+
+--InputCorrelation--
+Sub InputCorrelation()
+    Dim corrUrlBuilder As UrlBuilder
+    Set corrUrlBuilder = New UrlBuilder
+    
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Market Data")
+    
+    Dim baseDt As String
+    baseDt = VBA.Format(ws.Range("A2").value, "yyyymmdd")
+    
+    Dim commonUrl As String
+    commonUrl = ws.Range("G2").value
+    
+    corrUrlBuilder.baseUrl = commonUrl & "marketdata/"
+    corrUrlBuilder.Version = "v1/"
+    corrUrlBuilder.DataParameter = "selectCorrs?"
+    corrUrlBuilder.baseDt = "baseDt=" & baseDt & "&"
+    corrUrlBuilder.dataIds = "dataIds=" & dataIdBuilder()
+    
+    Dim corrUrl As String
+    corrUrl = corrUrlBuilder.MakeUrl
+    
+    Debug.Print corrUrl
+    
+    Dim jsonString As String
+    jsonString = GetHttpResponseText2(corrUrl)
+    Debug.Print jsonString
+    
+    Dim jsonResponse As Object
+    Set jsonResponse = JsonConverter.ParseJson(jsonString)
+    
+    If jsonResponse.Exists("code") Then
+        If jsonResponse("code") = "ERROR" Then
+            MsgBox "Error: " & jsonResponse("message"), vbCritical
+            Exit Sub
+        ElseIf jsonResponse("code") = "SUCCESS" Then
+            Dim corrs As Collection
+            Set corrs = jsonResponse("response")("correlations")
+            
+            Dim equityCell As Range, fxCell As Range
+            Set equityCell = ws.Cells.Find(What:="Equity", LookIn:=xlValues, LookAt:=xlWhole)
+            Set fxCell = ws.Cells.Find(What:="FX", LookIn:=xlValues, LookAt:=xlWhole)
+            
+            Dim corrUpdater As corrUpdater
+            Set corrUpdater = New corrUpdater
+            
+            With corrUpdater
+                Set .Worksheet = ws
+                Set .SelCorrelation = corrs
+                .MatrixId = "CORR"
+                Set .equityCell = equityCell
+                Set .fxCell = fxCell
+                .UpdateCorrelations
+            End With
+            
+            'MsgBox "Correlations 업데이트가 성공적으로 끝났습니다!", vbInformation
+        End If
+    End If
+End Sub
+
+Function dataIdBuilder() As String
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Market Data")
+    
+    Dim result As String
+    Dim cell As Range
+    
+    ' B8부터 B14까지 처리
+    For Each cell In ws.Range("B8:B14")
+        If Not IsEmpty(cell) Then
+            result = result & cell.value & ","
+        End If
+    Next cell
+    
+    ' B20부터 B23까지 처리
+    For Each cell In ws.Range("B20:B23")
+        If Not IsEmpty(cell) Then
+            result = result & cell.value & ","
+        End If
+    Next cell
+    
+    ' trailing Comma제거
+    If Len(result) > 0 Then
+        result = VBA.Left(result, Len(result) - 1)
+    End If
+    
+    dataIdBuilder = result
+End Function
+
+' DataIdBuilder 테스트
+Sub TestDataIdBuilder()
+    Dim dataIds As String
+    dataIds = dataIdBuilder()
+    
+    Debug.Print "Data IDs: " & dataIds
+    
+End Sub
+
+
+--InputDivStream--
+Sub InputDivStream()
+
+    Dim discreteDivUrlBuilder As UrlBuilder
+    Set discreteDivUrlBuilder = New UrlBuilder
+    
+    Dim ws2 As Worksheet
+    Set ws2 = ThisWorkbook.Sheets("DiscreteDividend")
+    
+    Dim baseDt As String
+    baseDt = VBA.Format(ws2.Range("A2").value, "yyyymmdd")
+    
+    Dim ws3 As Worksheet
+    Set ws3 = ThisWorkbook.Sheets("Market Data")
+    
+    Dim baseUrl As String
+    baseUrl = ws3.Range("G2").value
+    'setter를 이용해서 UrlBuilder의 property를 적절하게 세팅해준다.
+    discreteDivUrlBuilder.baseUrl = baseUrl & "marketdata/"
+    discreteDivUrlBuilder.Version = "v1/"
+    discreteDivUrlBuilder.DataParameter = "selectDividendStream?"
+    discreteDivUrlBuilder.baseDt = "baseDt=" & baseDt & "&"
+    discreteDivUrlBuilder.dataIds = "dataIds=" & RangeToCommaString(Range("A5:I5"))
+    
+    '메서드 이용, return값이 full url.
+    Dim discreteDivUrl As String
+    discreteDivUrl = discreteDivUrlBuilder.MakeUrl
+    
+    Dim jsonString As String
+    jsonString = GetHttpResponseText2(discreteDivUrl)
+    
+    Dim jsonResponse As Object
+    Set jsonResponse = JsonConverter.ParseJson(jsonString)
+    
+    ' response에 에러를 확인한다.
+    If jsonResponse.Exists("code") Then
+        If jsonResponse("code") = "ERROR" Then
+            Dim errMsg As String
+            errMsg = "Error: " & jsonResponse("message")
+            MsgBox errMsg, vbCritical ' 메시지 박스에 에러메시지를 보여준다.
+            Exit Sub
+        
+        ElseIf jsonResponse("code") = "SUCCESS" Then
+            Dim dividendStreams As Collection
+            Set dividendStreams = jsonResponse("response")("dividendStreams")
+            
+            Dim ws As Worksheet
+            Set ws = ThisWorkbook.Sheets("DiscreteDividend")
+            
+            Dim DDcell As Range
+            Set DDcell = ws.Columns(1).Find(What:="Discrete Dividend", LookIn:=xlValues, LookAt:=xlPart)
+            
+            If Not DDcell Is Nothing Then
+                Dim startCell As Range
+                Set startCell = DDcell.Offset(2, 0) ' 같은 column에서 DDcell로부터 2 row 밑에서 시작한다.
+                
+                Dim endCell As Range
+                Set endCell = startCell ' startCell로 endCell을 초기화한다.
+                
+                Dim cellToCheck As Range
+                Set cellToCheck = startCell ' cellToCheck를 startCell로 초기화한다.
+                
+                ' 한 셀 씩 건너뛰면서 체크해서 마지막 셀을 찾아낸다.
+                Do While Not IsEmpty(cellToCheck.value)
+                    Set endCell = cellToCheck ' endCell을 update한다.
+                    Set cellToCheck = cellToCheck.Offset(0, 2) ' 한 셀씩 건너뛰면서 check한다.
+                Loop
+                
+                ' 시작 cell로 부터 끝나는 cell까지 searchRange를 정의한다.
+                Dim searchRange As Range
+                Set searchRange = ws.Range(startCell, ws.Cells(startCell.row, endCell.Column))
+            Else
+                Debug.Print "이산 배당이 발견되지 않았습니다."
+            End If
+            
+            Dim divStreamUpdater As divStreamUpdater
+            Set divStreamUpdater = New divStreamUpdater
+            
+            divStreamUpdater.SetWorksheet ws.name
+            divStreamUpdater.SetDivStreamData dividendStreams
+            divStreamUpdater.SetSearchRange searchRange
+            divStreamUpdater.UpdateWorksheet
+            
+            MsgBox "데이터 입력이 성공하였습니다", vbInformation, "완료"
+        End If
+        
+    End If
+End Sub
+
+Sub InputAdjustDivStream()
+    Dim discreteDivUrlBuilder As UrlBuilder
+    Set discreteDivUrlBuilder = New UrlBuilder
+    
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Missing Data - D_Dividend(보정)")
+    
+    Dim baseDt As String
+    baseDt = VBA.Format(ws.Range("B1").value, "yyyymmdd")
+    
+    Dim ws3 As Worksheet
+    Set ws3 = ThisWorkbook.Sheets("Market Data")
+    
+    Dim baseUrl As String
+    baseUrl = ws3.Range("G2").value
+    
+    discreteDivUrlBuilder.baseUrl = baseUrl & "marketdata/"
+    discreteDivUrlBuilder.Version = "v1/"
+    discreteDivUrlBuilder.DataParameter = "selectDividendStream?"
+    discreteDivUrlBuilder.baseDt = "baseDt=" & baseDt & "&"
+    discreteDivUrlBuilder.dataIds = "dataIds=" & RangeToCommaString(ws.Range("B6,E6,H6,K6"))
+    
+    Dim discreteDivUrl As String
+    discreteDivUrl = discreteDivUrlBuilder.MakeUrl
+    
+    Dim jsonString As String
+    jsonString = GetHttpResponseText2(discreteDivUrl)
+    
+    Dim jsonResponse As Object
+    Set jsonResponse = JsonConverter.ParseJson(jsonString)
+    
+    If jsonResponse.Exists("code") Then
+        If jsonResponse("code") = "ERROR" Then
+            MsgBox "Error: " & jsonResponse("message"), vbCritical
+            Exit Sub
+        ElseIf jsonResponse("code") = "SUCCESS" Then
+            Dim dividendStreams As Collection
+            Set dividendStreams = jsonResponse("response")("dividendStreams")
+            
+            Dim divStreamUpdater As divStreamUpdater
+            Set divStreamUpdater = New divStreamUpdater
+            
+            divStreamUpdater.SetWorksheet ws.name
+            divStreamUpdater.SetDivStreamData dividendStreams
+            
+            ' Define the search range for dataIds
+            Dim searchRange As Range
+            Set searchRange = ws.Range("B6,E6,H6,K6")
+            divStreamUpdater.SetSearchRange searchRange
+            
+            divStreamUpdater.UpdateWorksheetAdjust
+            
+            MsgBox "데이터가 성공적으로 입력됬습니다.", vbInformation, "완료"
+        End If
+    End If
+End Sub
+
+
+Public Function RangeToCommaString(rng As Range) As String
+    Dim cell As Range
+    Dim values As New Collection
+    Dim result As String
+    Dim i As Integer
+    
+    ' range에서 cell을 loop를 돈다.
+    For Each cell In rng
+        ' cell이 비어있는지 아닌지 확인한다.
+        If Not IsEmpty(cell) Then
+            ' cell값을 collection에 추가한다.
+            values.Add CStr(cell.value)
+        End If
+    Next cell
+    
+    ' comma로 분리된 string으로 만든다.
+    If values.Count > 0 Then
+        result = values(1)
+        For i = 2 To values.Count
+            result = result & "," & values(i)
+        Next i
+    End If
+    
+    ' 결과를 return한다.
+    RangeToCommaString = result
+End Function
+
+
+--InputDivYield--
+Sub InputDivYield()
+    Dim divYieldUrlBuilder As UrlBuilder
+    Set divYieldUrlBuilder = New UrlBuilder
+    
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Dividend")
+    
+    Dim baseDt As String
+    baseDt = VBA.Format(ws.Range("A2").value, "yyyymmdd")
+    
+    Dim ws2 As Worksheet
+    Set ws2 = ThisWorkbook.Sheets("Market Data")
+    
+    Dim baseUrl As String
+    baseUrl = ws2.Range("G2").value
+    
+    'setter를 이용해서 UrlBuilder의 property를 적절하게 세팅해준다.
+    divYieldUrlBuilder.baseUrl = baseUrl & "marketdata/"
+    divYieldUrlBuilder.Version = "v1/"
+    divYieldUrlBuilder.DataParameter = "selectDividends?"
+    divYieldUrlBuilder.baseDt = "baseDt=" & baseDt & "&"
+    divYieldUrlBuilder.dataIds = "dataIds=" & RangeToCommaString(Range("A5:A9")) & "&"
+    'divYieldUrlBuilder.dataIds = "dataIds=20086_C_D,20065_C_D,20064_C_D" & "&"
+    'divYieldUrlBuilder.DataIds = "dataIds=esd_c"
+    divYieldUrlBuilder.dataSetId = "dataSetId=official"
+    
+    
+    '메서드 이용, return값이 full url.
+    Dim divUrl As String
+    divUrl = divYieldUrlBuilder.MakeUrl
+    
+    Debug.Print divUrl
+    
+    Dim jsonString As String
+    jsonString = GetHttpResponseText2(divUrl)
+    
+    Dim jsonResponse As Object
+    Set jsonResponse = JsonConverter.ParseJson(jsonString)
+    
+    If jsonResponse.Exists("code") Then
+        If jsonResponse("code") = "ERROR" Then
+            Dim errMsg As String
+            errMsg = "Error: " & jsonResponse("message")
+            MsgBox errMsg, vbCritical ' 메시지 박스에 에러메시지를 보여준다.
+            Exit Sub
+        
+        ElseIf jsonResponse("code") = "SUCCESS" Then
+            Dim divYields As Collection
+            Set divYields = jsonResponse("response")("dividendYields")
+        
+            Dim divYieldUpdater As divYieldUpdater
+            Set divYieldUpdater = New divYieldUpdater
+            
+            divYieldUpdater.SetWorksheet "Dividend"
+            'divYieldUpdater.SetDivRange "A5:A7" '이 부분 하드코딩되어 있는데, 수정 필요할 시 수정
+            
+            Dim lastRow As Long
+            lastRow = ws.Range("A5").End(xlDown).row
+            Dim divRange As String
+            divRange = "A5:A" & lastRow
+            
+            divYieldUpdater.SetDivRange divRange
+            
+            divYieldUpdater.SetDivData divYields
+            
+            'divYieldUpdater.UpdateWorksheet
+            divYieldUpdater.UpdateWorksheetEfficient
+            
+            MsgBox "데이터 입력이 성공하였습니다", vbInformation, "완료"
+        End If
+    End If
+    
+End Sub
+
+
+--InputPrice--
+'InputPrice
+Sub InputPrice()
+    Dim priceUrlBuilder As UrlBuilder
+    Set priceUrlBuilder = New UrlBuilder
+    
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Market Data")
+    
+    Dim baseDt As String
+    baseDt = VBA.Format(ws.Range("A2").value, "yyyymmdd")
+    
+    Dim commonUrl As String
+    commonUrl = ws.Range("G2").value
+    
+    priceUrlBuilder.baseUrl = commonUrl & "marketdata/"
+    priceUrlBuilder.Version = "v1/"
+    priceUrlBuilder.DataParameter = "selectPrices?"
+    priceUrlBuilder.baseDt = "baseDt=" & baseDt & "&"
+    priceUrlBuilder.dataIds = "dataIds=" & GetDataIdsString(ws)
+    
+    Dim priceUrl As String
+    priceUrl = priceUrlBuilder.MakeUrl
+    
+    Debug.Print priceUrl
+    
+    Dim jsonString As String
+    jsonString = GetHttpResponseText2(priceUrl)
+    
+    Dim jsonResponse As Object
+    Set jsonResponse = JsonConverter.ParseJson(jsonString)
+    
+    If jsonResponse.Exists("code") Then
+        If jsonResponse("code") = "ERROR" Then
+            Dim errMsg As String
+            errMsg = "Error: " & jsonResponse("message")
+            MsgBox errMsg, vbCritical
+            Exit Sub
+        ElseIf jsonResponse("code") = "SUCCESS" Then
+            Dim prices As Collection
+            Set prices = jsonResponse("response")("prices")
+            
+            Dim priceMarketDataUpdater As MarketDataUpdater
+            Set priceMarketDataUpdater = New MarketDataUpdater
+            
+            Set priceMarketDataUpdater.Worksheet = ws
+            Set priceMarketDataUpdater.PricesCollection = prices
+            
+            priceMarketDataUpdater.UpdatePricesOptimized
+        End If
+    End If
+End Sub
+
+Function GetDataIdsString(ws As Worksheet) As String
+    Dim equityDataIds As String
+    equityDataIds = GetDataIdsForSection(ws, "Equity")
+    
+    Dim fxDataIds As String
+    fxDataIds = GetDataIdsForSection(ws, "FX")
+    
+    GetDataIdsString = equityDataIds & "," & fxDataIds
+    
+    ' trailing comma 제거
+    If VBA.Right(GetDataIdsString, 1) = "," Then
+        GetDataIdsString = VBA.Left(GetDataIdsString, Len(GetDataIdsString) - 1)
+    End If
+End Function
+
+Function GetDataIdsForSection(ws As Worksheet, sectionName As String) As String
+    Dim sectionRow As Range
+    Set sectionRow = ws.Columns(2).Find(What:=sectionName, LookIn:=xlValues, LookAt:=xlPart)
+    
+    If sectionRow Is Nothing Then
+        GetDataIdsForSection = ""
+        Exit Function
+    End If
+    
+    Dim startRow As Long
+    startRow = sectionRow.row + 4
+    
+    Dim lastRow As Long
+    lastRow = ws.Cells(startRow, 2).End(xlDown).row
+    
+    Dim dataRange As Range
+    Set dataRange = ws.Range(ws.Cells(startRow, 2), ws.Cells(lastRow, 2))
+    
+    Dim cell As Range
+    Dim result As String
+    
+    For Each cell In dataRange
+        If Not IsEmpty(cell.value) Then
+            result = result & cell.value & ","
+        End If
+    Next cell
+    
+    ' trailing comma 제거
+    If Len(result) > 0 Then
+        result = VBA.Left(result, Len(result) - 1)
+    End If
+    
+    GetDataIdsForSection = result
+End Function
+
+
+--InputVol--
+Sub Inputvol()
+
+    Dim VoUrlBuilder As UrlBuilder
+    Set VoUrlBuilder = New UrlBuilder
+    
+    Dim ws2 As Worksheet
+    Set ws2 = ThisWorkbook.Sheets("Market Data")
+    
+    Dim baseDt As String
+    baseDt = VBA.Format(ws2.Range("A2").value, "yyyymmdd")
+    
+    Dim commonUrl As String
+    commonUrl = ws2.Range("G2").value
+    
+    Dim dataIdsString As String
+    'dataIdsString = ThisWorkbook.Sheets("Vol").Range("E1").value
+    dataIdsString = GenerateDataIdsString()
+    
+    VoUrlBuilder.baseUrl = commonUrl & "marketdata/"
+    VoUrlBuilder.Version = "v1/"
+    VoUrlBuilder.DataParameter = "vols?"
+    VoUrlBuilder.baseDt = "baseDt=" & baseDt & "&"
+    'VoUrlBuilder.DataIds = "dataIds=HSCEI_LOC,HSI_LOC,NKY_LOC,KOSPI200_LOC"
+    VoUrlBuilder.dataIds = "dataIds=" & dataIdsString
+    Dim VoUrl As String
+    VoUrl = VoUrlBuilder.MakeUrl
+    Debug.Print dataIdsString
+    Debug.Print VoUrl
+    
+    Dim jsonString As String
+    jsonString = GetHttpResponseText2(VoUrl)
+    Debug.Print jsonString
+    Dim jsonResponse As Object
+    Set jsonResponse = JsonConverter.ParseJson(jsonString)
+    
+    If jsonResponse.Exists("code") Then
+        If jsonResponse("code") = "ERROR" Then
+            Dim errMsg As String
+            errMsg = "Error: " & jsonResponse("message")
+            MsgBox errMsg, vbCritical ' error 메세지를 메세지 박스에 보여준다.
+            Exit Sub
+    
+        ElseIf jsonResponse("code") = "SUCCESS" Then
+            Dim Volatilities As Collection
+            Set Volatilities = jsonResponse("response")("volatilities")
+            
+            Dim ws As Worksheet
+            Set ws = ThisWorkbook.Sheets("Vol")
+            
+            Dim importer As New VolUpdaterNew
+            With importer
+                Set .Worksheet = ws
+                Set .Volatilities = Volatilities
+                .CodeColumn = "A"
+                .ImportDataWithoutIndex
+                .FillEmptyCells
+                        
+            End With
+            
+            MsgBox "데이터 입력이 성공하였습니다", vbInformation, "완료"
+            
+        End If
+    End If
+    
+End Sub
+
+Function GenerateDataIdsString() As String
+    Dim ws As Worksheet
+    Dim cell As Range
+    Dim dataIds() As String
+    Dim lastRow As Long
+    Dim dataId As String
+    Dim i As Long
+    Dim finalString As String
+    
+    Set ws = ThisWorkbook.Sheets("Vol")
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).row
+    
+    ReDim dataIds(0 To 0)
+    i = 0
+    
+    For Each cell In ws.Range("A1:A" & lastRow)
+        If cell.value <> "Code" And cell.value <> "Tenor" And _
+           cell.value <> "Vol" And cell.value <> "Official Data" Then
+            Select Case cell.value
+                Case "KOSPI_LV"
+                    dataId = "KOSPI200_LOC"
+                Case "NKY_LV"
+                    dataId = "NKY_LOC"
+                Case "HSI_LV"
+                    dataId = "HSI_LOC"
+                Case "HSCEI_LV"
+                    dataId = "HSCEI_LOC"
+                Case Else
+                    dataId = cell.value
+            End Select
+            
+            If dataId <> "" Then
+                ReDim Preserve dataIds(0 To i)
+                dataIds(i) = dataId
+                i = i + 1
+            End If
+        End If
+    Next cell
+    
+    ' array 요소를 join하고, 빈 요소를 제거한다.
+    finalString = Join(dataIds, ",")
+    finalString = Replace(finalString, ",,", ",")
+    
+    ' leading, trailing 콤마 제거
+    finalString = VBA.Trim(finalString)
+    If VBA.Left(finalString, 1) = "," Then finalString = VBA.Right(finalString, VBA.Len(finalString) - 1)
+    If VBA.Right(finalString, 1) = "," Then finalString = VBA.Left(finalString, VBA.Len(finalString) - 1)
+    
+    GenerateDataIdsString = finalString
+End Function
+
+--InputYieldCurve--
+Sub InputYieldCurve()
+    Dim YCUrlBuilder As UrlBuilder
+    Set YCUrlBuilder = New UrlBuilder
+    
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Market Data")
+    
+    Dim baseDt As String
+    baseDt = VBA.Format(ws.Range("A2").value, "yyyymmdd")
+    
+    Dim commonUrl As String
+    commonUrl = ws.Range("G2").value
+    'setter를 이용해서 UrlBuilder의 property를 적절하게 세팅해준다.
+    YCUrlBuilder.baseUrl = commonUrl & "marketdata/"
+    
+    'YCUrlBuilder.baseurl = "http://210.120.89.57:8080/marketdata/"
+    YCUrlBuilder.Version = "v1/"
+    YCUrlBuilder.DataParameter = "selectYieldcurves?"
+    'YCUrlBuilder.baseDt = "baseDt=20231228&"
+    YCUrlBuilder.baseDt = "baseDt=" & baseDt & "&"
+    YCUrlBuilder.dataIds = "dataIds=" & yieldDataIdBuilder
+    
+    Dim YCUrl As String
+    YCUrl = YCUrlBuilder.MakeUrl
+    
+    Debug.Print YCUrl
+    
+    Dim jsonString As String
+    jsonString = GetHttpResponseText2(YCUrl)
+    
+    Dim jsonResponse As Object
+    Set jsonResponse = JsonConverter.ParseJson(jsonString)
+    
+    If jsonResponse.Exists("code") Then
+        If jsonResponse("code") = "ERROR" Then
+            Dim errMsg As String
+            errMsg = "Error: " & jsonResponse("message")
+            MsgBox errMsg, vbCritical ' 메시지박스에 에러메시지를 보여준다.
+            Exit Sub
+    
+        ElseIf jsonResponse("code") = "SUCCESS" Then
+            Dim yieldCurves As Collection
+            Set yieldCurves = jsonResponse("response")("yieldCurves")
+            
+            Dim yieldCurve As Variant
+            Set yieldCurve = yieldCurves(1)
+            
+            Dim FX As String
+            FX = yieldCurve("dataId")
+            
+            Dim yieldCurveUpdater1 As YieldCurveUpdater
+            Set yieldCurveUpdater1 = New YieldCurveUpdater
+                
+'            Dim ws As Worksheet
+'            Set ws = ThisWorkbook.Sheets("Market Data")
+            
+            With yieldCurveUpdater1
+                Set .Worksheet = ws
+                Set .yieldCurves = yieldCurves
+                Set .CurrencyCell = ws.Range("A27:J27")
+                .PopulateYieldCurveData
+                        
+            End With
+        End If
+    End If
+    
+    
+End Sub
+
+Function yieldDataIdBuilder() As String
+    Dim ws As Worksheet
+    Dim cellAddresses As Variant
+    Dim cellValue As Variant
+    Dim result As String
+    Dim cellAddress As Variant
+    
+    ' worksheet를 세팅한다.
+    Set ws = ThisWorkbook.Sheets("Market Data")
+    
+    ' 셀 위치를 정의한다.
+    cellAddresses = Array("A27", "C27", "E27", "G27", "I27")
+    
+    ' 셀 위치를 돌면서, 결과를 만든다.
+    For Each cellAddress In cellAddresses
+        cellValue = ws.Range(cellAddress).value
+        
+        ' result string에cell value를 넣는다.
+        If result = "" Then
+            result = CStr(cellValue)
+        Else
+            result = result & "," & CStr(cellValue)
+        End If
+    Next cellAddress
+    
+    ' 결과를 반환한다.
+    yieldDataIdBuilder = result
+End Function
+
+--Macros---
+
+Option Explicit
+
+' MarketDataInput 매크로 (Market Data sheet & vol sheet)
+Sub MarketDataInputMacros()
+    
+    On Error GoTo ErrorHandler
+    
+    Application.ScreenUpdating = False
+    
+    Call InputPrice.InputPrice
+    
+    Call InputYieldCurve.InputYieldCurve
+        
+    Call InputCorrelation.InputCorrelation
+    
+    Application.ScreenUpdating = True
+    
+    MsgBox "마켓데이터 입력이 완료되었습니다.", vbInformation, "완료"
+    
+    Exit Sub
+    
+ErrorHandler:
+    Application.ScreenUpdating = True
+    MsgBox "에러발생: " & Err.Description, vbCritical, "에러"
+    'Call Inputvol.Inputvol
+     
+End Sub
+
+'MarketDataPost 매크로 (Market Data Sheet)
+Sub MarketDataPostMacros()
+
+    Call ClassPostPrice.ClassPostPrice
+    
+    Call ClassPostCorr.PrintJsonString3
+    
+    Call ClassPostYieldCurve.ClassPostYieldCurve
+    
+    'Call ClassPostVol.RunFunc
+    
+End Sub
+
+Sub VolDataInputMacro()
+    
+    Call Inputvol.Inputvol
+    
+End Sub
+
+Sub VolDataPostMacro()
+
+    Call ClassPostVol.RunFunc
+        
+End Sub
+
+
+Sub DivStreamInputMacro()
+
+    Call InputDivStream.InputDivStream
+    
+End Sub
+
+Sub DivStreamPostMacro()
+
+    Call ClassPostDivStream.ClassPostDivStream
+        
+End Sub
+
+Sub DivYieldInputMacro()
+
+    Call InputDivYield.InputDivYield
+    
+End Sub
+
+Sub DivYieldPostMacro()
+
+    Call ClassPostDivYield.ClassPostDivYield
+    
+End Sub
+
+Sub QuotePost()
+
+    Call ConvertRangeToJson.ConvertRangeToJson
+        
+End Sub
+
+Sub Valuation()
+
+    Call ValuationRequest.ValuationRequest
+        
+End Sub
+
+Sub TestImport()
+    ImportGreekData "81"
+End Sub
+
+Sub PostMissingDataHistVolCorr()
+
+    Call CPostHistoricalVol.UseHistoricalVolProcessor
+    
+    Call CPostCorr.UseCorrelationDataProcessor
+    
+End Sub
+
+Sub PostMissingDataFxForward()
+
+    Call CPostFXForwardRate.UseFXForwardData
+    
+End Sub
+
+Sub PostMissingDataDividend()
+
+    Call CPostDisDiv.UseDividendDataProcessor
+    
+End Sub
+
+Sub UnasIdInput()
+    
+    On Error GoTo ErrorHandler
+        
+    Application.ScreenUpdating = False
+    
+    Call stndCodeInput.stndCodeInput
+    
+    Call stndCodeInputFX.UpdateUnasIdFromStndCode
+    
+    Application.ScreenUpdating = True
+    MsgBox "dataId 입력 완료", vbInformation, "완료"
+    
+    Exit Sub
+    
+ErrorHandler:
+    Application.ScreenUpdating = True
+    MsgBox "dataId 입력시 에러 발생: " & Err.Description, vbCritical, "에러"
+End Sub
+
+
+--OTC_T1_Data_Input--
+Option Explicit
+
+Sub OTC_T1_Data_Input()
+
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("OTC_T1")
+    
+    Dim DataString As String
+    
+    'DataString = "20231213"
+    
+    'Dim jobIdString As String
+    
+    'jobIdString = "33"
+    
+    DataString = ws.Cells(1, 14).value
+    Dim url As String
+    'Dim api As String
+    
+    Dim baseUrl As String
+    baseUrl = ws.Cells(1, 16).value
+    
+    'url = "http://210.120.89.57:8080/marketdata/v1/OTCT1?qryDt=" & DataString
+    url = baseUrl & "marketdata/v1/OTCT1?qryDt=" & DataString
+    
+    Dim strResponse As String
+    strResponse = GetHttpResponseText(url)
+
+    Dim json As Object
+    Set json = JsonConverter.ParseJson(strResponse)
+    
+    Dim colMapping As Object
+    Set colMapping = CreateObject("Scripting.Dictionary")
+    
+    'colMapping2 추가
+    Dim colMapping2 As Object
+    Set colMapping2 = CreateObject("Scripting.Dictionary")
+    
+    Dim columnLetter As String
+    Dim columnNumber As Long
+    
+    columnLetter = "B" '열문자
+    columnNumber = Range(columnLetter & "1").Column
+    
+    colMapping("cntrnm") = columnNumber             '계약명
+    
+    'colMapping("fundCd") = columnNumber + 1        '펀드번호
+    
+    colMapping("cntrCode") = columnNumber + 2       '계약번호
+    colMapping("krCode") = columnNumber + 3         'KR코드
+    colMapping("frstNmnlAmt") = columnNumber + 4    '잔여명목(이거 중복)
+    colMapping("remNmnlCurr") = columnNumber + 5    '평가통화
+    
+    colMapping("maturityDt") = columnNumber + 6        '만기평가일
+    
+    colMapping("matDt") = columnNumber + 7          '만기결제일
+    
+    'colMapping("companyValue") = columnNumber + 8         '회사평가
+    'colMapping("intRpyDt") = columnNumber + 9       '구분1
+    colMapping("tmpl") = columnNumber + 10           '구분2
+    colMapping("fundCd") = columnNumber + 13        '구분5 (발행/헤지) (이거 영어로 들어오는데, 한글로 바꿔줘야 됨)
+    
+    '기초자산
+    colMapping("underlying1") = columnNumber + 14
+    colMapping("underlying2") = columnNumber + 16
+    colMapping("underlying3") = columnNumber + 18
+    colMapping("underlying4") = columnNumber + 20
+    
+    '기초자산수
+    colMapping("underlyingCount") = columnNumber + 22
+    
+    'KI배리어/NOKI
+    colMapping("kiWay") = columnNumber + 28
+    colMapping("kiRate") = columnNumber + 29
+    
+    Dim columnLetter2 As String
+    Dim columnNumber2 As Long
+    
+    columnLetter2 = "BG" '열문자
+    columnNumber2 = Range(columnLetter2 & "1").Column
+    '기타info
+    colMapping("issuDt") = columnNumber2
+    colMapping("bsTp") = columnNumber2 + 5
+    colMapping("cptyNm") = columnNumber2 + 6
+    
+    '금액
+    colMapping2("frstNmnlAmt") = columnNumber2 + 8
+    colMapping("frstKrwNmnlAmt") = columnNumber2 + 9
+    colMapping("frstIssuAmt") = columnNumber2 + 10
+    colMapping("frstKrwIssuAmt") = columnNumber2 + 11
+    colMapping("frstFairPric") = columnNumber2 + 12
+    colMapping("frstKrwFairPric") = columnNumber2 + 13
+    colMapping("frstEvalPric") = columnNumber2 + 14
+    colMapping("frstKrwEvalPric") = columnNumber2 + 15
+    colMapping("remNmnlAmt") = columnNumber2 + 16
+    colMapping("remKrwNmnlAmt") = columnNumber2 + 17
+    
+    Dim columnLetter3 As String
+    Dim columnNumber3 As Long
+    
+    columnLetter3 = "CC" '열문자
+    columnNumber3 = Range(columnLetter3 & "1").Column
+    
+    colMapping("cnrtFx") = columnNumber3
+    colMapping("evalFx") = columnNumber3 + 1
+    colMapping("pblctnSlct") = columnNumber3 + 2
+    colMapping("hedgeYn") = columnNumber3 + 3
+    
+    
+    colMapping("btbYn") = columnNumber3 + 4
+    colMapping("csaYn") = columnNumber3 + 5
+    
+    colMapping("kiPrice1") = columnNumber3 + 6
+    colMapping("kiPrice2") = columnNumber3 + 7
+    colMapping("kiPrice3") = columnNumber3 + 8
+    colMapping("kiPrice4") = columnNumber3 + 9
+    
+    colMapping2("fundCd") = columnNumber3 + 10
+    
+    colMapping2("fundNm") = columnNumber3 + 12
+    
+    Dim columnLetter4 As String
+    Dim columnNumber4 As Long
+    
+    columnLetter4 = "CR"
+    columnNumber4 = Range(columnLetter4 & "1").Column
+    
+    colMapping2("issuDt") = columnNumber4 + 1
+    'colMapping("issuDt") = columnNumber4 + 2
+    colMapping2("matDt") = columnNumber4 + 3
+    colMapping2("cntrnm") = columnNumber4 + 4
+    
+    '여기까지 input로직 작성함
+    colMapping2("hedgeYn") = columnNumber4 + 5
+    
+    Dim key As Variant
+    Dim item As Object
+    Dim rowNumber As Integer
+    
+    rowNumber = 25
+
+    Application.Calculation = xlCalculationManual
+    
+    If json("code") = "ERROR" Then
+        MsgBox "해당 날짜에 데이터가 없습니다"
+        Application.Calculation = xlCalculationAutomatic
+        Exit Sub
+    Else
+        For Each item In json("response")("OTC0s")
+            For Each key In colMapping.keys
+                If colMapping(key) > 0 Then
+                    ws.Cells(rowNumber, colMapping(key)).value = TrimValue(item(key))
+                End If
+                DoEvents
+            Next key
+            
+            For Each key In colMapping2.keys
+                If colMapping2(key) > 0 Then
+                    ws.Cells(rowNumber, colMapping2(key)).value = TrimValue(item(key))
+                End If
+                DoEvents
+            Next key
+            
+            'Step Down, ELS 처리 로직
+            If InStr(1, item("tmpl"), "Step Down", vbTextCompare) > 0 Then
+                ws.Cells(rowNumber, columnNumber + 10).value = "ELS"
+                ws.Cells(rowNumber, columnNumber + 11).value = "Stepdown"
+            
+            ElseIf InStr(1, item("tmpl"), "FX Swap", vbTextCompare) > 0 Then
+                ws.Cells(rowNumber, columnNumber + 10).value = "FX SWAP"
+            
+            Else
+            
+            End If
+            
+            '기초자산수 count 로직
+            Dim underlyingCount As Integer
+            underlyingCount = 0
+            If VBA.Strings.Trim(item("underlying1")) <> "" Then underlyingCount = underlyingCount + 1
+            If VBA.Strings.Trim(item("underlying2")) <> "" Then underlyingCount = underlyingCount + 1
+            If VBA.Strings.Trim(item("underlying3")) <> "" Then underlyingCount = underlyingCount + 1
+            If VBA.Strings.Trim(item("underlying4")) <> "" Then underlyingCount = underlyingCount + 1
+            
+            ws.Cells(rowNumber, colMapping("underlyingCount")).value = underlyingCount
+            
+            Dim fundCdValue As String
+            fundCdValue = VBA.Strings.Trim(item("fundCd"))
+            
+            Select Case fundCdValue
+                Case "publish"
+                    ws.Cells(rowNumber, colMapping("fundCd")).value = "발행"
+                Case "hedge"
+                    ws.Cells(rowNumber, colMapping("fundCd")).value = "헷지"
+                Case Else
+                    ws.Cells(rowNumber, colMapping("fundCd")).value = item("fundCd")
+            
+            End Select
+            
+            Dim fundCdValue2 As String
+            fundCdValue2 = VBA.Strings.Trim(item("fundCd"))
+            
+            'colMapping2의 fundCd input하는 로직 추가
+            Select Case fundCdValue2
+                Case "publish"
+                    ws.Cells(rowNumber, colMapping2("fundCd")).value = "발행"
+                Case "hedge"
+                    ws.Cells(rowNumber, colMapping2("fundCd")).value = "헷지"
+                Case Else
+                    ws.Cells(rowNumber, colMapping2("fundCd")).value = item("fundCd")
+            
+            End Select
+            
+            'btbYn 로직
+            Dim btbYnValue As String
+            btbYnValue = VBA.Strings.Trim(item("btbYn"))
+            
+            Select Case btbYnValue
+                Case "0"
+                    ws.Cells(rowNumber, colMapping("btbYn")).value = "없음"
+                Case "1"
+                    ws.Cells(rowNumber, colMapping("btbYn")).value = "있음"
+                Case Else
+                    ws.Cells(rowNumber, colMapping("btbYn")).value = item("btbYn")
+                    
+            End Select
+            
+            
+            'csaYn 로직
+            Dim csaYnValue As String
+            csaYnValue = VBA.Strings.Trim(item("csaYn"))
+            
+            Select Case csaYnValue
+                Case "notInclude"
+                    ws.Cells(rowNumber, colMapping("csaYn")).value = "미포함"
+                Case "include"
+                    ws.Cells(rowNumber, colMapping("csaYn")).value = "포함"
+                Case Else
+                    ws.Cells(rowNumber, colMapping("csaYn")).value = item("csaYn")
+            
+            
+            End Select
+                   
+            If item.Exists("issuDt") Then
+                ws.Cells(rowNumber, columnNumber2).value = item("issuDt")
+                ws.Cells(rowNumber, columnNumber2 + 1).value = item("issuDt")
+                ws.Cells(rowNumber, columnNumber2 + 4).value = item("issuDt")
+                
+                ws.Cells(rowNumber, columnNumber4 + 1).value = item("issuDt")
+                ws.Cells(rowNumber, columnNumber4 + 2).value = item("issuDt")
+            End If
+            
+            Dim bsTpValue As String
+            bsTpValue = VBA.Strings.Trim(item("bsTp"))
+            
+            Select Case VBA.Strings.LCase(bsTpValue)
+                Case "asset"
+                    ws.Cells(rowNumber, colMapping("bsTp")).value = "자산"
+                Case "debt"
+                    ws.Cells(rowNumber, colMapping("bsTp")).value = "부채"
+                Case Else
+                    ws.Cells(rowNumber, colMapping("bsTp")).value = item("bsTp")
+                
+            End Select
+            
+            If item.Exists("pblctnSlct") Then
+            
+                Select Case CStr(item("pblctnSlct"))
+                    Case "1"
+                        ws.Cells(rowNumber, colMapping("pblctnSlct")).value = "공모"
+                    Case "2"
+                        ws.Cells(rowNumber, colMapping("pblctnSlct")).value = "사모"
+                    Case Else
+                        ws.Cells(rowNumber, colMapping("pblctnSlct")).value = item("pblctnSlct")
+                End Select
+            End If
+            
+            If item.Exists("hedgeYn") Then
+                If CStr(item("hedgeYn")) = "2" Then
+                    ws.Cells(rowNumber, colMapping("hedgeYn")).value = "자체헤지"
+                Else
+                    ws.Cells(rowNumber, colMapping("hedgeYn")).value = item("hedgeYn")
+                End If
+            End If
+            
+            If item.Exists("hedgeYn") Then
+                If CStr(item("hedgeYn")) = "2" Then
+                    ws.Cells(rowNumber, colMapping2("hedgeYn")).value = "자체헤지"
+                Else
+                    ws.Cells(rowNumber, colMapping2("hedgeYn")).value = item("hedgeYn")
+                End If
+            End If
+            
+            If colMapping.Exists("matDt") Then
+                ws.Cells(rowNumber, colMapping("matDt")).value = FormatDateString(item("matDt"))
+                ws.Cells(rowNumber, colMapping("matDt")).NumberFormat = "yyyy-mm-dd"
+            End If
+            
+            If colMapping2.Exists("matDt") Then
+                ws.Cells(rowNumber, colMapping2("matDt")).value = FormatDateString(item("matDt"))
+                ws.Cells(rowNumber, colMapping2("matDt")).NumberFormat = "yyyy-mm-dd"
+            End If
+            
+            If colMapping.Exists("maturityDt") Then
+                ws.Cells(rowNumber, colMapping("maturityDt")).value = FormatDateString(item("maturityDt"))
+                ws.Cells(rowNumber, colMapping("maturityDt")).NumberFormat = "yyyy-mm-dd"
+            End If
+            
+            If item.Exists("issuDt") Then
+                Dim formattedIssuDt As Date
+                formattedIssuDt = FormatDateString(item("issuDt"))
+                
+                ' colMapping으로 부터 온 cell에 적용
+                If colMapping.Exists("issuDt") Then
+                    ws.Cells(rowNumber, colMapping("issuDt")).value = formattedIssuDt
+                    ws.Cells(rowNumber, colMapping("issuDt")).NumberFormat = "yyyy-mm-dd"
+                End If
+                
+                ' colMapping2로 부터 온 cell에 적용
+                If colMapping2.Exists("issuDt") Then
+                    ws.Cells(rowNumber, colMapping2("issuDt")).value = formattedIssuDt
+                    ws.Cells(rowNumber, colMapping2("issuDt")).NumberFormat = "yyyy-mm-dd"
+                End If
+                
+                
+                ws.Cells(rowNumber, columnNumber2).value = formattedIssuDt
+                ws.Cells(rowNumber, columnNumber2 + 1).value = formattedIssuDt
+                ws.Cells(rowNumber, columnNumber2 + 4).value = formattedIssuDt
+                ws.Cells(rowNumber, columnNumber4 + 1).value = formattedIssuDt
+                ws.Cells(rowNumber, columnNumber4 + 2).value = formattedIssuDt
+                
+                
+                ws.Cells(rowNumber, columnNumber2).NumberFormat = "yyyy-mm-dd"
+                ws.Cells(rowNumber, columnNumber2 + 1).NumberFormat = "yyyy-mm-dd"
+                ws.Cells(rowNumber, columnNumber2 + 4).NumberFormat = "yyyy-mm-dd"
+                ws.Cells(rowNumber, columnNumber4 + 1).NumberFormat = "yyyy-mm-dd"
+                ws.Cells(rowNumber, columnNumber4 + 2).NumberFormat = "yyyy-mm-dd"
+            End If
+                
+            rowNumber = rowNumber + 1
+            
+            DoEvents
+        Next item
+    End If
+    
+    
+    Application.Calculation = xlCalculationAutomatic
+    
+    MsgBox "데이터 입력이 완료되었습니다", vbInformation, "완료"
+    
+    
+End Sub
+
+
+--OTC_T1_Price_Input--
+Option Explicit
+
+Sub OTC_T1_Price_Input()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("OTC_T1")
+    
+    Dim jobId As String, resultType As String
+    jobId = ws.Range("R1").value
+    resultType = ws.Range("T1").value
+    
+    Dim homeUrl As String
+    homeUrl = ws.Cells(1, 16).value
+    
+    Dim baseUrl As String
+    baseUrl = homeUrl & "marketdata/v1/OTCT1PriceGreek?jobId=" & jobId & "&resultType=" & resultType & "&cntrCodes="
+    
+    Dim lastRow As Long
+    lastRow = ws.Range("D25").End(xlDown).row
+    
+    Dim cntrCodesRange As Range
+    Set cntrCodesRange = ws.Range("D25:D" & lastRow)
+    
+    Application.Calculation = xlCalculationManual
+    
+    Dim i As Long, j As Long
+    Dim batchSize As Long
+    batchSize = 100
+    
+    For i = 1 To cntrCodesRange.Rows.Count Step batchSize
+        Dim endRow As Long
+        endRow = Application.WorksheetFunction.Min(i + batchSize - 1, cntrCodesRange.Rows.Count)
+        
+        Dim batchRange As Range
+        Set batchRange = ws.Range("D" & (i + 24) & ":D" & (endRow + 24))
+        
+        Dim cntrCodes As String
+        cntrCodes = Join(Application.Transpose(batchRange.value), ",")
+        
+        Dim fullUrl As String
+        fullUrl = baseUrl & cntrCodes
+        
+        Dim strResponse As String
+        strResponse = GetHttpResponseText(fullUrl)
+        
+        Debug.Print fullUrl
+        
+        Dim jsonResponse As Object
+        Set jsonResponse = JsonConverter.ParseJson(strResponse)
+        
+        If jsonResponse("code") = "ERROR" Then
+            MsgBox "해당되는 데이터가 없습니다"
+            Application.Calculation = xlCalculationAutomatic
+            Exit Sub
+        Else
+            Dim item As Object
+            Dim cntrCode As String
+            
+            For j = 1 To batchRange.Rows.Count
+                cntrCode = batchRange.Cells(j, 1).value
+                
+                For Each item In jsonResponse("response")("OTC0s")
+                    If item("cntrCode") = cntrCode Then
+                        ws.Cells(i + 24 + j - 1, "J").value = item("companyValue")
+                        
+                        If resultType = "G" Then
+                            ProcessGreekData ws, i + 24 + j - 1, item("greeks")
+                        End If
+                        
+                        Exit For
+                    End If
+                    DoEvents
+                Next item
+                
+                DoEvents
+            Next j
+        End If
+    Next i
+    
+    MsgBox "데이터가 성공적으로 업데이트 되었습니다.", vbInformation, "완료"
+    Application.Calculation = xlCalculationAutomatic
+End Sub
+
+'그릭 데이터 처리하는 로직
+Sub ProcessGreekData(ws As Worksheet, rowNumber As Long, greekData As Object)
+    '여기서 greekColumn 시작점 추가
+    Dim greekLetter As String
+    Dim greekColumnStart As Long
+    
+    greekLetter = "ABN"
+    greekColumnStart = ws.Range(greekLetter & "1").Column
+
+    '기초자산 Greek Section
+    Dim underlyingColumn As Long
+    underlyingColumn = greekColumnStart
+    
+    Dim greekItem As Variant
+    
+    For Each greekItem In greekData
+        If Len(greekItem("rfCd")) = 5 And greekItem("comnCdFullNm") = "Delta" Then
+            ws.Cells(rowNumber, underlyingColumn).value = greekItem("rfCd")
+            ws.Cells(rowNumber, underlyingColumn + 1).value = greekItem("delta")
+            ws.Cells(rowNumber, underlyingColumn + 2).value = greekItem("gamma")
+            underlyingColumn = underlyingColumn + 3
+        End If
+        DoEvents
+    Next greekItem
+    
+    'Cross Gamma Section (ACC부터)
+    Dim crossGammaNumber As String
+    Dim crossGammaColumn As Long
+    
+    crossGammaNumber = "ACC"
+    crossGammaColumn = Range(crossGammaNumber & "1").Column
+    
+    For Each greekItem In greekData
+        If greekItem("comnCdFullNm") = "Cross Gamma" Then
+            ws.Cells(rowNumber, crossGammaColumn).value = greekItem("rfCd")
+            ws.Cells(rowNumber, crossGammaColumn + 1).value = greekItem("delta")
+            crossGammaColumn = crossGammaColumn + 2
+        End If
+        DoEvents
+    Next greekItem
+    
+    'vega section (ACI부터)
+    Dim vegaNumber As String
+    Dim vegaColumn As Long
+    
+    vegaNumber = "ACI"
+    vegaColumn = Range(vegaNumber & "1").Column
+    
+    For Each greekItem In greekData
+        If greekItem("comnCdFullNm") = "Vega" Then
+            ws.Cells(rowNumber, vegaColumn).value = greekItem("rfCd")
+            ws.Cells(rowNumber, vegaColumn + 1).value = greekItem("delta")
+            vegaColumn = vegaColumn + 2
+        End If
+        DoEvents
+    Next greekItem
+
+    'Cross Vanna section (ACO 부터)
+    Dim crossVannaNumber As String
+    Dim crossVannaColumn As Long
+    
+    crossVannaNumber = "ACO"
+    crossVannaColumn = Range(crossVannaNumber & "1").Column
+    
+    For Each greekItem In greekData
+        If greekItem("comnCdFullNm") = "Cross Vanna" Then
+            ws.Cells(rowNumber, crossVannaColumn).value = greekItem("rfCd")
+            ws.Cells(rowNumber, crossVannaColumn + 1).value = greekItem("delta")
+            crossVannaColumn = crossVannaColumn + 2
+        End If
+        DoEvents
+    Next greekItem
+    
+    'Theta section (ADA 부터)
+    Dim thetaNumber As String
+    Dim thetaColumn As Long
+    
+    thetaNumber = "ADA"
+    thetaColumn = Range(thetaNumber & "1").Column
+    
+    For Each greekItem In greekData
+        If greekItem("comnCdFullNm") = "Theta" Then
+            'ws.Cells(rowNumber, thetaColumn).value = greekItem("rfCd")
+            ws.Cells(rowNumber, thetaColumn).value = greekItem("delta")
+            thetaColumn = thetaColumn + 2
+        End If
+        DoEvents
+    Next greekItem
+    
+    'Cega Section (ADB 부터)
+    Dim cegaNumber As String
+    Dim cegaColumn As Long
+    
+    cegaNumber = "ADB"
+    cegaColumn = Range(cegaNumber & "1").Column
+    
+    For Each greekItem In greekData
+        If greekItem("comnCdFullNm") = "Cega" Then
+            ws.Cells(rowNumber, cegaColumn).value = greekItem("rfCd")
+            ws.Cells(rowNumber, cegaColumn + 1).value = greekItem("delta")
+            cegaColumn = cegaColumn + 2
+        End If
+        DoEvents
+    Next greekItem
+    
+    'Charm Section (ADN 부터)
+    Dim charmNumber As String
+    Dim charmColumn As Long
+    
+    charmNumber = "ADN"
+    charmColumn = Range(charmNumber & "1").Column
+    
+    For Each greekItem In greekData
+        If greekItem("comnCdFullNm") = "Charm" Then
+            ws.Cells(rowNumber, charmColumn).value = greekItem("rfCd")
+            ws.Cells(rowNumber, charmColumn + 1).value = greekItem("delta")
+            charmColumn = charmColumn + 2
+        End If
+        DoEvents
+    Next greekItem
+    
+    '할인금리커브 (ADT 부터)
+    Dim discountRateNumber As String
+    Dim discountRateColumn As Long
+    
+    discountRateNumber = "ADT"
+    discountRateColumn = Range(discountRateNumber & "1").Column
+    
+    'orderedData 초기화
+    'Dim discountRateRfCds As New Collection
+    Dim discountRateRfCds As Collection
+    Set discountRateRfCds = New Collection
+    
+    
+    '할인금리커브와 관련있는 모든 객체를 모은다.
+    For Each greekItem In greekData
+        If VBA.Left(greekItem("rfCd"), 7) = "7010131" Then
+            discountRateRfCds.Add greekItem
+        End If
+        DoEvents
+    Next greekItem
+    
+    '데이터가 있는지 확인
+    If discountRateRfCds.Count > 0 Then
+    
+        'collection을 sorting한다.
+        Set discountRateRfCds = SortCollectionByTimePeriod(discountRateRfCds)
+        
+        Dim processedRfCds As Collection
+        Set processedRfCds = New Collection
+        
+        Dim discountRateItem As Object
+        
+        
+        For Each discountRateItem In discountRateRfCds
+            If Not IsInCollection(processedRfCds, discountRateItem("rfCd")) Then
+                'rfCd값을 넣는다.
+                ws.Cells(rowNumber, discountRateColumn).value = discountRateItem("rfCd")
+                discountRateColumn = discountRateColumn + 1
+                
+                'Delta값을 넣는다.
+                Dim deltaItem As Object
+                Set deltaItem = FindItemByComnCdFullNm(discountRateRfCds, discountRateItem("rfCd"), "Delta")
+                If Not deltaItem Is Nothing Then
+                    ws.Cells(rowNumber, discountRateColumn).value = deltaItem("delta")
+                End If
+                discountRateColumn = discountRateColumn + 1
+                
+                'PV01값을 넣는다.
+                Dim pv01Item As Object
+                Set pv01Item = FindItemByComnCdFullNm(discountRateRfCds, discountRateItem("rfCd"), "PV01")
+                If Not pv01Item Is Nothing Then
+                    ws.Cells(rowNumber, discountRateColumn).value = pv01Item("delta")
+                End If
+                discountRateColumn = discountRateColumn + 1
+            
+                processedRfCds.Add discountRateItem("rfCd")
+                DoEvents
+            End If
+        Next discountRateItem
+    Else
+        'Debug.Print "No discount rate data found"
+    End If
+    
+    '국고채금리커브 (AEX부터)
+    Dim treasuryBondRateNumber As String
+    Dim treasuryBondRateColumn As Long
+    
+    treasuryBondRateNumber = "AEX"
+    treasuryBondRateColumn = Range(treasuryBondRateNumber & "1").Column
+    
+    'orderedData 초기화
+    Dim treasuryBondRateRfCds As Collection
+    Set treasuryBondRateRfCds = New Collection
+    
+    '국고채금리커브와 관련있는 모든 객체를 모은다.
+    For Each greekItem In greekData
+        If VBA.Left(greekItem("rfCd"), 7) = "1013000" Then
+            treasuryBondRateRfCds.Add greekItem
+        End If
+        DoEvents
+    Next greekItem
+    
+    If treasuryBondRateRfCds.Count > 0 Then
+        'collection을 sorting한다.
+         Set treasuryBondRateRfCds = SortCollectionByTimePeriod(treasuryBondRateRfCds)
+         
+         Dim tbProcessedRfCds As Collection
+         Set tbProcessedRfCds = New Collection
+         
+         Dim treasuryBondRateItem As Object
+         
+         For Each treasuryBondRateItem In treasuryBondRateRfCds
+            If Not IsInCollection(tbProcessedRfCds, treasuryBondRateItem("rfCd")) Then
+                'rfCd값을 넣는다.
+                ws.Cells(rowNumber, treasuryBondRateColumn).value = treasuryBondRateItem("rfCd")
+                treasuryBondRateColumn = treasuryBondRateColumn + 1
+                
+                'Delta값을 넣는다.
+                Dim tbDeltaItem As Object
+                Set tbDeltaItem = FindItemByComnCdFullNm(treasuryBondRateRfCds, treasuryBondRateItem("rfCd"), "Delta")
+                If Not tbDeltaItem Is Nothing Then
+                    ws.Cells(rowNumber, treasuryBondRateColumn).value = tbDeltaItem("delta")
+                End If
+                treasuryBondRateColumn = treasuryBondRateColumn + 1
+                
+                'PV01값을 넣는다.
+                Dim tbPv01Item As Object
+                Set tbPv01Item = FindItemByComnCdFullNm(treasuryBondRateRfCds, treasuryBondRateItem("rfCd"), "PV01")
+                If Not tbPv01Item Is Nothing Then
+                    ws.Cells(rowNumber, treasuryBondRateColumn).value = tbPv01Item("delta")
+                End If
+                treasuryBondRateColumn = treasuryBondRateColumn + 1
+                
+                tbProcessedRfCds.Add treasuryBondRateItem("rfCd")
+                DoEvents
+            End If
+        Next treasuryBondRateItem
+    Else
+        'Debug.Print "No treasury bond rate data found"
+    End If
+    
+    'IRSEUR (AGB부터)
+    Dim IRSEURNumber As String
+    Dim IRSEURColumn As Long
+    
+    IRSEURNumber = "AGB"
+    IRSEURColumn = Range(IRSEURNumber & "1").Column
+    
+    'orderedData 초기화
+    Dim IRSEURRfCds As Collection
+    Set IRSEURRfCds = New Collection
+    
+    'IRSEUR과 관련있는 모든 객체를 모은다.
+    For Each greekItem In greekData
+        If VBA.Left(greekItem("rfCd"), 6) = "IRSEUR" Then
+            IRSEURRfCds.Add greekItem
+        End If
+        DoEvents
+    Next greekItem
+    
+    If IRSEURRfCds.Count > 0 Then
+        'collection을 sorting한다.
+         Set IRSEURRfCds = SortCollectionByTimePeriod(IRSEURRfCds)
+         
+         Dim EURProcessedRfCds As Collection
+         Set EURProcessedRfCds = New Collection
+         
+         Dim IRSEURItem As Object
+         
+         For Each IRSEURItem In IRSEURRfCds
+            If Not IsInCollection(EURProcessedRfCds, IRSEURItem("rfCd")) Then
+                'rfCd값을 넣는다.
+                ws.Cells(rowNumber, IRSEURColumn).value = IRSEURItem("rfCd")
+                IRSEURColumn = IRSEURColumn + 1
+                
+                'Delta값을 넣는다.
+                Dim EURDeltaItem As Object
+                Set EURDeltaItem = FindItemByComnCdFullNm(IRSEURRfCds, IRSEURItem("rfCd"), "Delta")
+                If Not EURDeltaItem Is Nothing Then
+                    ws.Cells(rowNumber, IRSEURColumn).value = EURDeltaItem("delta")
+                End If
+                IRSEURColumn = IRSEURColumn + 1
+                
+                'PV01값을 넣는다.
+                Dim EURPv01Item As Object
+                Set EURPv01Item = FindItemByComnCdFullNm(IRSEURRfCds, IRSEURItem("rfCd"), "PV01")
+                If Not EURPv01Item Is Nothing Then
+                    ws.Cells(rowNumber, IRSEURColumn).value = EURPv01Item("delta")
+                End If
+                IRSEURColumn = IRSEURColumn + 1
+                
+                EURProcessedRfCds.Add IRSEURItem("rfCd")
+                DoEvents
+            End If
+        Next IRSEURItem
+    Else
+        'Debug.Print "No IRSEUR data found"
+    End If
+    
+     
+    'IRSUSD (AHF부터)
+    Dim IRSUSDNumber As String
+    Dim IRSUSDColumn As Long
+    
+    IRSUSDNumber = "AHF"
+    IRSUSDColumn = Range(IRSUSDNumber & "1").Column
+    
+    'orderedData 초기화
+    Dim IRSUSDRfCds As Collection
+    Set IRSUSDRfCds = New Collection
+    
+    'IRSUSD와 관련있는 모든 객체를 모은다.
+    For Each greekItem In greekData
+        If VBA.Left(greekItem("rfCd"), 6) = "IRSUSD" Then
+            IRSUSDRfCds.Add greekItem
+        End If
+        DoEvents
+    Next greekItem
+    
+    If IRSUSDRfCds.Count > 0 Then
+        'collection을 sorting한다.
+         Set IRSUSDRfCds = SortCollectionByTimePeriod(IRSUSDRfCds)
+         
+         Dim USDProcessedRfCds As Collection
+         Set USDProcessedRfCds = New Collection
+         
+         Dim IRSUSDItem As Object
+         
+         For Each IRSUSDItem In IRSUSDRfCds
+            If Not IsInCollection(USDProcessedRfCds, IRSUSDItem("rfCd")) Then
+                'rfCd값을 넣는다.
+                ws.Cells(rowNumber, IRSUSDColumn).value = IRSUSDItem("rfCd")
+                IRSUSDColumn = IRSUSDColumn + 1
+                
+                'Delta값을 넣는다.
+                Dim USDDeltaItem As Object
+                Set USDDeltaItem = FindItemByComnCdFullNm(IRSUSDRfCds, IRSUSDItem("rfCd"), "Delta")
+                If Not USDDeltaItem Is Nothing Then
+                    ws.Cells(rowNumber, IRSUSDColumn).value = USDDeltaItem("delta")
+                End If
+                IRSUSDColumn = IRSUSDColumn + 1
+                
+                'PV01값을 넣는다.
+                Dim USDPv01Item As Object
+                Set USDPv01Item = FindItemByComnCdFullNm(IRSUSDRfCds, IRSUSDItem("rfCd"), "PV01")
+                If Not USDPv01Item Is Nothing Then
+                    ws.Cells(rowNumber, IRSUSDColumn).value = USDPv01Item("delta")
+                End If
+                IRSUSDColumn = IRSUSDColumn + 1
+                
+                USDProcessedRfCds.Add IRSUSDItem("rfCd")
+                DoEvents
+            End If
+        Next IRSUSDItem
+    Else
+        'Debug.Print "No IRSUSD data found"
+    End If
+    
+    'IRSJPY (AIJ부터)
+    Dim IRSJPYNumber As String
+    Dim IRSJPYColumn As Long
+    
+    IRSJPYNumber = "AIJ"
+    IRSJPYColumn = Range(IRSJPYNumber & "1").Column
+    
+    'orderedData 초기화
+    Dim IRSJPYRfCds As Collection
+    Set IRSJPYRfCds = New Collection
+    
+    'IRSJPY와 관련있는 모든 객체를 모은다.
+    For Each greekItem In greekData
+        If VBA.Left(greekItem("rfCd"), 6) = "IRSJPY" Then
+            IRSJPYRfCds.Add greekItem
+        End If
+        DoEvents
+    Next greekItem
+    
+    If IRSJPYRfCds.Count > 0 Then
+        'collection을 sorting한다.
+         Set IRSJPYRfCds = SortCollectionByTimePeriod(IRSJPYRfCds)
+         
+         Dim JPYProcessedRfCds As Collection
+         Set JPYProcessedRfCds = New Collection
+         
+         Dim IRSJPYItem As Object
+         
+         For Each IRSJPYItem In IRSJPYRfCds
+            If Not IsInCollection(JPYProcessedRfCds, IRSJPYItem("rfCd")) Then
+                'rfCd값을 넣는다.
+                ws.Cells(rowNumber, IRSJPYColumn).value = IRSJPYItem("rfCd")
+                IRSJPYColumn = IRSJPYColumn + 1
+                
+                'Delta값을 넣는다.
+                Dim JPYDeltaItem As Object
+                Set JPYDeltaItem = FindItemByComnCdFullNm(IRSJPYRfCds, IRSJPYItem("rfCd"), "Delta")
+                If Not JPYDeltaItem Is Nothing Then
+                    ws.Cells(rowNumber, IRSJPYColumn).value = JPYDeltaItem("delta")
+                End If
+                IRSJPYColumn = IRSJPYColumn + 1
+                
+                'PV01값을 넣는다.
+                Dim JPYPv01Item As Object
+                Set JPYPv01Item = FindItemByComnCdFullNm(IRSJPYRfCds, IRSJPYItem("rfCd"), "PV01")
+                If Not JPYPv01Item Is Nothing Then
+                    ws.Cells(rowNumber, IRSJPYColumn).value = JPYPv01Item("delta")
+                End If
+                IRSJPYColumn = IRSJPYColumn + 1
+                
+                JPYProcessedRfCds.Add IRSJPYItem("rfCd")
+                DoEvents
+            End If
+        Next IRSJPYItem
+    Else
+        'Debug.Print "No IRSJPY data found"
+    End If
+    
+    
+    'IRSHKD (AJN부터)
+    Dim IRSHKDNumber As String
+    Dim IRSHKDColumn As Long
+    
+    IRSHKDNumber = "AJN"
+    IRSHKDColumn = Range(IRSHKDNumber & "1").Column
+    
+    'orderedData 초기화
+    Dim IRSHKDRfCds As Collection
+    Set IRSHKDRfCds = New Collection
+    
+    'IRSEUR과 관련있는 모든 객체를 모은다.
+    For Each greekItem In greekData
+        If VBA.Left(greekItem("rfCd"), 6) = "IRSHKD" Then
+            IRSHKDRfCds.Add greekItem
+        End If
+        DoEvents
+    Next greekItem
+    
+    If IRSHKDRfCds.Count > 0 Then
+        'collection을 sorting한다.
+         Set IRSHKDRfCds = SortCollectionByTimePeriod(IRSHKDRfCds)
+         
+         Dim HKDProcessedRfCds As Collection
+         Set HKDProcessedRfCds = New Collection
+         
+         Dim IRSHKDItem As Object
+         
+         For Each IRSHKDItem In IRSHKDRfCds
+            If Not IsInCollection(HKDProcessedRfCds, IRSHKDItem("rfCd")) Then
+                'rfCd값을 넣는다.
+                ws.Cells(rowNumber, IRSHKDColumn).value = IRSHKDItem("rfCd")
+                IRSHKDColumn = IRSHKDColumn + 1
+                
+                'Delta값을 넣는다.
+                Dim HKDDeltaItem As Object
+                Set HKDDeltaItem = FindItemByComnCdFullNm(IRSHKDRfCds, IRSHKDItem("rfCd"), "Delta")
+                If Not HKDDeltaItem Is Nothing Then
+                    ws.Cells(rowNumber, IRSHKDColumn).value = HKDDeltaItem("delta")
+                End If
+                IRSHKDColumn = IRSHKDColumn + 1
+                
+                'PV01값을 넣는다.
+                Dim HKDPv01Item As Object
+                Set HKDPv01Item = FindItemByComnCdFullNm(IRSHKDRfCds, IRSHKDItem("rfCd"), "PV01")
+                If Not HKDPv01Item Is Nothing Then
+                    ws.Cells(rowNumber, IRSHKDColumn).value = HKDPv01Item("delta")
+                End If
+                IRSHKDColumn = IRSHKDColumn + 1
+                
+                HKDProcessedRfCds.Add IRSHKDItem("rfCd")
+                DoEvents
+            End If
+        Next IRSHKDItem
+    Else
+        'Debug.Print "No IRSHKD data found"
+    End If
+    
+    'IRSKRW (AKR부터)
+    Dim IRSKRWNumber As String
+    Dim IRSKRWColumn As Long
+    
+    IRSKRWNumber = "AKR"
+    IRSKRWColumn = Range(IRSKRWNumber & "1").Column
+    
+    'orderedData 초기화
+    Dim IRSKRWRfCds As Collection
+    Set IRSKRWRfCds = New Collection
+    
+    'IRSKRW과 관련있는 모든 객체를 모은다.
+    For Each greekItem In greekData
+        If VBA.Left(greekItem("rfCd"), 6) = "IRSKRW" Then
+            IRSKRWRfCds.Add greekItem
+        End If
+        DoEvents
+    Next greekItem
+    
+    If IRSKRWRfCds.Count > 0 Then
+        'collection을 sorting한다.
+         Set IRSKRWRfCds = SortCollectionByTimePeriod(IRSKRWRfCds)
+         
+         Dim KRWProcessedRfCds As Collection
+         Set KRWProcessedRfCds = New Collection
+         
+         Dim IRSKRWItem As Object
+         
+         For Each IRSKRWItem In IRSKRWRfCds
+            If Not IsInCollection(KRWProcessedRfCds, IRSKRWItem("rfCd")) Then
+                'rfCd값을 넣는다.
+                ws.Cells(rowNumber, IRSKRWColumn).value = IRSKRWItem("rfCd")
+                IRSKRWColumn = IRSKRWColumn + 1
+                
+                'Delta값을 넣는다.
+                Dim KRWDeltaItem As Object
+                Set KRWDeltaItem = FindItemByComnCdFullNm(IRSKRWRfCds, IRSKRWItem("rfCd"), "Delta")
+                If Not KRWDeltaItem Is Nothing Then
+                    ws.Cells(rowNumber, IRSKRWColumn).value = KRWDeltaItem("delta")
+                End If
+                IRSKRWColumn = IRSKRWColumn + 1
+                
+                'PV01값을 넣는다.
+                Dim KRWPv01Item As Object
+                Set KRWPv01Item = FindItemByComnCdFullNm(IRSKRWRfCds, IRSKRWItem("rfCd"), "PV01")
+                If Not KRWPv01Item Is Nothing Then
+                    ws.Cells(rowNumber, IRSKRWColumn).value = KRWPv01Item("delta")
+                End If
+                IRSKRWColumn = IRSKRWColumn + 1
+                
+                KRWProcessedRfCds.Add IRSKRWItem("rfCd")
+                DoEvents
+            End If
+        Next IRSKRWItem
+    Else
+        'Debug.Print "No IRSKRW data found"
+    End If
+        
+    'F_FMKRWUSD (ALV부터)
+    Dim FMKRWUSDNumber As String
+    Dim FMKRWUSDColumn As Long
+    
+    FMKRWUSDNumber = "ALV"
+    FMKRWUSDColumn = Range(FMKRWUSDNumber & "1").Column
+    
+    'orderedData 초기화
+    Dim FMKRWUSDRfCds As Collection
+    Set FMKRWUSDRfCds = New Collection
+    
+    'IRSKRW과 관련있는 모든 객체를 모은다.
+    For Each greekItem In greekData
+        If VBA.Left(greekItem("rfCd"), 10) = "F_FMKRWUSD" Then
+            FMKRWUSDRfCds.Add greekItem
+        End If
+        DoEvents
+    Next greekItem
+    
+    If FMKRWUSDRfCds.Count > 0 Then
+        'collection을 sorting한다. (SortCollectionByTimePeriod 이용)
+         Set FMKRWUSDRfCds = SortCollectionByTimePeriod(FMKRWUSDRfCds)
+         
+         Dim FMKRWProcessedRfCds As Collection
+         Set FMKRWProcessedRfCds = New Collection
+         
+         Dim FMKRWUSDItem As Object
+         
+         For Each FMKRWUSDItem In FMKRWUSDRfCds
+            If Not IsInCollection(FMKRWProcessedRfCds, FMKRWUSDItem("rfCd")) Then
+                'rfCd값을 넣는다.
+                ws.Cells(rowNumber, FMKRWUSDColumn).value = FMKRWUSDItem("rfCd")
+                FMKRWUSDColumn = FMKRWUSDColumn + 1
+                
+                'Delta값을 넣는다.
+                Dim FMKRWDeltaItem As Object
+                Set FMKRWDeltaItem = FindItemByComnCdFullNm(FMKRWUSDRfCds, FMKRWUSDItem("rfCd"), "Delta")
+                If Not FMKRWDeltaItem Is Nothing Then
+                    ws.Cells(rowNumber, FMKRWUSDColumn).value = FMKRWDeltaItem("delta")
+                End If
+                FMKRWUSDColumn = FMKRWUSDColumn + 1
+                
+                'PV01값을 넣는다.
+                Dim FMKRWPv01Item As Object
+                Set FMKRWPv01Item = FindItemByComnCdFullNm(FMKRWUSDRfCds, FMKRWUSDItem("rfCd"), "PV01")
+                If Not FMKRWPv01Item Is Nothing Then
+                    ws.Cells(rowNumber, FMKRWUSDColumn).value = FMKRWPv01Item("delta")
+                End If
+                FMKRWUSDColumn = FMKRWUSDColumn + 1
+                
+                FMKRWProcessedRfCds.Add FMKRWUSDItem("rfCd")
+                DoEvents
+            End If
+        Next FMKRWUSDItem
+    Else
+        'Debug.Print "No FMKRWUSD data found"
+    End If
+    
+    
+    'F_FMKRWHKD (ANF부터)
+    Dim FMKRWHKDNumber As String
+    Dim FMKRWHKDColumn As Long
+    
+    FMKRWHKDNumber = "ANF"
+    FMKRWHKDColumn = Range(FMKRWHKDNumber & "1").Column
+    
+    'orderedData 초기화
+    Dim FMKRWHKDRfCds As Collection
+    Set FMKRWHKDRfCds = New Collection
+    
+    'IRSKRW과 관련있는 모든 객체를 모은다.
+    For Each greekItem In greekData
+        If VBA.Left(greekItem("rfCd"), 10) = "F_FMKRWHKD" Then
+            FMKRWHKDRfCds.Add greekItem
+        End If
+        DoEvents
+    Next greekItem
+    
+    If FMKRWHKDRfCds.Count > 0 Then
+        'collection을 sorting한다. (SortCollectionByTimePeriod 이용)
+         Set FMKRWHKDRfCds = SortCollectionByTimePeriod(FMKRWHKDRfCds)
+         
+         Dim FMKRWHKDProcessedRfCds As Collection
+         Set FMKRWHKDProcessedRfCds = New Collection
+         
+         Dim FMKRWHKDItem As Object
+         
+         For Each FMKRWHKDItem In FMKRWHKDRfCds
+            If Not IsInCollection(FMKRWHKDProcessedRfCds, FMKRWHKDItem("rfCd")) Then
+                'rfCd값을 넣는다.
+                ws.Cells(rowNumber, FMKRWHKDColumn).value = FMKRWHKDItem("rfCd")
+                FMKRWHKDColumn = FMKRWHKDColumn + 1
+                
+                'Delta값을 넣는다.
+                Dim FMKRWHKDDeltaItem As Object
+                Set FMKRWHKDDeltaItem = FindItemByComnCdFullNm(FMKRWHKDRfCds, FMKRWHKDItem("rfCd"), "Delta")
+                If Not FMKRWHKDDeltaItem Is Nothing Then
+                    ws.Cells(rowNumber, FMKRWHKDColumn).value = FMKRWHKDDeltaItem("delta")
+                End If
+                FMKRWHKDColumn = FMKRWHKDColumn + 1
+                
+                'PV01값을 넣는다.
+                Dim FMKRWHKDPv01Item As Object
+                Set FMKRWHKDPv01Item = FindItemByComnCdFullNm(FMKRWHKDRfCds, FMKRWHKDItem("rfCd"), "PV01")
+                If Not FMKRWHKDPv01Item Is Nothing Then
+                    ws.Cells(rowNumber, FMKRWHKDColumn).value = FMKRWHKDPv01Item("delta")
+                End If
+                FMKRWHKDColumn = FMKRWHKDColumn + 1
+                
+                FMKRWHKDProcessedRfCds.Add FMKRWHKDItem("rfCd")
+                DoEvents
+            End If
+        Next FMKRWHKDItem
+    Else
+        'Debug.Print "No FMKRWHKD data found"
+    End If
+    
+    
+    'F_FMKRWJPY (AOP부터)
+    Dim FMKRWJPYNumber As String
+    Dim FMKRWJPYColumn As Long
+    
+    FMKRWJPYNumber = "AOP"
+    FMKRWJPYColumn = Range(FMKRWJPYNumber & "1").Column
+    
+    'orderedData 초기화
+    Dim FMKRWJPYRfCds As Collection
+    Set FMKRWJPYRfCds = New Collection
+    
+    'IRSKRW과 관련있는 모든 객체를 모은다.
+    For Each greekItem In greekData
+        If VBA.Left(greekItem("rfCd"), 10) = "F_FMKRWJPY" Then
+            FMKRWJPYRfCds.Add greekItem
+        End If
+        DoEvents
+    Next greekItem
+    
+    If FMKRWJPYRfCds.Count > 0 Then
+        'collection을 sorting한다. (SortCollectionByTimePeriod 이용)
+         Set FMKRWJPYRfCds = SortCollectionByTimePeriod(FMKRWJPYRfCds)
+         
+         Dim FMKRWJPYProcessedRfCds As Collection
+         Set FMKRWJPYProcessedRfCds = New Collection
+         
+         Dim FMKRWJPYItem As Object
+         
+         For Each FMKRWJPYItem In FMKRWJPYRfCds
+            If Not IsInCollection(FMKRWJPYProcessedRfCds, FMKRWJPYItem("rfCd")) Then
+                'rfCd값을 넣는다.
+                ws.Cells(rowNumber, FMKRWJPYColumn).value = FMKRWJPYItem("rfCd")
+                FMKRWJPYColumn = FMKRWJPYColumn + 1
+                
+                'Delta값을 넣는다.
+                Dim FMKRWJPYDeltaItem As Object
+                Set FMKRWJPYDeltaItem = FindItemByComnCdFullNm(FMKRWJPYRfCds, FMKRWJPYItem("rfCd"), "Delta")
+                If Not FMKRWJPYDeltaItem Is Nothing Then
+                    ws.Cells(rowNumber, FMKRWJPYColumn).value = FMKRWJPYDeltaItem("delta")
+                End If
+                FMKRWJPYColumn = FMKRWJPYColumn + 1
+                
+                'PV01값을 넣는다.
+                Dim FMKRWJPYPv01Item As Object
+                Set FMKRWJPYPv01Item = FindItemByComnCdFullNm(FMKRWJPYRfCds, FMKRWJPYItem("rfCd"), "PV01")
+                If Not FMKRWJPYPv01Item Is Nothing Then
+                    ws.Cells(rowNumber, FMKRWJPYColumn).value = FMKRWJPYPv01Item("delta")
+                End If
+                FMKRWJPYColumn = FMKRWJPYColumn + 1
+                
+                FMKRWJPYProcessedRfCds.Add FMKRWJPYItem("rfCd")
+                DoEvents
+            End If
+        Next FMKRWJPYItem
+    Else
+        'Debug.Print "No FMKRWJPY data found"
+    End If
+    
+    
+    
+    
+    'CKRWKIS (APZ부터)
+    Dim CKRWKISNumber As String
+    Dim CKRWKISColumn As Long
+    
+    CKRWKISNumber = "APZ"
+    CKRWKISColumn = Range(CKRWKISNumber & "1").Column
+    
+    'orderedData 초기화
+    Dim CKRWKISRfCds As Collection
+    Set CKRWKISRfCds = New Collection
+    
+    'IRSKRW과 관련있는 모든 객체를 모은다.
+    For Each greekItem In greekData
+        If VBA.Left(greekItem("rfCd"), 7) = "CKRWKIS" Then
+            CKRWKISRfCds.Add greekItem
+        End If
+        DoEvents
+    Next greekItem
+    
+    If CKRWKISRfCds.Count > 0 Then
+        'collection을 sorting한다. (SortCollectionByTimePeriod 이용)
+         Set CKRWKISRfCds = SortCollectionByTimePeriod(CKRWKISRfCds)
+         
+         Dim CKRWProcessedRfCds As Collection
+         Set CKRWProcessedRfCds = New Collection
+         
+         Dim CKRWKISItem As Object
+         
+         For Each CKRWKISItem In CKRWKISRfCds
+            If Not IsInCollection(CKRWProcessedRfCds, CKRWKISItem("rfCd")) Then
+                'rfCd값을 넣는다.
+                ws.Cells(rowNumber, CKRWKISColumn).value = CKRWKISItem("rfCd")
+                CKRWKISColumn = CKRWKISColumn + 1
+                
+                'Delta값을 넣는다.
+                Dim CKRWDeltaItem As Object
+                Set CKRWDeltaItem = FindItemByComnCdFullNm(CKRWKISRfCds, CKRWKISItem("rfCd"), "Delta")
+                If Not CKRWDeltaItem Is Nothing Then
+                    ws.Cells(rowNumber, CKRWKISColumn).value = CKRWDeltaItem("delta")
+                End If
+                CKRWKISColumn = CKRWKISColumn + 1
+                
+                'PV01값을 넣는다.
+                Dim CKRWPv01Item As Object
+                Set CKRWPv01Item = FindItemByComnCdFullNm(CKRWKISRfCds, CKRWKISItem("rfCd"), "PV01")
+                If Not CKRWPv01Item Is Nothing Then
+                    ws.Cells(rowNumber, CKRWKISColumn).value = CKRWPv01Item("delta")
+                End If
+                CKRWKISColumn = CKRWKISColumn + 1
+                
+                CKRWProcessedRfCds.Add CKRWKISItem("rfCd")
+                DoEvents
+            End If
+        Next CKRWKISItem
+    Else
+        'Debug.Print "No CKRWKIS data found"
+    End If
+    
+End Sub
+
+
+--OTCValuation--
+Option Explicit
+
+Sub OTCValuation()
+    Dim jsonString As String
+    Dim xmlHttp As Object
+    
+    ' code에서 JSON string을 바로 정의한다.
+    'JsonString = StrConv("test=test1", vbFromUnicode)
+    
+    ' 새로운 XML HTTP request를 만든다.
+    Set xmlHttp = CreateObject("WinHttp.WinHttpRequest.5.1")
+    
+    ' 평가를 요청하는 url
+    Dim url As String
+    url = "http://210.120.89.57:8080/createValWebJob"
+    
+    Dim baseUrl As String
+    baseUrl = "http://210.120.89.57:8080/"
+    
+    ' post를 위한 xmlhttp의 메소드 Open 호출
+    xmlHttp.Open "POST", url, False
+    
+    xmlHttp.SetRequestHeader "Content-Type", "application/x-www-form-urlencoded"
+    
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Worksheets("OTC")
+    
+    Dim valDate As String
+    valDate = VBA.Format(ws.Range("B2").value, "yyyymmdd")
+    
+    Dim name As String
+    name = ws.Range("A2").value
+    
+    Dim valTypeCode As String
+    valTypeCode = ws.Range("C2").value
+    
+    Dim contextIds As String
+    contextIds = ws.Range("D2").value
+    
+    Dim officeCd As String
+    officeCd = ws.Range("E2").value
+    
+    Dim priority As String
+    priority = CStr(ws.Range("F2").value)
+    
+    Dim itemCodes As String
+    itemCodes = ""
+    
+    Dim lastRow As Integer
+    lastRow = ws.Cells(9, 1).End(xlDown).row
+    
+    Dim i As Integer
+    
+    For i = 9 To lastRow
+        itemCodes = itemCodes & ws.Cells(i, 1).value & ","
+    Next i
+    
+    ' 마지막 콤마 제거
+    If Len(itemCodes) > 0 Then
+        itemCodes = VBA.Left(itemCodes, Len(itemCodes) - 1)
+    End If
+    
+    Dim dataSetIds As String
+    dataSetIds = ws.Range("A7").value
+    ' request를 보낸다.
+    'xmlhttp.Send "officeCd=BO&name=TEST4&valDate=20231228&valTypeCode=P&greekLevel=&contextIds=BO&dataSetIds=Test_4,official&simId=&priority=4&itemCodes=ELS3588"
+    Dim sendMessage As String
+    'sendMessage = "officeCd=" + officeCd + "&name=" + name + "&valDate=" + valDate + "&valTypeCode=" + valTypeCode + "&greekLevel=&contextIds=" + contextIds + "&dataSetIds=TEST2,official&simId=&priority=" + priority + "&itemCodes=" + itemCodes
+    sendMessage = "officeCd=" + officeCd + "&name=" + name + "&valDate=" + valDate + "&valTypeCode=" + valTypeCode + "&greekLevel=1&contextIds=" + contextIds + "&dataSetIds=" + dataSetIds + "&simId=&priority=" + priority + "&itemCodes=" + itemCodes
+    Debug.Print sendMessage
+    
+    xmlHttp.send sendMessage
+    
+    Do
+        
+        If xmlHttp.Status = 200 Then
+        
+            Exit Do
+        
+        ElseIf xmlHttp.Status >= 400 Then
+            
+            ws.Range("K2").value = xmlHttp.Status
+            Exit Sub
+        
+        End If
+        
+        DoEvents
+    Loop
+    
+    Dim response As String
+    response = xmlHttp.ResponseText
+    
+    'status 완료 확인 (status가 완료 시에, ResponseText로 부터 jobId를 획득해 올 수 있다.)
+    'jobId 획득
+    
+    Dim jobId As String
+    Dim ParsedJson As Dictionary
+    
+    Set ParsedJson = JsonConverter.ParseJson(response)
+    jobId = ParsedJson("jobId")
+    
+    ws.Range("B5").value = jobId
+    
+    Dim url2 As String
+    url2 = baseUrl & "selectValJob?jobId=" & jobId
+    
+    Do
+        Dim xmlhttp2 As Object
+        Set xmlhttp2 = CreateObject("WinHttp.WinHttpRequest.5.1")
+        
+        xmlhttp2.Open "GET", url2, False
+        xmlhttp2.SetRequestHeader "Content-Type", "application/x-www-form-urlencoded"
+        xmlhttp2.send
+        
+        response = xmlhttp2.ResponseText
+        
+        Set ParsedJson = JsonConverter.ParseJson(response)
+        
+        If ParsedJson("jobStateCode") = "FIN" Then
+            ' job이 완료되면, logic을 지속함.
+            ws.Range("C5").value = ParsedJson("jobStateCode")
+            
+            ws.Range("E5").value = "'" & ParsedJson("procEndDtime")
+            Exit Do
+            
+        ElseIf ParsedJson("jobStateCode") = "F" Or ParsedJson("jobStateCode") = "C" Then
+        
+            ws.Range("C5").value = ParsedJson("jobStateCode")
+            
+            ws.Range("E5").value = "'" & ParsedJson("procEndDtime")
+            Exit Sub
+            
+        End If
+        
+        ws.Range("C5").value = ParsedJson("jobStateCode")
+        ws.Range("D5").value = "'" & ParsedJson("creDtime")
+        
+        'Start timing (StartTime은 Timer의 현재 시간을 assign받고,
+        Dim startTime As Single
+        startTime = Timer
+        
+        '10초 마다 loop
+        Do While Timer < startTime + 10
+            DoEvents  'Excel이 responsive하도록
+        Loop
+        
+        If ParsedJson("jobStateCode") = "W" Then
+            ws.Range("C5").value = ParsedJson("jobStateCode")
+            'Exit Sub
+        End If
+        DoEvents
+    Loop
+    
+    Dim url3 As String
+    url3 = baseUrl & "marketdata/v1/selectQuotePrice?jobId=" & jobId
+    
+    Dim xmlhttp3 As Object
+    Set xmlhttp3 = CreateObject("WinHttp.WinHttpRequest.5.1")
+    
+    xmlhttp3.Open "GET", url3, False
+    xmlhttp3.SetRequestHeader "Content-Type", "application/x-www-form-urlencoded"
+    xmlhttp3.send
+    
+    response = xmlhttp3.ResponseText
+    
+    Set ParsedJson = JsonConverter.ParseJson(response)
+    
+    Dim quotePrice As Variant
+    
+    Set quotePrice = ParsedJson("response")("quotePrice")
+    
+    Dim rowIndex As Integer
+    
+    rowIndex = 9
+    
+    Dim item As Dictionary
+    Application.Calculation = xlCalculationManual
+    For Each item In quotePrice
+        Dim foundCell As Range
+        Set foundCell = ws.Columns("A").Find(What:=item("itemCd"), LookIn:=xlValues, LookAt:=xlWhole)
+        
+        If Not foundCell Is Nothing Then
+            foundCell.Offset(0, 1).value = item("price")
+        End If
+        DoEvents
+    Next item
+    Application.Calculation = xlCalculationAutomatic
+    'ImportGreekData jobId
+    
+End Sub
+
+               
+'평가작업'
+
+
+--postMasterDDiv--
+Option Explicit
+
+Sub postMasterDDiv()
+
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Missing Data - D_Dividend(보정)")
+    
+    Dim titleRange As Range
+    Set titleRange = ws.Range("A:A").Find(What:="Discrete Dividend", LookAt:=xlWhole)
+
+    Dim k As Long
+    k = 4
+    
+    Dim masterDDivCollection As Collection
+    Set masterDDivCollection = New Collection
+    
+    Dim i As Long
+    
+    For i = 1 To k
+        
+        Dim dataIdRange As Range
+        Set dataIdRange = titleRange.Offset(3, 1 + 3 * (i - 1))
+        
+        Dim dataId As String
+        dataId = dataIdRange.value
+        
+        Dim dataNM As String
+        dataNM = dataIdRange.Offset(1, 0).value
+        
+        Dim crncCode As String
+        crncCode = dataIdRange.Offset(2, 0).value
+        
+        Dim eachName As Object
+        Set eachName = CreateObject("Scripting.Dictionary")
+        
+        eachName("dataId") = dataId
+        
+        eachName("crncCode") = crncCode
+        
+        masterDDivCollection.Add eachName
+        
+    Next i
+    
+    Dim jsonString As String
+    
+    jsonString = JsonConverter.ConvertToJson(masterDDivCollection)
+    
+    Debug.Print jsonString
+    
+    Dim url As String
+    url = "http://210.120.89.57:8080/saveDisDividendMaster"
+    
+    ' JSON data와 POST request를 보내는 subroutine을 호출한다.
+    SendPostRequest jsonString, url
+End Sub
+
+--postMasterFXForward--
+Option Explicit
+
+Sub postMasterFXForward()
+
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Missing Data - Fx Forward")
+    
+    Dim titleRange As Range
+    Set titleRange = ws.Range("A:A").Find(What:="FX Forward Curve", LookAt:=xlWhole)
+    
+    Dim k As Long
+    k = 4
+    
+    Dim FXForwardNames As Collection
+    Set FXForwardNames = New Collection
+    Dim i As Long
+    For i = 1 To k
+        Dim eachName As Object
+        Set eachName = CreateObject("Scripting.Dictionary")
+        Dim nameRange As Range
+        Set nameRange = titleRange.Offset(2, 1 + 3 * (i - 1))
+        
+        Dim dataId As String
+        dataId = nameRange.value
+        
+        Dim crnc As String
+        Dim reltCrnc As String
+        
+        crnc = nameRange.Offset(2, 0).value
+        reltCrnc = nameRange.Offset(1, 0).value
+        
+        Dim dataNM As String
+        dataNM = crnc + "-" + reltCrnc + " FX Forward"
+        
+        eachName("dataId") = dataId
+        eachName("dataNM") = dataNM
+        eachName("crnc") = crnc
+        eachName("reltCrnc") = reltCrnc
+    
+        FXForwardNames.Add eachName
+    Next i
+    
+    Dim jsonString As String
+    jsonString = JsonConverter.ConvertToJson(FXForwardNames)
+    
+    Debug.Print jsonString
+    
+    Dim url As String
+    url = "http://210.120.89.57:8080/marketdata/v1/saveFXForwardMaster"
+    
+    ' JSON data와 POST request를 보내는 subroutine을 호출한다.
+    SendPostRequest jsonString, url
+End Sub
+
+--stndCodeInput--
+Sub ProcessAndUpdateWorksheet(selectStndCodes As Collection)
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Market Data")
+    
+    Dim lastRow As Long
+    lastRow = ws.Range("A8").End(xlDown).row
+    
+    Dim i As Long
+    Dim obj As Object
+    Dim rowIndex As Long
+    Dim currentCol As Long
+    currentCol = 4 ' Start from column D
+    
+    Application.Calculation = xlCalculationManual
+    
+    ' 수직 Input
+    For i = 1 To selectStndCodes.Count
+        Set obj = selectStndCodes(i)
+        
+        rowIndex = Application.match(obj("stndcode"), ws.Range("A8:A" & lastRow), 0)
+        
+        If Not IsError(rowIndex) Then
+            ws.Cells(rowIndex + 7, 2).value = "'" & obj("unasid")
+        End If
+        DoEvents
+    Next i
+    
+    ' 수평 Input
+    For i = 8 To lastRow
+        If Not IsEmpty(ws.Cells(i, 2).value) Then
+            ws.Cells(7, currentCol).value = "'" & VBA.Mid(ws.Cells(i, 2).value, 1)
+            currentCol = currentCol + 1
+        End If
+        DoEvents
+    Next i
+    
+    Dim secondCol As Long
+    secondCol = 5
+    
+    For i = 8 To lastRow
+        If Not IsEmpty(ws.Cells(i, 2).value) Then
+            ws.Cells(19, secondCol).value = "'" & VBA.Mid(ws.Cells(i, 2).value, 1)
+            secondCol = secondCol + 1
+        End If
+        DoEvents
+    Next i
+    Application.Calculation = xlCalculationAutomatic
+End Sub
+
+Sub stndCodeInput()
+    
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Market Data")
+    
+    Dim baseUrl As String
+    baseUrl = ws.Range("G2").value
+    
+    Dim url As String
+    url = baseUrl & "marketdata/v1/selectOTCUNASMSTR?stndCode=" & GetDataIdsStringA
+    
+    Debug.Print url
+    
+    Dim jsonString As String
+    jsonString = GetHttpResponseText2(url)
+    
+    Dim jsonResponse As Object
+    Set jsonResponse = JsonConverter.ParseJson(jsonString)
+    
+    If jsonResponse.Exists("code") Then
+        If jsonResponse("code") = "ERROR" Then
+            Dim errMsg As String
+            errMsg = "Error: " & jsonResponse("message")
+            MsgBox errMsg, vbCritical ' 에러메시지를 보여준다.
+            Exit Sub
+        
+        ElseIf jsonResponse("code") = "SUCCESS" Then
+            Dim match As Collection
+            Set match = jsonResponse("selectStndCode")
+            
+             Call ProcessAndUpdateWorksheet(match)
+        End If
+    End If
+End Sub
+
+Function GetDataIdsStringA() As String
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim dataRange As Range
+    Dim cell As Range
+    Dim result As String
+    
+    ' 워크시트 세팅
+    Set ws = ThisWorkbook.Sheets("Market Data")
+    
+    ' 마지막 연속 셀을 찾는다.
+    lastRow = ws.Range("A8").End(xlDown).row
+    
+    ' data가 있는지 확인한다.
+    If lastRow < 8 Then
+        GetDataIdsStringA = ""
+        Exit Function
+    End If
+    
+    ' range를 설정한다.
+    Set dataRange = ws.Range("A8:A" & lastRow)
+    
+    ' range에 셀에 loop를 돈다.
+    For Each cell In dataRange
+        ' 셀값을 추가한다.
+        result = result & cell.value & ","
+    Next cell
+    
+    ' trailing comma를 제거한다.
+    If Len(result) > 0 Then
+        result = VBA.Left(result, Len(result) - 1)
+    End If
+    
+    ' 결과를 리턴한다.
+    GetDataIdsStringA = result
+End Function
+
+--StndCodeInputFX--
+Sub UpdateUnasIdFromStndCode()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Market Data") ' Adjust sheet name if necessary
+    
+    Dim lastRow As Long
+    lastRow = ws.Range("A20").End(xlDown).row
+    
+    Dim baseUrl As String
+    baseUrl = ws.Range("G2").value
+    Dim url As String
+    url = baseUrl & "marketdata/v1/selectOTCUNASMSTR?stndCode=" & GetDataIdsStringC("A20:A" & lastRow)
+    
+    Debug.Print url
+    
+    Dim jsonString As String
+    jsonString = GetHttpResponseText2(url)
+    
+    Dim jsonResponse As Object
+    Set jsonResponse = JsonConverter.ParseJson(jsonString)
+    
+    If jsonResponse.Exists("code") Then
+        If jsonResponse("code") = "ERROR" Then
+            Dim errMsg As String
+            errMsg = "Error: " & jsonResponse("message")
+            MsgBox errMsg, vbCritical
+            Exit Sub
+        ElseIf jsonResponse("code") = "SUCCESS" Then
+            Dim selectStndCodes As Collection
+            Set selectStndCodes = jsonResponse("selectStndCode")
+            
+            Call ProcessAndUpdateUnasId(selectStndCodes, "A20:A" & lastRow)
+        End If
+    End If
+End Sub
+
+Sub ProcessAndUpdateUnasId(selectStndCodes As Collection, stndCodeRange As String)
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Market Data")
+    
+    Dim dict As Object
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+    Dim obj As Object
+    For Each obj In selectStndCodes
+        dict(obj("stndcode")) = obj("unasid")
+    Next obj
+    
+    Dim rng As Range
+    Set rng = ws.Range(stndCodeRange)
+    Application.Calculation = xlCalculationManual
+    Dim cell As Range
+    For Each cell In rng
+        If dict.Exists(cell.value) Then
+            cell.Offset(0, 1).value = "'" & dict(cell.value)
+        End If
+        DoEvents
+    Next cell
+    Application.Calculation = xlCalculationAutomatic
+    
+End Sub
+
+Function GetDataIdsStringC(rngAddress As String) As String
+    Dim ws As Worksheet
+    Dim dataRange As Range
+    Dim cell As Range
+    Dim result As String
+    
+    Set ws = ThisWorkbook.Sheets("Market Data")
+    Set dataRange = ws.Range(rngAddress)
+    
+    For Each cell In dataRange
+        If Not IsEmpty(cell) Then
+            result = result & cell.value & ","
+        End If
+    Next cell
+    
+    If Len(result) > 0 Then
+        result = VBA.Left(result, Len(result) - 1)
+    End If
+    
+    GetDataIdsStringC = result
+End Function
+
+
+--Subroutines--
+' 주어진 data string과 함께 POST request를 특정 URL에 보낸다. response는 message box에 보여진다.
+'
+' @subroutine SendPostRequest
+' @param {String} DataString - POST request에서 보내질 데이터
+' @param {String} url - POST request가 보내질 URL
+Sub SendPostRequest(DataString As String, url As String)
+    Dim xmlHttp As Object
+    
+    ' 새로운 XML HTTP request를 만든다.
+    Set xmlHttp = CreateObject("WinHttp.WinHttpRequest.5.1")
+    
+    ' xmlhttp 객체를 세팅한다. 특정 URL에 synchronous하게 POST request를 한다. xmlhttp객체의 내부 상태를 configure한다.
+    xmlHttp.Open "POST", url, False
+    
+    ' request content-type header를 application/x-www-form-urlencoded로 세팅한다.
+    xmlHttp.SetRequestHeader "Content-Type", "application/x-www-form-urlencoded"
+    
+    ' DataString과 함께 request를 보낸다.
+    xmlHttp.send "a=" & DataString
+    
+    ' request의 상태를 확인한다.
+    If xmlHttp.Status = 200 Then
+        ' request가 성공적이면, response를 반환한다.
+        MsgBox xmlHttp.ResponseText
+    Else
+        ' request가 실패하면, status를 반환한다.
+        MsgBox "Error: " & xmlHttp.Status & " - " & xmlHttp.StatusText
+    End If
+    
+    ' Clean up
+    Set xmlHttp = Nothing
+End Sub
+
+'Internal State는 모든 field를 포함한다. 하지만, 직접적으로 개개의 field에 mapping되지 않는 부가적인 상태 정보도 포함한다. (예) 메소드로 관리되어지는 flag, counter, state variable
+'객체의 Internal state는 현재 데이터(field)와 data가 메서드에 의해서 조작되어진 역사 및 맥락의 결합이다.
+
+--UrlEncodeFunction--
+Private Declare PtrSafe Function WideCharToMultiByte Lib "kernel32" ( _
+    ByVal CodePage As Long, _
+    ByVal dwFlags As Long, _
+    ByVal lpWideCharStr As LongPtr, _
+    ByVal cchWideChar As Long, _
+    ByVal lpMultiByteStr As LongPtr, _
+    ByVal cbMultiByte As Long, _
+    ByVal lpDefaultChar As LongPtr, _
+    ByVal lpUsedDefaultChar As LongPtr) As Long
+
+Private Const CP_UTF8 As Long = 65001
+
+'@method SimpleUrlEncode4
+'@description ASCII 와 ASCII가 아닌 문자를 Encoding하는데 사용되어 진다.
+'@param StringVal {String} URL-encoding될 String
+'@return {String} URL-encoding된 String
+'@usage 인코딩된 String결과값을 사용한다.
+
+Function SimpleURLEncode4(ByVal StringVal As String) As String
+    Dim i As Long, j As Long
+    Dim result As String
+    Dim utf8() As Byte
+    Dim char As String
+    Dim charCode As Long
+    
+    result = ""
+    
+    For i = 1 To Len(StringVal)
+        char = VBA.Strings.Mid$(StringVal, i, 1)
+        charCode = AscW(char)
+        
+        Select Case charCode
+            Case 48 To 57, 65 To 90, 97 To 122, 45, 46, 95, 126  ' 0-9, A-Z, a-z, -, ., _, ~
+                result = result & char
+            Case 32  ' Space
+                result = result & "%20"
+            Case Else  ' Korean characters and other special characters
+                utf8 = StringToUTF8(char)
+                For j = LBound(utf8) To UBound(utf8)
+                    result = result & "%" & VBA.Strings.Right$("0" & VBA.Conversion.Hex$(utf8(j)), 2)
+                Next j
+        End Select
+    Next i
+    
+    SimpleURLEncode4 = result
+End Function
+
+'@method StringToUTF8
+'@description string을 UTF-8 바이트 형태로 바꿔준다.
+'@param StringVal {String} UTF-8형태로 변경될 String
+'@return {Byte()} UTF-8로 인코딩된 String을 나타내는 byte의 array
+'@usage
+
+Private Function StringToUTF8(ByVal StringVal As String) As Byte()
+    Dim length As Long
+    Dim utf8() As Byte
+    
+    ' 필요한 buffer size를 얻는다.
+    length = WideCharToMultiByte(CP_UTF8, 0, StrPtr(StringVal), -1, 0, 0, 0, 0)
+    
+    If length > 0 Then
+        ReDim utf8(0 To length - 1)
+        
+        ' 변환을 수행한다.
+        WideCharToMultiByte CP_UTF8, 0, StrPtr(StringVal), -1, VarPtr(utf8(0)), length, 0, 0
+        
+        ' null terminator를 제거한다.
+        ReDim Preserve utf8(0 To length - 2)
+    End If
+    
+    StringToUTF8 = utf8
+End Function
+
+
+
+--ValuationRequest--
+Sub ValuationRequest()
+    Dim jsonString As String
+    Dim xmlHttp As Object
+    Dim baseUrl As String
+    
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Quote")
+    
+    Dim requestName As String
+    requestName = "Quote_Valuation_By_" + ws.Cells(2, 5).value
+    
+    Dim valDate As String
+    valDate = VBA.Format(ws.Cells(2, 1).value, "yyyymmdd")
+    
+    ',(comma)를 이용해서 itemCode(cntrCode)를 가져오도록 하기
+    Dim itemCodes As String
+'    itemCodes = ""
+'
+'    Dim lastRow As Integer
+'    lastRow = ws.Cells(10, 2).End(xlDown).row
+'
+'    Dim i As Integer
+'
+'    For i = 10 To lastRow
+'        itemCodes = itemCodes & ws.Cells(i, 2).value & ","
+'    Next i
+'
+'    ' 마지막 콤마 제거
+'    If Len(itemCodes) > 0 Then
+'        itemCodes = VBA.Left(itemCodes, Len(itemCodes) - 1)
+'    End If
+    Dim lastRow As Long
+    Dim i As Long
+    Dim arraySize As Long
+    Dim codeArray() As String
+    
+    arraySize = ws.Cells(8, 2).value
+    
+    ReDim codeArray(1 To arraySize)
+    
+    lastRow = ws.Cells(10, 2).End(xlDown).row
+    
+    If lastRow - 10 + 1 < arraySize Then
+        Debug.Print "데이터가 충분하지 않습니다."
+        Exit Sub
+    End If
+    
+    For i = 1 To arraySize
+        codeArray(i) = ws.Cells(9 + i, 2).value
+    Next i
+    
+    itemCodes = Join(codeArray, ",")
+    
+    Dim sendMessage As String
+    sendMessage = "officeCd=FO&name=" + requestName + "&valDate=" + valDate + "&valTypeCode=G&greekLevel=1&contextIds=FO&dataSetIds=official&simId=&priority=4&itemCodes=" + itemCodes
+    
+    Debug.Print sendMessage
+    Set xmlHttp = CreateObject("WinHttp.WinHttpRequest.5.1")
+'    baseUrl = ThisWorkbook.Sheets("Sheet1").Range("A8").value
+    
+    Dim url As String
+    baseUrl = "http://210.120.89.57:8080/"
+    
+    Dim localUrl As String
+    localUrl = "http://localhost:8080/"
+    'url = "http://urosys-web.juroinstruments.com/app/createValWebJob"
+    url = baseUrl & "createValWebJob"
+    
+    xmlHttp.Open "POST", url, False
+    
+    xmlHttp.SetRequestHeader "Content-Type", "application/x-www-form-urlencoded"
+    
+    xmlHttp.send sendMessage
+    
+    Do
+        
+        If xmlHttp.Status = 200 Then
+        
+            Exit Do
+        
+        ElseIf xmlHttp.Status >= 400 Then
+            
+            'ThisWorkbook.Sheets("Sheet1").Range("F2").value = xmlhttp.Status
+            ws.Range("C5").value = xmlHttp.Status
+            Exit Sub
+        
+        End If
+        
+        DoEvents
+    Loop
+    
+    Dim response As String
+    response = xmlHttp.ResponseText
+    
+    'status 완료 확인 (status가 완료 시에, ResponseText로 부터 jobId를 획득해 올 수 있다.)
+    'jobId 획득
+    
+    Dim jobId As String
+    Dim ParsedJson As Dictionary
+    
+    Set ParsedJson = JsonConverter.ParseJson(response)
+    jobId = ParsedJson("jobId")
+    
+    'ThisWorkbook.Sheets("Sheet1").Range("B5").value = jobId
+    ws.Range("B5").value = jobId
+    
+    Dim url2 As String
+    url2 = baseUrl & "selectValJob?jobId=" & jobId
+    
+    Dim startTime As Single
+    Dim elapsedTime As Single
+    
+    startTime = Timer
+    elapsedTime = 0
+    
+    Do
+        Dim xmlhttp2 As Object
+        Set xmlhttp2 = CreateObject("WinHttp.WinHttpRequest.5.1")
+        
+        xmlhttp2.Open "GET", url2, False
+        xmlhttp2.SetRequestHeader "Content-Type", "application/x-www-form-urlencoded"
+        xmlhttp2.send
+        
+        response = xmlhttp2.ResponseText
+        
+        Set ParsedJson = JsonConverter.ParseJson(response)
+        
+        If ParsedJson("jobStateCode") = "FIN" Then
+            ' job이 완료되면, logic을 지속함.
+                        
+            ws.Range("E5").value = "'" & ParsedJson("procEndDtime")
+            
+            ws.Range("C5").value = ParsedJson("jobStateCodeNm")
+            Exit Do
+            
+        ElseIf ParsedJson("jobStateCode") = "F" Or ParsedJson("jobStateCode") = "C" Then
+        
+            ws.Range("C5").value = ParsedJson("jobStateCodeNm")
+            
+            ws.Range("E5").value = "'" & ParsedJson("procEndDtime")
+            Exit Do
+            'Exit Sub
+        End If
+        
+        ws.Range("C5").value = ParsedJson("jobStateCodeNm")
+        ws.Range("D5").value = "'" & ParsedJson("creDtime")
+        
+        'Start timing (StartTime은 Timer의 현재 시간을 assign받고,
+        'startTime = Timer
+        
+        elapsedTime = Timer - startTime
+        
+        If elapsedTime >= 20 Then
+            Exit Do
+        End If
+        
+        Dim loopStartTime As Single
+        loopStartTime = Timer
+        Do While Timer < loopStartTime + 10
+            DoEvents
+        Loop
+        '10초 마다 loop
+'        Do While Timer < startTime + 10
+'            DoEvents  'Excel이 responsive하도록
+'        Loop
+        DoEvents
+    Loop
+    
+    If ParsedJson("jobStateCode") = "FIN" Then
+        Dim url3 As String
+        url3 = baseUrl & "marketdata/v1/selectQuotePrice?jobId=" & jobId
+        'url3 = localUrl & "marketdata/v1/selectQuotePrice?jobid=" & jobId
+        
+        Dim xmlhttp3 As Object
+        Set xmlhttp3 = CreateObject("WinHttp.WinHttpRequest.5.1")
+        
+        xmlhttp3.Open "GET", url3, False
+        xmlhttp3.SetRequestHeader "Content-Type", "application/x-www-form-urlencoded"
+        xmlhttp3.send
+        
+        response = xmlhttp3.ResponseText
+        Dim ParsedJson2 As Dictionary
+        Set ParsedJson2 = JsonConverter.ParseJson(response)
+        
+        Dim selectQuotePrice As Variant
+        
+        Set selectQuotePrice = ParsedJson2("response")("quotePrice")
+        
+        Dim rowIndex As Integer
+    
+        rowIndex = 10
+    
+        Dim item As Variant
+        Dim currentRow As Integer
+        Dim itemCd As String
+        
+        Application.Calculation = xlCalculationManual
+        
+        Do While ws.Cells(rowIndex, 2).value <> ""
+            itemCd = ws.Cells(rowIndex, 2).value
+            
+            For Each item In selectQuotePrice
+                If item("itemCd") = itemCd Then
+                    ws.Cells(rowIndex, 32).value = "FIN"
+                    ws.Cells(rowIndex, 33).value = item("price")
+                    Exit For
+                End If
+                DoEvents
+            Next item
+    
+            rowIndex = rowIndex + 1
+            DoEvents
+        Loop
+        
+        Application.Calculation = xlCalculationAutomatic
+    Else
+        
+        Dim url4 As String
+        url4 = baseUrl & "marketdata/v1/selectJobStatus?jobId=" & jobId
+    
+        Dim xmlhttp4 As Object
+        Set xmlhttp4 = CreateObject("WinHttp.WinHttpRequest.5.1")
+        
+        xmlhttp4.Open "GET", url4, False
+        xmlhttp4.SetRequestHeader "Content-Type", "application/x-www-form-urlencoded"
+        xmlhttp4.send
+        
+        response = xmlhttp4.ResponseText
+        Dim ParsedJson4 As Dictionary
+        Set ParsedJson4 = JsonConverter.ParseJson(response)
+        
+        Dim selectjob4 As Variant
+        
+        Set selectjob4 = ParsedJson4("response")("jobStatus")
+        
+        Application.Calculation = xlCalculationManual
+        
+        Dim lastRow2 As Long
+        lastRow2 = ws.Cells(10, "B").End(xlDown).row
+        
+        Dim j As Long
+        Dim job As Variant
+        Dim itemCd2 As String
+        Dim found As Boolean
+        
+        For j = 10 To lastRow2 ' column B의 row10에서 시작한다.
+            itemCd2 = ws.Cells(j, 2).value ' column B로 부터 itemCd2를 얻는다.
+            found = False
+            
+            For Each job In selectjob4
+                If job("itemCd") = itemCd2 Then
+                    ws.Cells(j, 32).value = job("taskSttsCd") ' column AF (32)에 taskSttsCd를 입력한다.
+                    found = True
+                    Exit For
+                End If
+                DoEvents
+            Next job
+            
+            If Not found Then
+                ws.Cells(j, 32).value = "" ' match가 발견되지 않는다면, cell은 clear한다.
+            End If
+            
+            DoEvents
+        Next j
+        
+        Application.Calculation = xlCalculationAutomatic
+        
+    End If
+        
+End Sub
+
+Sub FindColumnNumber()
+
+    Dim columnLetter As String
+    Dim columnNumber As Integer
+    
+    columnLetter = "AG"
+    
+    columnNumber = Range(columnLetter & "1").Column
+    
+    Debug.Print columnNumber
+
+End Sub
